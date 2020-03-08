@@ -1,5 +1,6 @@
 name = "McCormick"
 uuid = "53c679d3-6890-5091-8386-c291e8c8aaa1"
+authors = ["Matthew Wilhelm <matthew.wilhelm@uconn.edu>"]
 version = "0.1.0"
 
 [deps]

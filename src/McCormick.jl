@@ -1,3 +1,5 @@
+__precompile__()
+
 module McCormick
 
 using DocStringExtensions, LinearAlgebra
@@ -30,7 +32,7 @@ import Base.MathConstants.golden
 export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        one, zero, dist, real, eps, mid, exp, exp2, exp10, expm1, log, log2,
        log10, log1p, acosh, sqrt, sin, cos, tan, min, max, sec, csc, cot, ^,
-       abs, step, sign, pow, in, isempty, intersect, length,
+       abs, step, sign, pow, in, isempty, intersect, length, mid3,
        acos, asin, atan, sinh, cosh, tanh, asinh, atanh, inv, sqr, sech,
        csch, coth, acsch, acoth, asech, rad2deg, deg2rad,
        sind, cosd, tand, asind, acosd, atand,
