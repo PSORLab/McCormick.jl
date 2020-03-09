@@ -8,7 +8,7 @@ environment:
 platform:
   - x64
 
- matrix:
+matrix:
    allow_failures:
    - julia_version: nightly
 
