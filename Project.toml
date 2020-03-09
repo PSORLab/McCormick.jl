@@ -13,7 +13,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-DiffRules = "0.0.5, 1.0.0"
+DiffRules = "0.0.5, 0.0.6, 0.0.7, 0.0.8, 0.0.9, 0.0.10, 0.1.0, ~1.0"
 DocStringExtensions = "~0.8"
 ForwardDiff = "~0.5.0, ~0.6, ~0.7, ~0.8, ~0.9, ~0.10"
 IntervalArithmetic = "~0.16"
