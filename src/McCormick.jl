@@ -59,7 +59,7 @@ export MCCallback, gen_expansion_params!, implicit_relax_h!, DenseMidInv,
        NewtonGS, KrawczykCW
 
 """
-    RelaxTag
+$(TYPEDEF)
 
 An `abstract type` the subtypes of which define the manner of relaxation that will
 be performed for each operator applied to the MC object. Currently, the `struct NS`
@@ -216,34 +216,35 @@ end
 
 #abstract type AbstractMC <: Real end
 """
-    MC
+$(TYPEDEF)
 
 `MC{N, T <: RelaxTag} <: Real` is the McCormick (w/ (sub)gradient) structure which is used to overload
 standard calculations. The fields are:
-* `cc::Float64`: Concave relaxation
-* `cv::Float64`: Convex relaxation
-* `cc_grad::SVector{N,Float64}`: (Sub)gradient of concave relaxation
-* `cv_grad::SVector{N,Float64}`: (Sub)gradient of convex relaxation
-* `Intv::Interval{Float64}`: Interval bounds
-* `cnst::Bool`: Flag for whether the bounds are constant
+
+$(TYPEDFIELDS)
 """
 struct MC{N, T <: RelaxTag} <: Real
-  cv::Float64
-  cc::Float64
-  Intv::Interval{Float64}
-  cv_grad::SVector{N,Float64}
-  cc_grad::SVector{N,Float64}
-  cnst::Bool
-
-  function MC{N,T}(cv1::Float64, cc1::Float64, Intv1::Interval{Float64},
+    "Convex relaxation"
+    cv::Float64
+    "Concave relaxation"
+    cc::Float64
+    "Interval bounds"
+    Intv::Interval{Float64}
+    "(Sub)gradient of convex relaxation"
+    cv_grad::SVector{N,Float64}
+    "(Sub)gradient of concave relaxation"
+    cc_grad::SVector{N,Float64}
+    "Flag for whether the bounds are constant"
+    cnst::Bool
+    function MC{N,T}(cv1::Float64, cc1::Float64, Intv1::Interval{Float64},
                  cv_grad1::SVector{N,Float64} ,cc_grad1::SVector{N,Float64},
                  cnst1::Bool) where {N, T <: RelaxTag}
-    new(cv1,cc1,Intv1,cv_grad1,cc_grad1,cnst1)
-  end
+        new(cv1,cc1,Intv1,cv_grad1,cc_grad1,cnst1)
+    end
 end
 
 """
-    MC{N,T}(y::Interval{Float64})
+$(TYPEDSIGNATURES)
 
 Constructs McCormick relaxation with convex relaxation equal to `y.lo` and
 concave relaxation equal to `y.hi`.
@@ -254,7 +255,7 @@ function MC{N,T}(y::Interval{Float64}) where {N, T <: RelaxTag}
 end
 
 """
-    MC{N,T}(y::Float64)
+$(TYPEDSIGNATURES)
 
 Constructs McCormick relaxation with convex relaxation equal to `y` and
 concave relaxation equal to `y`.
@@ -265,7 +266,7 @@ function MC{N,T}(y::Y) where {N, T <: RelaxTag, Y <: AbstractIrrational}
 end
 
 """
-    MC{N,T}(cv::Float64, cc::Float64)
+$(TYPEDSIGNATURES)
 
 Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
@@ -277,7 +278,7 @@ function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
 end
 
 """
-    MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64})
+$(TYPEDSIGNATURES)
 
 Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
@@ -289,7 +290,7 @@ function MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64}) where {N, T 
 end
 
 """
-    MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64)
+$(TYPEDSIGNATURES)
 
 Constructs McCormick relaxation with convex relaxation equal to `val`,
 concave relaxation equal to `val`, interval bounds of `Intv`, and a unit subgradient
@@ -322,7 +323,7 @@ function isone(x::MC)
 end
 
 """
-    newton(x0::T,xL::T,xU::T,f::Function,df::Function,envp1::T,envp2::T)
+$(TYPEDSIGNATURES)
 
 Defines a local 1D newton method to solve for the root of `f` between the bounds
 `xL` and `xU` using `x0` as a starting point. The derivative of `f` is `df`. The
@@ -353,7 +354,7 @@ end
 
 
 """
-    secant(x0::T,x1::T,xL::T,xU::T,f::Function,envp1::T,envp2::T)  where {T<:Real}
+$(TYPEDSIGNATURES)
 
 Defines a local 1D secant method to solve for the root of `f` between
 the bounds `xL` and `xU` using `x0` and `x1` as a starting points. The inputs
@@ -385,7 +386,7 @@ end
 
 
 """
-    golden_section(xL::T,xU::T,f::Function,envp1::T,envp2::T) where {T<:Real}
+$(TYPEDSIGNATURES)
 
 Defines a local 1D golden section method to solve for the root of `f` between
 the bounds `xL` and `xU` using `x0` as a starting point. Define iteration used
@@ -402,8 +403,7 @@ function golden_section(xL::Float64,xU::Float64,f::Function,envp1::Float64,envp2
   return golden_section_it(1,xL,fL,xm,fm,xU,fU,f,envp1,envp2)
 end
 """
-    golden_section_it(init::Int64,a::T,fa::T,b::T,fb::T,c::T,
-                      fc::T,f::Function,envp1::T,envp2::T) where {T<:Real}
+$(TYPEDSIGNATURES)
 
 Define iteration used in golden section method. The inputs `fa`,`fb`, and `fc`,
 are the function `f` evaluated at `a`,`b`, and `c` respectively. The inputs
