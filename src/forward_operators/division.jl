@@ -57,9 +57,12 @@ function div_MV(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where N
         cc = -cc
         cc_grad = -cc_grad
     else
-        return MC{N,Diff}(union(x.Intv/Interval{Float64}(y.Intv.lo, -MC_DOMAIN_TOL),
-                                x.Intv/Interval{Float64}(MC_DOMAIN_TOL, y.Intv.hi)))
-        error("Division (x/y) is unbounded on intervals y containing 0.")
+        if MC_DOMAIN_CATCH
+            return MC{N,Diff}(union(x.Intv/Interval{Float64}(y.Intv.lo, -MC_DOMAIN_TOL),
+                                    x.Intv/Interval{Float64}(MC_DOMAIN_TOL, y.Intv.hi)))
+        else
+            error("Division (x/y) is unbounded on intervals y containing 0.")
+        end
     end
     return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst && y.cnst)
 end
@@ -68,8 +71,13 @@ function div_kernel(x::MC{N,NS}, y::MC{N,NS}, z::Interval{Float64}) where N
     if (x === y)
         zMC = one(x)
     else
-        q = inv(y)
-        zMC = mult_kernel(x, q, z)
+        if (y.Intv.lo <= 0.0 <= y.Intv.hi)
+            zMC = MC{N,NS}(union(x.Intv/Interval{Float64}(y.Intv.lo, -MC_DOMAIN_TOL),
+                                 x.Intv/Interval{Float64}(MC_DOMAIN_TOL, y.Intv.hi)))
+        else
+            q = inv(y)
+            zMC = mult_kernel(x, q, z)
+        end
     end
     return zMC
 end

@@ -34,7 +34,7 @@ function sqr_kernel(x::MC{N,NS}, y::Interval{Float64}) where N
 	dcv = dcv_sqr_NS(midcv, x.Intv.lo, x.Intv.hi)
 	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
 	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-	#cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
 	return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function sqr_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
@@ -114,7 +114,7 @@ function npp_or_pow4(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integ
   cv, dcv = cv_npp_or_pow4(midcv, x.Intv.lo, x.Intv.hi, c)
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+  cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
   return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function npp_or_pow4(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}

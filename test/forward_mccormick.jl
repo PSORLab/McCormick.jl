@@ -225,12 +225,12 @@ end
    yref_sinh_d1_p = MC{2,Diff}(27.28991719712775, 144.59243701386904, Interval{Float64}(10.0178, 548.3161232732466), @SVector[27.3082, 0.0], @SVector[134.57456208645914, 0.0], false)
    yref_sinh_d1_n = MC{2,Diff}(-144.59243701386904, -27.28991719712775, Interval{Float64}(-548.3161232732466, -10.0178), @SVector[134.57456208645914 , 0.0], @SVector[27.3082, 0.0], false)
    yref_sinh_d1_z = MC{2,Diff}(-6.212568527712605, -3.626860407847019, Interval{Float64}(-10.0179, 1.17521), @SVector[3.8053063996972973, 0.0], @SVector[3.7622, 0.0], false)
-   yref_sinh_ns_p = MC{2,NS}(27.28991719712775, 144.59243701386904, Interval{Float64}(10.0178, 548.317), @SVector[27.3082, 0.0], @SVector[134.575, 0.0], false)
+   yref_sinh_ns_p = MC{2,NS}(27.28991719712775, 144.59243701386904, Interval{Float64}(10.0178, 548.3161232732466), @SVector[27.3082, 0.0], @SVector[134.57456208645914, 0.0], false)
 
    @test check_vs_ref1(sinh, x_sinh_p, yref_sinh_d1_p, mctol)
    @test check_vs_ref1(sinh, x_sinh_n, yref_sinh_d1_n, mctol)
    @test check_vs_ref1(sinh, x_sinh_z, yref_sinh_d1_z, mctol)
-   @test_broken check_vs_ref1(sinh, x_sinh_ns_p, yref_sinh_ns_p, mctol)
+   @test check_vs_ref1(sinh, x_sinh_ns_p, yref_sinh_ns_p, mctol)
 
    ##### Hyperbolic Cosine #####
    x_cosh_ns = MC{2,NS}(4.0, 4.0, Interval{Float64}(3.0,7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -389,10 +389,34 @@ end
    @test out6[2] == 2
    @test out7[2] == 3
    @test out8[2] == 1
+
+   Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+
+   Z3 = inv(Y1)
+   Z4 = inv(Y2)
+   @test isapprox(Z3.cv, -1.0e10, atol = 1E-3)
+   @test isapprox(Z3.cc, 1.0e10, atol = 1E-3)
+   @test isapprox(Z4.cv, -1.0e10, atol = 1E-3)
+   @test isapprox(Z4.cc, 1.0e10, atol = 1E-3)
+
+   Z5 = Y1^(-3)
+   Z6 = Y2^(-3)
+   @test isapprox(Z5.cv, -1.0e30, rtol = 1E-3)
+   @test isapprox(Z5.cc, 1.0e30, rtol = 1E-3)
+   @test isapprox(Z6.cv, -1.0e30, rtol = 1E-3)
+   @test isapprox(Z6.cc, 1.0e30, rtol = 1E-3)
+
+   Z7 = Y1^(-3.0)
+   Z8 = Y2^(-3.0)
+   @test isapprox(Z7.cv, -1.0e30, rtol = 1E-3)
+   @test isapprox(Z7.cc, 1.0e30, rtol = 1E-3)
+   @test isapprox(Z8.cv, -1.0e30, rtol = 1E-3)
+   @test isapprox(Z8.cc, 1.0e30, rtol = 1E-3)
 end
 
 
-@testset "Test Multivariant w/Constant" begin
+@testset "Test Arithmetic w/Constant" begin
 
    mctol = 1E-4
 
@@ -764,6 +788,21 @@ end
 end
 
 @testset "Division" begin
+
+   X1 = MC{2,Diff}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
+   Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   Z1 = X1/Y1
+
+
+   X2 = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
+   Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   Z2 = X2/Y2
+
+   @test isapprox(Z1.cv, -4.0e10, atol = 1E-3)
+   @test isapprox(Z2.cc, 4.0e10, atol = 1E-3)
+   @test isapprox(Z1.cv, -4.0e10, atol = 1E-3)
+   @test isapprox(Z2.cc, 4.0e10, atol = 1E-3)
+
     X = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
     Y = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,-3.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
     out = X/Y
