@@ -57,6 +57,8 @@ function div_MV(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where N
         cc = -cc
         cc_grad = -cc_grad
     else
+        return MC{N,Diff}(union(x.Intv/Interval{Float64}(y.Intv.lo, -MC_DOMAIN_TOL),
+                                x.Intv/Interval{Float64}(MC_DOMAIN_TOL, y.Intv.hi)))
         error("Division (x/y) is unbounded on intervals y containing 0.")
     end
     return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst && y.cnst)
@@ -87,16 +89,25 @@ function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N
     elseif  ~(degen1||degen2)
         zMC = div_MV(x, y, z)
     else
-        q = inv(y)
-        zMC = mult_kernel(x, q, z)
+        if (y.Intv.lo <= 0.0 <= y.Intv.hi)
+            q = inv(y)
+            zMC = mult_kernel(x, q, x.Intv/q.Intv)
+        else
+            q = inv(y)
+            zMC = mult_kernel(x, q, z)
+        end
     end
     return zMC
 end
 
 function /(x::MC{N,T}, y::MC{N,T}) where {N,T<:RelaxTag}
-    @assert ~(y.Intv.lo <= 0.0 <= y.Intv.hi) "Domain Error: When computing the relaxations of x/y the
-                                              interval bounds of y contained zero. As such the x/y is unbounded
-                                              and the relaxations do not exist. This may occur due to the expansiveness
-                                              in long calculations. Reformulating the function may remedy this."
+    if ~(y.Intv.lo <= 0.0 <= y.Intv.hi)
+        if ~MC_DOMAIN_CATCH
+            error("Domain Error: When computing the relaxations of x/y the
+                                 interval bounds of y contained zero. As such the x/y is unbounded
+                                 and the relaxations do not exist. This may occur due to the expansiveness
+                                 in long calculations. Reformulating the function may remedy this.")
+        end
+    end
     return div_kernel(x, y, x.Intv/y.Intv)
 end

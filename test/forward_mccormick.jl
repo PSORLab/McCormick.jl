@@ -700,26 +700,26 @@ end
     out1 = McCormick.mul1_u1pos_u2mix(x1a, x2b, z1, false)
     @test out1.cv == 1.0
     @test out1.cc == 1.5
-    @test out1.Intv.lo == 0.5
-    @test out1.Intv.hi == 2.0
+    @test isapprox(out1.Intv.lo, 0.5, atol =1E-6)
+    @test isapprox(out1.Intv.hi, 2.0, atol =1E-6)
 
     out2 = McCormick.mul1_u1pos_u2mix(x1a, x2c, z2, false)
     @test out2.cv == 4.0
     @test out2.cc == 6.0
-    @test out2.Intv.lo == 2.0
-    @test out2.Intv.hi == 8.0
+    @test isapprox(out2.Intv.lo, 2.0, atol =1E-6)
+    @test isapprox(out2.Intv.hi, 8.0, atol =1E-6)
 
     out3 = McCormick.mul2_u1pos_u2mix(x1a, x2b, z1, false)
     @test out3.cv == 1.0
     @test out3.cc == 1.5
-    @test out3.Intv.lo == 0.5
-    @test out3.Intv.hi == 2.0
+    @test isapprox(out3.Intv.lo, 0.5, atol =1E-6)
+    @test isapprox(out3.Intv.hi, 2.0, atol =1E-6)
 
     out4 = McCormick.mul2_u1pos_u2mix(x1a, x2c, z2, false)
     @test out4.cv == 4.0
     @test out4.cc == 6.0
-    @test out4.Intv.lo == 2.0
-    @test out4.Intv.hi == 8.0
+    @test isapprox(out4.Intv.lo, 2.0, atol =1E-6)
+    @test isapprox(out4.Intv.hi, 8.0, atol =1E-6)
 
     x1a = MC{2,NS}(1.1, 2.3, Interval(0.1,3.3))
     x2a = MC{2,NS}(2.1, 3.3, Interval(1.1,4.3))
