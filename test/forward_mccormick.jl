@@ -793,10 +793,12 @@ end
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Z1 = X1/Y1
 
-
    X2 = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Z2 = X2/Y2
+
+   @test X1/X1 == one(X1)
+   @test X2/X2 == one(X2)
 
    @test isapprox(Z1.cv, -4.0e10, atol = 1E-3)
    @test isapprox(Z2.cc, 4.0e10, atol = 1E-3)
