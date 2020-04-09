@@ -246,36 +246,40 @@ end
 function pow_kernel(x::MC, c::Z, y::Interval{Float64}) where {Z<:Integer}
     if (c == 0)
 		    z = one(x)
-	  elseif (c == 1)
+	elseif (c == 1)
 		    z = x
-	  elseif (c > 0)
+	elseif (c > 0)
         if (c == 2)
-			#println("x = $x")
-			#println("y = $y")
-			      z = sqr_kernel(x, y)
-				elseif isodd(c)
-						z = pos_odd(x, c, y)
-				else
-						z =	npp_or_pow4(x, c, y)
-				end
+   	        z = sqr_kernel(x, y)
+		elseif isodd(c)
+			z = pos_odd(x, c, y)
+		else
+			z =	npp_or_pow4(x, c, y)
+		end
     else
         if (x.Intv.hi < 0.0)
-        		if isodd(c)
-						  	z = neg_powneg_odd(x, c, y)
-						else
-        	  		z = neg_powneg_even(x, c, y)
-						end
+        	if isodd(c)
+			  	z = neg_powneg_odd(x, c, y)
+			else
+        		z = neg_powneg_even(x, c, y)
+			end
         elseif (x.Intv.lo > 0.0)
-					  z = npp_or_pow4(x, c, y)
-				else
-					error("Envelope not defined.")
-				end
+			z = npp_or_pow4(x, c, y)
+		else
+			error("Domain Error: When computing the relaxations of y^c (c < 0) the
+			       interval bounds of y contained zero. As such the y^c is unbounded
+			       and the relaxations do not exist. This may occur due to the expansiveness
+			       in long calculations. Reformulating the function may remedy this.")
+		end
     end
 	  return z
 end
 function pow(x::MC, c::Z) where {Z<:Integer}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		error("Function unbounded on this domain")
+		error("Domain Error: When computing the relaxations of y^c (c < 0) the
+			   interval bounds of y contained zero. As such the y^c is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this.")
 	end
 	return pow_kernel(x, c, x.Intv^c)
 end
@@ -331,9 +335,9 @@ pow(x::MC, c::F) where {F <: AbstractFloat} = x^c
 
 # Define powers to MC of floating point number
 function pow(b::Float64, x::MC) # DONE (no kernel)
-	(b <= 0.0) && error("Relaxations of a^x where a<=0 not currently defined in library.
-		                   Functions of this type may prevent convergences in global
-			                 optimization algorithm as they may be discontinuous.")
+	(b <= 0.0) && error("Relaxations of b^x where b<=0 not currently defined in library.
+		                 Functions of this type may prevent convergences in global
+			             optimization algorithm as they may be discontinuous.")
 	exp(x*log(b))
 end
 ^(b::Float64, x::MC) = pow(b, x) # DONE (no kernel)
@@ -362,7 +366,10 @@ function inv1(x::MC{N,NS}, y::Interval{Float64}) where N
 end
 function inv_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi)
-		error("Function unbounded on domain: $(x.Intv)")
+		error("Domain Error: When computing the relaxations of inv(y) the
+			   interval bounds of y contained zero. As such the y is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this.")
 	end
 	if (x.Intv.hi < 0.0)
 		x = neg_powneg_odd(x, -1, y)

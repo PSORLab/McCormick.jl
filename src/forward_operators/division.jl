@@ -94,6 +94,9 @@ function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N
 end
 
 function /(x::MC{N,T}, y::MC{N,T}) where {N,T<:RelaxTag}
-    @assert ~(y.Intv.lo <= 0.0 <= y.Intv.hi)
+    @assert ~(y.Intv.lo <= 0.0 <= y.Intv.hi) "Domain Error: When computing the relaxations of x/y the
+                                              interval bounds of y contained zero. As such the x/y is unbounded
+                                              and the relaxations do not exist. This may occur due to the expansiveness
+                                              in long calculations. Reformulating the function may remedy this."
     return div_kernel(x, y, x.Intv/y.Intv)
 end

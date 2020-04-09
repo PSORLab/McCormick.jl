@@ -1,7 +1,7 @@
 """
 $(FUNCTIONNAME)
 
-Dense LU preconditioner for implicit McCormick relaxation.
+A dense LU preconditioner for implicit McCormick relaxation.
 """
 struct DenseMidInv <: AbstractPreconditionerMC
     Y::Array{Float64,2}
