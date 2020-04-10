@@ -177,5 +177,6 @@ end
 	                    max_MC.cv_grad, min_MC.cc_grad, x.cnst)
 end
 
-@inline in(x::MC) = in(x.Intv)
+@inline in(a::Int, x::MC) = in(a, x.Intv)
+@inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
 @inline isempty(x::MC) = isempty(x.Intv)

@@ -413,6 +413,28 @@ end
    @test isapprox(Z7.cc, 1.0e30, rtol = 1E-3)
    @test isapprox(Z8.cv, -1.0e30, rtol = 1E-3)
    @test isapprox(Z8.cc, 1.0e30, rtol = 1E-3)
+
+   @test isapprox(McCormick.tanh_deriv(3.0, 2.0, 4.0), 0.009866, rtol=1E-3)
+   @test isapprox(McCormick.tanh_envd(3.0, 2.0, 4.0), 6.258589, rtol=1E-3)
+   @test isapprox(McCormick.atan_deriv(3.0, 2.0, 4.0), 0.100, rtol=1E-3)
+   @test isapprox(McCormick.asin_deriv(0.5, 0.0, 0.9), 1.1547005, rtol=1E-3)
+   @test isapprox(McCormick.tan_deriv(3.0, 2.0, 4.0), 1.0203195, rtol=1E-3)
+   @test isapprox(McCormick.tan_envd(3.0, 2.0, 4.0), -0.570704, rtol=1E-3)
+   @test isapprox(McCormick.acos_deriv(0.5, 0.0, 0.9), -1.1547005, rtol=1E-3)
+   @test isapprox(McCormick.acos_env(0.5, 0.0, 0.9), -0.04655, rtol=1E-3)
+   @test isapprox(McCormick.asinh_deriv(3.0, 2.0, 4.0), 0.31622, rtol=1E-3)
+
+   xD = MC{2,Diff}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   xNS = MC{2,NS}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+
+   @test xD^0 == one(xD)
+   @test xNS^0 == one(xNS)
+   @test ~isnan(xD)
+   @test ~in(0.5,xD)
+   @test in(2,xD)
+   @test ~isempty(xD)
+
+   @test_throws ErrorException (-0.5)^xNS
 end
 
 

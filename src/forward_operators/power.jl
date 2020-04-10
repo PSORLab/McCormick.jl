@@ -335,8 +335,8 @@ function (^)(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
     return MC{N,Diff}(z.cv, z.cc, y, z.cv_grad, z.cc_grad, x.cnst)
 end
 
-(^)(x::MC, c::Float32, y::Interval{Float64}) = (^)(x, Float32(c), y)
-(^)(x::MC, c::Float16, y::Interval{Float64}) = (^)(x, Float16(c), y)
+(^)(x::MC, c::Float32, y::Interval{Float64}) = (^)(x, Float64(c), y)
+(^)(x::MC, c::Float16, y::Interval{Float64}) = (^)(x, Float64(c), y)
 (^)(x::MC, c::Float64) = (^)(x, c, x.Intv^c)
 (^)(x::MC, c::Float32) = x^Float64(c) # DONE
 (^)(x::MC, c::Float16) = x^Float64(c) # DONE
