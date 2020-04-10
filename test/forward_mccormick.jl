@@ -435,6 +435,64 @@ end
    @test ~isempty(xD)
 
    @test_throws ErrorException (-0.5)^xNS
+
+   xD = MC{2,Diff}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   xNS = MC{2,NS}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+
+   mc2 = ^(0.5, xNS)
+   mc3 = (^)(xD, 0.5, xNS.Intv^0.5)
+   mc4 = (^)(xD, 2.3, xNS.Intv^2.3)
+   mc5 = (^)(xNS, 0.5, xNS.Intv^0.5)
+   mc6 = (^)(xNS, 2.3, xNS.Intv^2.3)
+   mc7 = (^)(xNS, Float32(2.3), xNS.Intv^2.3)
+   mc8 = (^)(xNS, Float16(2.3), xNS.Intv^2.3)
+   mc9 = (^)(xNS, Float32(2.3))
+   mc10 = (^)(xNS, Float16(2.3))
+
+   @test  isapprox(mc10.cv, 2.895583, rtol=1E-4)
+   @test  isapprox(mc10.cc, 12.63887, rtol=1E-4)
+   @test  isapprox(mc10.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc10.Intv.hi, 24.2778, rtol=1E-4)
+   
+   @test  isapprox(mc2.cv, 0.25, rtol=1E-4)
+   @test  isapprox(mc2.cc, 0.354166, rtol=1E-4)
+   @test  isapprox(mc2.Intv.lo, 0.0625, rtol=1E-4)
+   @test  isapprox(mc2.Intv.hi, 0.500001, rtol=1E-4)
+
+   @test  isapprox(mc3.cv, 1.33333, rtol=1E-4)
+   @test  isapprox(mc3.cc, 1.414214, rtol=1E-4)
+   @test  isapprox(mc3.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc3.Intv.hi, 2, rtol=1E-4)
+
+   @test  isapprox(mc4.cv, 4.924577, rtol=1E-4)
+   @test  isapprox(mc4.cc, 12.62573, rtol=1E-4)
+   @test  isapprox(mc4.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc4.Intv.hi, 24.2515, rtol=1E-4)
+
+   @test  isapprox(mc5.cv, 1.33333, rtol=1E-4)
+   @test  isapprox(mc5.cc, 1.414214, rtol=1E-4)
+   @test  isapprox(mc5.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc5.Intv.hi, 2, rtol=1E-4)
+
+   @test  isapprox(mc6.cv, 2.8945384, rtol=1E-4)
+   @test  isapprox(mc6.cc, 12.625732, rtol=1E-4)
+   @test  isapprox(mc6.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc6.Intv.hi, 24.2515, rtol=1E-4)
+
+   @test  isapprox(mc7.cv, 2.8945384, rtol=1E-4)
+   @test  isapprox(mc7.cc, 12.625732, rtol=1E-4)
+   @test  isapprox(mc7.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc7.Intv.hi, 24.2515, rtol=1E-4)
+
+   @test  isapprox(mc8.cv, 2.8955384, rtol=1E-4)
+   @test  isapprox(mc8.cc, 12.63887, rtol=1E-4)
+   @test  isapprox(mc8.Intv.lo, 1, rtol=1E-4)
+   @test  isapprox(mc8.Intv.hi, 24.2515, rtol=1E-3)
+
+   @test  isapprox(mc9.cv, 2.8945384, rtol=1E-4)
+   @test  isapprox(mc9.cc, 12.625732, rtol=1E-4)
+   @test  isapprox(mc9.Intv.lo, 1, rtol=1E-4)
+   @test isapprox(mc9.Intv.hi, 24.2515, rtol=1E-3)
 end
 
 

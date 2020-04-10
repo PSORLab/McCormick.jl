@@ -80,7 +80,7 @@ const MC_DEGEN_TOL = 1E-14
 const MC_DOMAIN_TOL = 1E-10
 
 
-if haskey(ENV, "MC_UNGUARDED")
+if haskey(ENV, uppercase("MC_UNGUARDED"))
     const MC_DOMAIN_CATCH = false
 else
     const MC_DOMAIN_CATCH = true
