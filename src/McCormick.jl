@@ -79,13 +79,6 @@ const MC_MV_TOL = 1E-8
 const MC_DEGEN_TOL = 1E-14
 const MC_DOMAIN_TOL = 1E-10
 
-
-if haskey(ENV, uppercase("MC_UNGUARDED"))
-    const MC_DOMAIN_CATCH = false
-else
-    const MC_DOMAIN_CATCH = true
-end
-
 const IntervalConstr = interval
 const Half64 = Float64(0.5)
 const Two64 = Float64(2.0)

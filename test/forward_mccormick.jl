@@ -393,26 +393,14 @@ end
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
 
-   Z3 = inv(Y1)
-   Z4 = inv(Y2)
-   @test isapprox(Z3.cv, -1.0e10, atol = 1E-3)
-   @test isapprox(Z3.cc, 1.0e10, atol = 1E-3)
-   @test isapprox(Z4.cv, -1.0e10, atol = 1E-3)
-   @test isapprox(Z4.cc, 1.0e10, atol = 1E-3)
+   @test_throws ErrorException inv(Y1)
+   @test_throws ErrorException inv(Y2)
 
-   Z5 = Y1^(-3)
-   Z6 = Y2^(-3)
-   @test isapprox(Z5.cv, -1.0e30, rtol = 1E-3)
-   @test isapprox(Z5.cc, 1.0e30, rtol = 1E-3)
-   @test isapprox(Z6.cv, -1.0e30, rtol = 1E-3)
-   @test isapprox(Z6.cc, 1.0e30, rtol = 1E-3)
+   @test_throws ErrorException Y1^(-3)
+   @test_throws ErrorException Y2^(-3)
 
-   Z7 = Y1^(-3.0)
-   Z8 = Y2^(-3.0)
-   @test isapprox(Z7.cv, -1.0e30, rtol = 1E-3)
-   @test isapprox(Z7.cc, 1.0e30, rtol = 1E-3)
-   @test isapprox(Z8.cv, -1.0e30, rtol = 1E-3)
-   @test isapprox(Z8.cc, 1.0e30, rtol = 1E-3)
+   @test_throws ErrorException Y1^(-3.0)
+   @test_throws ErrorException Y2^(-3.0)
 
    @test isapprox(McCormick.tanh_deriv(3.0, 2.0, 4.0), 0.009866, rtol=1E-3)
    @test isapprox(McCormick.tanh_envd(3.0, 2.0, 4.0), 6.258589, rtol=1E-3)
@@ -453,7 +441,7 @@ end
    @test  isapprox(mc10.cc, 12.63887, rtol=1E-4)
    @test  isapprox(mc10.Intv.lo, 1, rtol=1E-4)
    @test  isapprox(mc10.Intv.hi, 24.2778, rtol=1E-4)
-   
+
    @test  isapprox(mc2.cv, 0.25, rtol=1E-4)
    @test  isapprox(mc2.cc, 0.354166, rtol=1E-4)
    @test  isapprox(mc2.Intv.lo, 0.0625, rtol=1E-4)
@@ -871,19 +859,14 @@ end
 
    X1 = MC{2,Diff}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
-   Z1 = X1/Y1
+   @test_throws ErrorException X1/Y1
 
    X2 = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
-   Z2 = X2/Y2
+   @test_throws ErrorException X2/Y2
 
    @test X1/X1 == one(X1)
    @test X2/X2 == one(X2)
-
-   @test isapprox(Z1.cv, -4.0e10, atol = 1E-3)
-   @test isapprox(Z2.cc, 4.0e10, atol = 1E-3)
-   @test isapprox(Z1.cv, -4.0e10, atol = 1E-3)
-   @test isapprox(Z2.cc, 4.0e10, atol = 1E-3)
 
     X = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
     Y = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,-3.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)

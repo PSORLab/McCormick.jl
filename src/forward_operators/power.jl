@@ -263,33 +263,18 @@ function pow_kernel(x::MC{N,T}, c::Z, y::Interval{Float64}) where {Z<:Integer,N,
 			else
         		z = neg_powneg_even(x, c, y)
 			end
-        elseif (x.Intv.lo > 0.0)
+        else (x.Intv.lo > 0.0)
 			z = npp_or_pow4(x, c, y)
-		else
-			if ~MC_DOMAIN_CATCH
-				error("Domain Error: When computing the relaxations of y^c (c < 0) the
-				       interval bounds of y contained zero. As such the y^c is unbounded
-				       and the relaxations do not exist. This may occur due to the expansiveness
-				       in long calculations. Reformulating the function may remedy this.")
-			else
-				z = MC{N,T}(union(Interval{Float64}(x.Intv.lo, -MC_DOMAIN_TOL)^c,
-					              Interval{Float64}(MC_DOMAIN_TOL, x.Intv.hi)^c))
-			end
 		end
     end
 	return z
 end
 function pow(x::MC{N,T}, c::Z) where {Z<:Integer,N,T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		if ~MC_DOMAIN_CATCH
-			error("Domain Error: When computing the relaxations of y^c (c < 0) the
-				   interval bounds of y contained zero. As such the y^c is unbounded
-				   and the relaxations do not exist. This may occur due to the expansiveness
-				   in long calculations. Reformulating the function may remedy this.")
-		else
-			return MC{N,T}(union(Interval{Float64}(x.Intv.lo, -MC_DOMAIN_TOL)^c,
-			                     Interval{Float64}(MC_DOMAIN_TOL, x.Intv.hi)^c))
-		end
+		error("Domain Error: When computing the relaxations of y^c (c < 0) the
+			   interval bounds of y contained zero. As such the y^c is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this.")
 	end
 	return pow_kernel(x, c, x.Intv^c)
 end
@@ -323,12 +308,24 @@ function flt_pow_1(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
 end
 
 function (^)(x::MC{N,NS}, c::Float64, y::Interval{Float64}) where N
+	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
+		error("Domain Error: When computing the relaxations of y^c (c < 0) the
+			   interval bounds of y contained zero. As such the y^c is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this.")
+	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
 	z = exp(c*log(x))
     return MC{N,NS}(z.cv, z.cc, y, z.cv_grad, z.cc_grad, x.cnst)
 end
 function (^)(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
+	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
+		error("Domain Error: When computing the relaxations of y^c (c < 0) the
+			   interval bounds of y contained zero. As such the y^c is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this.")
+	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
 	z = exp(c*log(x))
@@ -376,23 +373,18 @@ function inv1(x::MC{N,NS}, y::Interval{Float64}) where N
 end
 function inv_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi)
-		if ~MC_DOMAIN_CATCH
-			error("Domain Error: When computing the relaxations of inv(x) the
-				   interval bounds of x contained zero. As such the y is unbounded
-				   and the relaxations do not exist. This may occur due to the expansiveness
-				   in long calculations. Reformulating the function may remedy this. Also,
-				   consider setting the MC_DOMAIN_CATCH flag to true. This will treat
-				   inv(x) as union(inv(Interval(x.Intv.lo,-MC_DOMAIN_TOL),
-				   inv(Interval(MC_DOMAIN_TOL, x.Intv.hi)")
-		end
+		error("Domain Error: When computing the relaxations of inv(x) the
+			   interval bounds of x contained zero. As such the y is unbounded
+			   and the relaxations do not exist. This may occur due to the expansiveness
+			   in long calculations. Reformulating the function may remedy this. Also,
+			   consider setting the MC_DOMAIN_CATCH flag to true. This will treat
+			   inv(x) as union(inv(Interval(x.Intv.lo,-MC_DOMAIN_TOL),
+			   inv(Interval(MC_DOMAIN_TOL, x.Intv.hi)")
 	end
 	if (x.Intv.hi < 0.0)
 		x = neg_powneg_odd(x, -1, y)
-  	elseif (x.Intv.lo > 0.0)
+  	else (x.Intv.lo > 0.0)
 		x = inv1(x, y)
-	elseif MC_DOMAIN_CATCH
-		x = MC{N,T}(union(inv(Interval{Float64}(x.Intv.lo,-MC_DOMAIN_TOL)),
-		            inv(Interval{Float64}(MC_DOMAIN_TOL, x.Intv.hi))))
 	end
 	return x
 end
