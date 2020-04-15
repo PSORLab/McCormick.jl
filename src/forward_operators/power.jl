@@ -276,7 +276,7 @@ function pow(x::MC{N,T}, c::Z) where {Z<:Integer,N,T<:RelaxTag}
 			   and the relaxations do not exist. This may occur due to the expansiveness
 			   in long calculations. Reformulating the function may remedy this.")
 	end
-	return pow_kernel(x, c, x.Intv^c)
+	return pow_kernel(x, c, pow(x.Intv,c))
 end
 (^)(x::MC, c::Z) where {Z <: Integer} = pow(x,c)
 
