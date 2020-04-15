@@ -469,9 +469,6 @@ end
 @inline cv_cosh(x::Float64, xL::Float64, xU::Float64) = cosh(x), sinh(x)
 @inline cc_cosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(cosh, sinh, x, xL, xU)
 @inline function cosh_kernel(x::MC{N, NS}, yintv::Interval{Float64}) where N
-  if (yintv.lo == -Inf) || (yintv.hi == Inf)
-    error("Function unbounded on this domain")
-  end
   xL = x.Intv.lo
   xU = x.Intv.hi
   xLc = yintv.lo
@@ -492,9 +489,6 @@ end
   return MC{N,NS}(cv, cc, yintv, cv_grad, cc_grad, x.cnst)
 end
 @inline function cosh_kernel(x::MC{N,Diff}, yintv::Interval{Float64}) where N
-  if (yintv.lo == -Inf) || (yintv.hi == Inf)
-    error("Function unbounded on this domain")
-  end
   xL = x.Intv.lo
   xU = x.Intv.hi
   xLc = yintv.lo

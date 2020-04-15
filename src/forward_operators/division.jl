@@ -69,24 +69,12 @@ function div_kernel(x::MC{N,NS}, y::MC{N,NS}, z::Interval{Float64}) where N
     if (x === y)
         zMC = one(x)
     else
-        if (y.Intv.lo <= 0.0 <= y.Intv.hi)
-            q = inv(y)
-            zMC = mult_kernel(x, q, x.Intv/q.Intv)
-        else
-            q = inv(y)
-            zMC = mult_kernel(x, q, z)
-        end
+        q = inv(y)
+        zMC = mult_kernel(x, q, z)
     end
     return zMC
 end
-#=
-function div_kernel(x::MC{N,MV}, y::MC{N,MV}, z::Interval{Float64}) where N
-    pos_orth::Bool = (x.Intv.lo >= 0) && (y.Intv.lo >= 0)
-    degen1 = ((x.Intv.hi - x.Intv.lo) == 0.0)
-    degen2 = ((y.Intv.hi - y.Intv.lo) == 0.0)
-    error("To be implemented")
-end
-=#
+
 function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N}
     degen1 = ((x.Intv.hi - x.Intv.lo) == 0.0)
     degen2 = ((y.Intv.hi - y.Intv.lo) == 0.0)
@@ -95,13 +83,8 @@ function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N
     elseif  ~(degen1||degen2)
         zMC = div_MV(x, y, z)
     else
-        if (y.Intv.lo <= 0.0 <= y.Intv.hi)
-            q = inv(y)
-            zMC = mult_kernel(x, q, x.Intv/q.Intv)
-        else
-            q = inv(y)
-            zMC = mult_kernel(x, q, z)
-        end
+        q = inv(y)
+        zMC = mult_kernel(x, q, z)
     end
     return zMC
 end
