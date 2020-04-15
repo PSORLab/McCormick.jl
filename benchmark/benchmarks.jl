@@ -1,4 +1,4 @@
-using BenchmarkTools, McCormick
+using BenchmarkTools, McCormick, IntervalArithmetic
 
 # don't really want to measure interval performance, so we're using the
 # fastest interval rounding mode
