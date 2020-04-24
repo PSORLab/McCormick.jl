@@ -30,6 +30,8 @@ function plus_kernel(x::MC{N,T}, y::Float64, z::Interval{Float64}) where {N, T <
 end
 +(x::MC, y::Float64) = plus_kernel(x, y, (x.Intv + y))
 +(y::Float64, x::MC) = plus_kernel(x, y, (x.Intv + y))
++(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x + MC{N,T}(y)
++(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = x + MC{N,T}(y)
 
 plus_kernel(x::MC, y::Float32, z::Interval{Float64}) where {C <: AbstractFloat} = plus_kernel(x, convert(Float64, y), z)
 plus_kernel(x::Float32, y::MC, z::Interval{Float64}) where {C <: AbstractFloat} = plus_kernel(y, convert(Float64, x), z)
@@ -52,6 +54,8 @@ function minus_kernel(c::Float64, x::MC{N,T}, z::Interval{Float64}) where {N, T 
 end
 -(x::MC, c::Float64) = minus_kernel(x, c, x.Intv - c)
 -(c::Float64, x::MC) = minus_kernel(c, x, c - x.Intv)
+-(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x - MC{N,T}(y)
+-(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = MC{N,T}(y) - x
 
 minus_kernel(x::MC, y::C, z::Interval{Float64}) where {C <: AbstractFloat} = minus_kernel(x, convert(Float64,y), z)
 minus_kernel(y::C, x::MC, z::Interval{Float64}) where {C <: AbstractFloat} = minus_kernel(convert(Float64,y), x, z)
@@ -74,6 +78,8 @@ function mult_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <
 end
 *(x::MC, c::Float64) = mult_kernel(x, c, c*x.Intv)
 *(c::Float64, x::MC) = mult_kernel(x, c, c*x.Intv)
+*(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x*MC{N,T}(y)
+*(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = MC{N,T}(y)*x
 
 mult_kernel(x::MC, c::C, z::Interval{Float64}) where {C<:AbstractFloat} = mult_kernel(x, convert(Float64, c), z)
 mult_kernel(c::C, x::MC, z::Interval{Float64}) where {C<:AbstractFloat} =  mult_kernel(x, convert(Float64, c), z)
@@ -94,6 +100,8 @@ div_kernel(x::C, y::MC, z::Interval{Float64}) where {C<:Integer}  = mult_kernel(
 /(x::C, y::MC) where {C<:AbstractFloat} = convert(Float64,x)*inv(y)
 /(x::MC, y::C) where {C<:Integer} = x*inv(convert(Float64,y))
 /(x::C, y::MC) where {C<:Integer} = convert(Float64,x)*inv(y)
+/(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x/MC{N,T}(y)
+/(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = MC{N,T}(y)/x
 
 # Maximization
 max_kernel(c::Float64, x::MC, z::Interval{Float64}) = max_kernel(x, c, z)
@@ -107,6 +115,8 @@ max(x::MC, c::C) where {C<:AbstractFloat} = max_kernel(x, convert(Float64, c), m
 max(c::C, x::MC) where {C<:AbstractFloat} = max_kernel(x, convert(Float64, c), max(x.Intv, c))
 max(x::MC, c::C) where {C<:Integer} = max_kernel(x, convert(Float64, c), max(x.Intv, c))
 max(c::C, x::MC) where {C<:Integer} = max_kernel(x, convert(Float64, c), max(x.Intv, c))
+max(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = max(x, MC{N,T}(y))
+max(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = max(MC{N,T}(y), x)
 
 # Minimization
 min_kernel(x::MC, c::C, z::Interval{Float64}) where {C<:AbstractFloat} = min_kernel(x, convert(Float64, c), z)
@@ -119,6 +129,8 @@ min(x::MC, c::C) where {C<:AbstractFloat} = min_kernel(x, convert(Float64, c), m
 min(c::C, x::MC) where {C<:AbstractFloat} = min_kernel(x, convert(Float64, c), min(x.Intv, c))
 min(x::MC, c::C) where {C<:Integer} = min_kernel(x, convert(Float64, c), min(x.Intv, c))
 min(c::C, x::MC) where {C<:Integer} = min_kernel(x, convert(Float64, c), min(x.Intv, c))
+min(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = min(x, MC{N,T}(y))
+min(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = min(MC{N,T}(y), x)
 
 # Promote and Convert
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Integer, N, T <: RelaxTag} = MC{N,T}
