@@ -369,7 +369,7 @@ function inv1(x::MC{N,T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
   cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-  return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+  return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function inv1(x::MC{N,Diff}, y::Interval{Float64}) where N
   midcc, cc_id = mid3(x.cc, x.cv, x.Intv.lo)

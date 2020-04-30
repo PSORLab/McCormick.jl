@@ -29,7 +29,7 @@ end
 	  (xL >= 0.0) && (return 1.0, 0.0)
 	  (x >= 0.0) ? (1.0, 0.0) : ((1.0 - (x/xL)), (-x/xL))
 end
-@inline function step_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS,NV}}
+@inline function step_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	xL = x.Intv.lo
 	xU = x.Intv.hi
 	xLc = z.lo
