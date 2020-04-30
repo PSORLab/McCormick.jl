@@ -26,7 +26,7 @@ for opMC in (:exp, :exp2, :exp10, :expm1)
                midcv,cv_id = mid3(x.cc, x.cv, xL)
                concave = xUc
                (xUc > xLc) && (concave = xLc*((xU-midcc)/(xU-xL)) + xUc*((midcc-xL)/(xU-xL)))
-               convex = ($opMC)(midcc)
+               convex = ($opMC)(midcv)
                convex_grad = ($dop)*x.cv_grad
                concave_grad = ((xUc - xLc)/(xU - xL))*x.cc_grad
                return MC{N, Diff}(convex, concave, z, convex_grad, concave_grad, x.cnst)
