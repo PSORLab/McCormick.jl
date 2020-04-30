@@ -120,8 +120,8 @@ end
   return MC{N, Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
 end
 
-@inline function cos_kernel(x::MC{N, NS}, y::Interval{Float64}, cv_tp1::Float64,
-                              cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where N
+@inline function cos_kernel(x::MC{N, T}, y::Interval{Float64}, cv_tp1::Float64,
+                              cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where {N,T<:Union{NS,MV}}
   xL = x.Intv.lo
   xU = x.Intv.hi
   xLc = y.lo
@@ -134,7 +134,7 @@ end
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
   cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
-  return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
+  return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
 end
 
 @inline function cos(x::MC)
@@ -383,8 +383,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     expri_kernel = Symbol(String(expri)*"_kernel")
     eps_min = eps_min_dict[expri]
     eps_max = eps_max_dict[expri]
-    @eval @inline function ($expri_kernel)(x::MC{N, NS}, y::Interval{Float64},
-                            cv_p::Float64, cc_p::Float64) where N
+    @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
+                            cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
         if (y.lo == -Inf) || (y.hi == Inf)
             error("Function unbounded on this domain")
         end
@@ -419,7 +419,7 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
         (cc_id == 2) && (cc_grad = x.cv_grad*dcc)
         (cc_id == 3) && (cc_grad = zero(SVector{N,Float64}))
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-        return MC{N, NS}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
+        return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
     @eval @inline function ($expri_kernel)(x::MC{N, Diff}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where N
@@ -468,7 +468,7 @@ end
 # cosh convex
 @inline cv_cosh(x::Float64, xL::Float64, xU::Float64) = cosh(x), sinh(x)
 @inline cc_cosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(cosh, sinh, x, xL, xU)
-@inline function cosh_kernel(x::MC{N, NS}, yintv::Interval{Float64}) where N
+@inline function cosh_kernel(x::MC{N, T}, yintv::Interval{Float64}) where {N,T<:Union{NS,MV}}
   xL = x.Intv.lo
   xU = x.Intv.hi
   xLc = yintv.lo
@@ -486,7 +486,7 @@ end
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
   cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
-  return MC{N,NS}(cv, cc, yintv, cv_grad, cc_grad, x.cnst)
+  return MC{N,T}(cv, cc, yintv, cv_grad, cc_grad, x.cnst)
 end
 @inline function cosh_kernel(x::MC{N,Diff}, yintv::Interval{Float64}) where N
   xL = x.Intv.lo

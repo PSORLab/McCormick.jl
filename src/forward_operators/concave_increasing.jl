@@ -14,7 +14,7 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
               concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*$dop
               convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
               convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-              return MC{N, NS}(convex, concave, z, convex_grad, concave_grad, x.cnst)
+              return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
         end
     dop = diffrule(:Base, opMC, :(x.cv))
     dMCexp = quote
@@ -36,7 +36,7 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
                return MC{N, Diff}(convex, concave, z, convex_grad, concave_grad, x.cnst)
          end
 
-     @eval @inline ($opMC_kernel)(x::MC{N, NS}, z::Interval{Float64}) where {N} = $MCexp
+     @eval @inline ($opMC_kernel)(x::MC{N, T}, z::Interval{Float64}) where {N,T<:Union{NS,MV}} = $MCexp
      @eval @inline ($opMC_kernel)(x::MC{N, Diff}, z::Interval{Float64}) where {N} = $dMCexp
      @eval @inline ($opMC)(x::MC) = ($opMC_kernel)(x, ($opMC)(x.Intv))
 end

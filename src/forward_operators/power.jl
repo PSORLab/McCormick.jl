@@ -23,7 +23,7 @@ function dcv_sqr(x::Float64, xL::Float64, xU::Float64)
 	((xL < 0.0) && (0.0 <= xU) && (0.0 <= x)) && (3.0*x^2)/xU
 	return (3.0*x^2)/xL
 end
-function sqr_kernel(x::MC{N,NS}, y::Interval{Float64}) where N
+function sqr_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
     eps_min = y.lo
     eps_max = y.hi
 	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
@@ -35,7 +35,7 @@ function sqr_kernel(x::MC{N,NS}, y::Interval{Float64}) where N
 	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
 	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-	return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+	return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function sqr_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
 	if (x.Intv.hi < 0.0)
@@ -97,7 +97,7 @@ function cc_powodd(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integ
     return val, dval
 end
 
-function npp_or_pow4(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
+function npp_or_pow4(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
   if (x.Intv.hi < 0.0)
     eps_min = x.Intv.hi
     eps_max = x.Intv.lo
@@ -115,7 +115,7 @@ function npp_or_pow4(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integ
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
   cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-  return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+  return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function npp_or_pow4(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
   if (x.Intv.hi < 0.0)
@@ -141,7 +141,7 @@ function npp_or_pow4(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Int
   return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-function pos_odd(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
+function pos_odd(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
     midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
     midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
     cc, dcc = cc_powodd(midcc, x.Intv.lo, x.Intv.hi, c)
@@ -149,7 +149,7 @@ function pos_odd(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-    return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function pos_odd(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
     midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
@@ -165,7 +165,7 @@ function pos_odd(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-function neg_powneg_odd(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
+function neg_powneg_odd(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
   xL = x.Intv.lo
   xU = x.Intv.hi
   xUc = y.hi
@@ -182,7 +182,7 @@ function neg_powneg_odd(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:In
     cc_grad = zeros(SVector{N,Float64})
   end
   if (xU == xL)
-    cv = xLc
+    cv = xL^c
     cv_grad = zeros(SVector{N,Float64})
   else
     dcv = (xU^c - xL^c)/(xU - xL) # function decreasing
@@ -197,8 +197,8 @@ function neg_powneg_odd(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:In
       cv_grad = zeros(SVector{N,Float64})
     end
   end
-	cv, cc, cv_grad, cc_grad = cut(y.lo,xUc, cv, cc, cv_grad, cc_grad)
-	return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+	cv, cc, cv_grad, cc_grad = cut(y.lo, xUc, cv, cc, cv_grad, cc_grad)
+	return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function neg_powneg_odd(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
   xL = x.Intv.lo
@@ -219,7 +219,7 @@ function neg_powneg_odd(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:
 	return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-function neg_powneg_even(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
+function neg_powneg_even(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
   midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
   midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
   cc, dcc = cc_negpowneg(midcc, x.Intv.lo, x.Intv.hi, c)
@@ -227,7 +227,7 @@ function neg_powneg_even(x::MC{N,NS}, c::Z, y::Interval{Float64}) where {N, Z<:I
   cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-  return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+  return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function neg_powneg_even(x::MC{N,Diff}, c::Z, y::Interval{Float64}) where {N, Z<:Integer}
   midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
@@ -283,7 +283,7 @@ end
 # Power of MC to float
 cv_flt_pow_1(x::Float64, xL::Float64, xU::Float64, n::Float64) = dline_seg(^, pow_deriv, x, xL, xU, n)
 cc_flt_pow_1(x::Float64, xL::Float64, xU::Float64, n::Float64) = x^n, n*x^(n-1)
-function flt_pow_1(x::MC{N,NS}, c::Float64, y::Interval{Float64}) where N
+function flt_pow_1(x::MC{N,T}, c::Float64, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
 	midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
 	cc, dcc = cc_flt_pow_1(midcc, x.Intv.lo, x.Intv.hi, c)
@@ -291,7 +291,7 @@ function flt_pow_1(x::MC{N,NS}, c::Float64, y::Interval{Float64}) where N
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
     cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-    return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function flt_pow_1(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
 	midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
@@ -307,7 +307,7 @@ function flt_pow_1(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-function (^)(x::MC{N,NS}, c::Float64, y::Interval{Float64}) where N
+function (^)(x::MC{N,T}, c::Float64, y::Interval{Float64})  where {N, T<:Union{NS,MV}}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
 		error("Domain Error: When computing the relaxations of y^c (c < 0) the
 			   interval bounds of y contained zero. As such the y^c is unbounded
@@ -317,7 +317,7 @@ function (^)(x::MC{N,NS}, c::Float64, y::Interval{Float64}) where N
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
 	z = exp(c*log(x))
-    return MC{N,NS}(z.cv, z.cc, y, z.cv_grad, z.cc_grad, x.cnst)
+    return MC{N,T}(z.cv, z.cc, y, z.cv_grad, z.cc_grad, x.cnst)
 end
 function (^)(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
@@ -361,7 +361,7 @@ function cv_inv1(x::Float64, xL::Float64, xU::Float64)
 	dcv = -1.0/(x*x)
 	return cv, dcv
 end
-function inv1(x::MC{N,NS}, y::Interval{Float64}) where N
+function inv1(x::MC{N,T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
   midcc, cc_id = mid3(x.cc, x.cv, x.Intv.lo)
   midcv, cv_id = mid3(x.cc, x.cv, x.Intv.hi)
   cc, dcc = cc_inv1(midcc, x.Intv.lo, x.Intv.hi)
@@ -370,6 +370,15 @@ function inv1(x::MC{N,NS}, y::Interval{Float64}) where N
   cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
   cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
   return MC{N,NS}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+function inv1(x::MC{N,Diff}, y::Interval{Float64}) where N
+  midcc, cc_id = mid3(x.cc, x.cv, x.Intv.lo)
+  midcv, cv_id = mid3(x.cc, x.cv, x.Intv.hi)
+  cc, dcc = cc_inv1(midcc, x.Intv.lo, x.Intv.hi)
+  cv, dcv = cv_inv1(midcv, x.Intv.lo, x.Intv.hi)
+  cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+  cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+  return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 function inv_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi)

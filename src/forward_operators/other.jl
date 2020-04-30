@@ -29,7 +29,7 @@ end
 	  (xL >= 0.0) && (return 1.0, 0.0)
 	  (x >= 0.0) ? (1.0, 0.0) : ((1.0 - (x/xL)), (-x/xL))
 end
-@inline function step_kernel(x::MC{N, NS}, z::Interval{Float64}) where N
+@inline function step_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS,NV}}
 	xL = x.Intv.lo
 	xU = x.Intv.hi
 	xLc = z.lo
@@ -41,7 +41,7 @@ end
 	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
 	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
-	return MC{N,NS}(cv, cc, z, cv_grad, cc_grad, x.cnst)
+	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
 @inline function step_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
 	 xL = x.Intv.lo
@@ -81,7 +81,7 @@ end
 @inline cc_abs(x::Float64,xL::Float64,xU::Float64) = dline_seg(abs, sign, x, xL, xU)
 @inline cv_abs_NS(x::Float64,xL::Float64,xU::Float64) = abs(x), sign(x)
 
-@inline function abs_kernel(x::MC{N, NS}, z::Interval{Float64}) where N
+@inline function abs_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xL = x.Intv.lo
 	xU = x.Intv.hi
 	xLc = z.lo
@@ -95,7 +95,7 @@ end
 	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
 	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
-	return MC{N,NS}(cv, cc, z, cv_grad, cc_grad, x.cnst)
+	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
 @inline function abs_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
   xL = x.Intv.lo
@@ -118,7 +118,7 @@ end
 end
 @inline abs(x::MC) = abs_kernel(x, abs(x.Intv))
 
-@inline function intersect(x_mc::MC{N,NS}, x_mc_int::MC{N,NS}) where N
+@inline function intersect(x_mc::MC{N,T}, x_mc_int::MC{N,T}) where {N, T<:Union{NS,MV}}
     Intv = x_mc.Intv ∩ x_mc_int.Intv
     if (x_mc.cc < x_mc_int.cc)
       cc = x_mc.cc
@@ -134,8 +134,7 @@ end
       cv = x_mc_int.cv
       cv_grad = x_mc_int.cv_grad
     end
-    x_out::MC{N,NS} = MC{N,NS}(cv, cc,(x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, x_mc.cnst)
-  return x_out
+    MC{N,T}(cv, cc,(x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, x_mc.cnst)
 end
 
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
@@ -144,7 +143,7 @@ end
     return MC{N,Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv,y.Intv), max_MC.cv_grad, min_MC.cc_grad, (x.cnst && y.cnst))
 end
 
-@inline function intersect(x::MC{N, NS}, y::Interval{Float64}) where N
+@inline function intersect(x::MC{N, T}, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
 
 	if (x.cv >= y.lo)
   		cv = x.cv
@@ -168,7 +167,7 @@ end
 		cv = NaN
 		cc = NaN
 	end
-    return MC{N, NS}(cv, cc, intersect(x.Intv,y), cv_grad, cc_grad, (x.cnst))
+    return MC{N, T}(cv, cc, intersect(x.Intv,y), cv_grad, cc_grad, (x.cnst))
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
      max_MC = x - max(x - y, 0.0)   # used for convex
