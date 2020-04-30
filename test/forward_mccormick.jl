@@ -378,7 +378,7 @@ end
 
    y = MC{2, Diff}(2.0, 3.0, Interval{Float64}(1.0,4.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    out5 = McCormick.exp_kernel(y, exp(y.Intv))
-   @test isapprox(out5.cv, 20.0855369, atol=1E-5)
+   @test isapprox(out5.cv, 7.38905609893065, atol=1E-5)
 
    x1dual = Dual{1,Float64,2}(2.1, Partials{2,Float64}(NTuple{2,Float64}([1.1; 2.9])))
    x2dual = Dual{1,Float64,2}(2.4, Partials{2,Float64}(NTuple{2,Float64}([1.1; 2.9])))
@@ -452,7 +452,7 @@ end
    @test  isapprox(mc3.Intv.lo, 1, rtol=1E-4)
    @test  isapprox(mc3.Intv.hi, 2, rtol=1E-4)
 
-   @test  isapprox(mc4.cv, 4.924577, rtol=1E-4)
+   @test  isapprox(mc4.cv, 2.8945384748807563, rtol=1E-4)
    @test  isapprox(mc4.cc, 12.62573, rtol=1E-4)
    @test  isapprox(mc4.Intv.lo, 1, rtol=1E-4)
    @test  isapprox(mc4.Intv.hi, 24.2515, rtol=1E-4)
