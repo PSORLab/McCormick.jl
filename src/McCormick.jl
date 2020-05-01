@@ -8,9 +8,9 @@ using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
 
 import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
-             abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh, sech,
-             csch, coth, acsch, acoth, asech, rad2deg, deg2rad,
-             sqrt, sin, cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
+             abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh,
+             sech, csch, coth, acsch, acoth, asech, rad2deg, deg2rad, sqrt, sin,
+             cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty
@@ -24,7 +24,8 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            ∩, IntervalBox, bisect, isdisjoint, length,
                            atan, asin, acos, AbstractInterval, atomic,
                            sind, cosd, tand, asind, acosd, atand,
-                           secd, cscd, cotd, asecd, acscd, acotd, half_pi, setrounding
+                           secd, cscd, cotd, asecd, acscd, acotd, half_pi,
+                           setrounding
 
 import Base.MathConstants.golden
 
@@ -75,6 +76,11 @@ struct Diff <: RelaxTag end
 const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10
 const MC_DIFF_MU = 1
+const MC_DIFF_MUT = convert(Float64, MC_DIFF_MU)
+const MC_DIFF_MU1 = MC_DIFF_MU + 1
+const MC_DIFF_MU1T = convert(Float64, MC_DIFF_MU1)
+const MC_DIFF_MU1N = MC_DIFF_MU - 1
+
 const MC_MV_TOL = 1E-8
 const MC_DEGEN_TOL = 1E-14
 const MC_DOMAIN_TOL = 1E-10
@@ -119,12 +125,23 @@ end
 """
 $(FUNCTIONNAME)
 
-Calculates the midpoint of three numbers returning the value and the index.
+Calculates the middle of three numbers returning the value and the index.
 """
-function mid3(x::Float64,y::Float64,z::Float64)
+function mid3(x::Float64, y::Float64, z::Float64)
   (((x>=y)&&(y>=z))||((z>=y)&&(y>=x))) && (return y,2)
   (((y>=x)&&(x>=z))||((z>=x)&&(x>=y))) && (return x,1)
   return z,3
+end
+
+"""
+$(FUNCTIONNAME)
+
+Calculates the middle of three numbers (x,y,z) returning the value where x <= y.
+"""
+function mid3v(x::Float64, y::Float64, z::Float64)
+    (z <= x) && (return x)
+    (y <= z) && (return y)
+    return z
 end
 
 """
@@ -183,25 +200,24 @@ end
 """
 $(FUNCTIONNAME)
 """
-function cut(xL::Float64,xU::Float64,
-             cv::Float64,cc::Float64,
+function cut(xL::Float64,xU::Float64, cv::Float64,cc::Float64,
              cv_grad::SVector{N,Float64},cc_grad::SVector{N,Float64}) where {N}
 
     if (cc > xU)
-      cco::Float64 = xU
-      cc_grado::SVector{N,Float64} = zero(SVector{N,Float64})
+        cco = xU
+        cc_grado = zero(SVector{N,Float64})
     else
-      cco = cc
-      cc_grado = cc_grad
+        cco = cc
+        cc_grado = cc_grad
     end
     if (cv < xL)
-      cvo::Float64 = xL
-      cv_grado::SVector{N,Float64} = zero(SVector{N,Float64})
+        cvo = xL
+        cv_grado = zero(SVector{N,Float64})
     else
-      cvo = cv
-      cv_grado = cv_grad
-  end
-  return cvo,cco,cv_grado,cc_grado
+        cvo = cv
+        cv_grado = cv_grad
+    end
+    return (cvo, cco, cv_grado, cc_grado)
 end
 
 lo(x::Interval{Float64}) = x.lo
@@ -314,6 +330,8 @@ cv_grad(x::MC) = x.cv_grad
 cnst(x::MC) = x.cnst
 length(x::MC) = length(x.cc_grad)
 
+diam(x::MC) = diam(x.Intv)
+isthin(x::MC) = isthin(x.Intv)
 
 function isone(x::MC)
   flag = true
@@ -330,27 +348,29 @@ Defines a local 1D newton method to solve for the root of `f` between the bounds
 `xL` and `xU` using `x0` as a starting point. The derivative of `f` is `df`. The
 inputs `envp1` and `envp2` are the envelope calculation parameters.
 """
-function newton(x0::Float64, xL::Float64, xU::Float64, f::Function, df::Function, envp1::Float64, envp2::Float64)
-  dfk::Float64 = 0.0
+function newton(x0::Float64, xL::Float64, xU::Float64, f::Function, df::Function,
+               envp1::Float64, envp2::Float64)
 
-  xk::Float64 = max(xL,min(x0,xU))
-  fk::Float64 = f(xk,envp1,envp2)
+    dfk = 0.0
+    xk = max(xL, min(x0, xU))
+    fk::Float64 = f(xk, envp1, envp2)
 
-  for i=1:MC_ENV_MAX_INT
-    dfk = df(xk, envp1, envp2)
-    if (abs(fk) < MC_ENV_TOL)
-      return (xk,false)
+    for i=1:MC_ENV_MAX_INT
+        dfk = df(xk, envp1, envp2)
+        if (abs(fk) < MC_ENV_TOL)
+            return (xk, false)
+        end
+        (dfk == 0.0) && return (0.0, true)
+        if (xk == xL && fk/dfk > 0.0)
+            return (xk, false)
+        elseif (xk == xU && fk/dfk < 0.0)
+            return (xk, false)
+        end
+        xk = max(xL, min(xU, xk - fk/dfk))
+        fk = f(xk, envp1, envp2)
     end
-    (dfk == 0.0) && return (0.0,true)
-    if (xk == xL && fk/dfk > 0.0)
-      return (xk,false)
-    elseif (xk == xU && fk/dfk < 0.0)
-      return (xk,false)
-    end
-    xk = max(xL,min(xU,xk-fk/dfk))
-    fk = f(xk,envp1,envp2)
-  end
-  (0.0,true)
+
+    (0.0, true)
 end
 
 
@@ -361,28 +381,31 @@ Defines a local 1D secant method to solve for the root of `f` between
 the bounds `xL` and `xU` using `x0` and `x1` as a starting points. The inputs
 `envp1` and `envp2` are the envelope calculation parameters.
 """
-function secant(x0::Float64, x1::Float64, xL::Float64, xU::Float64, f::Function, envp1::Float64, envp2::Float64)
-  xkm::Float64 = max(xL,min(xU,x0))
-  xk::Float64 = max(xL,min(xU,x1))
-  fkm::Float64 = f(xkm,envp1,envp2)
+function secant(x0::Float64, x1::Float64, xL::Float64, xU::Float64, f::Function,
+                envp1::Float64, envp2::Float64)
 
-  for i=1:MC_ENV_MAX_INT
-    fk = f(xk,envp1,envp2)
-    Bk::Float64 = (fk-fkm)/(xk-xkm)
-    if (abs(fk) < MC_ENV_TOL)
-      return (xk,false)
+    xkm = max(xL, min(xU, x0))
+    xk = max(xL, min(xU, x1))
+    fkm::Float64 = f(xkm, envp1, envp2)
+
+    for i=1:MC_ENV_MAX_INT
+        fk::Float64  = f(xk, envp1, envp2)
+        Bk = (fk - fkm)/(xk - xkm)
+        if (abs(fk) < MC_ENV_TOL)
+            return (xk, false)
+        end
+        (Bk == 0.0) && return (0.0, true)
+        if (xk == xL) && (fk/Bk > 0.0)
+            return (xk, false)
+        elseif (xk == xU) && (fk/Bk < 0.0)
+            return (xk, false)
+        end
+        xkm = xk
+        fkm = fk
+        xk = max(xL, min(xU, xk - fk/Bk))
     end
-    (Bk == 0.0) && return (0.0, true)
-    if ((xk == xL) && (fk/Bk > 0.0))
-      return (xk,false)
-    elseif ((xk == xU) && (fk/Bk < 0.0))
-      return (xk,false)
-    end
-    xkm = xk
-    fkm = fk
-    xk = max(xL,min(xU,xk-fk/Bk))
-  end
-  (0.0,true)
+
+    (0.0,true)
 end
 
 
@@ -394,15 +417,17 @@ the bounds `xL` and `xU` using `x0` as a starting point. Define iteration used
 in golden section method. The inputs `envp1` and `envp2` are the envelope
 calculation parameters.
 """
-function golden_section(xL::Float64,xU::Float64,f::Function,envp1::Float64,envp2::Float64)
+function golden_section(xL::Float64, xU::Float64, f::Function, envp1::Float64,
+                        envp2::Float64)
   fL::Float64 = f(xL,envp1,envp2)
   fU::Float64 = f(xU,envp1,envp2)
 
   (fL*fU > 0.0) && error("GOLDEN EXCEPTION: No root present in range [xL, xU]")
-  xm::Float64 = xU-(2.0-golden)*(xU-xL)
+  xm = xU-(2.0-golden)*(xU-xL)
   fm::Float64 = f(xm,envp1,envp2)
-  return golden_section_it(1,xL,fL,xm,fm,xU,fU,f,envp1,envp2)
+  return golden_section_it(1, xL, fL, xm, fm, xU, fU, f, envp1, envp2)
 end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -411,31 +436,28 @@ are the function `f` evaluated at `a`,`b`, and `c` respectively. The inputs
 `envp1` and `envp2` are the envelope calculation parameters. The value `init` is
 the iteration number of the golden section method.
 """
-function golden_section_it(init::Int,a::Float64,fa::Float64,b::Float64,fb::Float64,c::Float64,
-                                   fc::Float64,f::Function,envp1::Float64,envp2::Float64)
-    b_t_x::Bool = (c-b > b-a)
-    if b_t_x
-        x = b + (2.0-golden)*(c-b)
-    else
-        x = b - (2.0-golden)*(b-a)
-    end
+function golden_section_it(init::Int, a::Float64, fa::Float64, b::Float64,
+                           fb::Float64, c::Float64, fc::Float64, f::Function,
+                           envp1::Float64, envp2::Float64)
+    flag = (c - b > b - a)
+    x = flag ? (b + (2.0 - golden)*(c - b)) : (b - (2.0 - golden)*(b - a))
     itr = init
-    if (abs(c-a) < MC_ENV_TOL*(abs(b)+abs(x)) || (itr > MC_ENV_MAX_INT))
-        return (c+a)/2.0
+    if (abs(c-a) < MC_ENV_TOL*(abs(b) + abs(x)) || (itr > MC_ENV_MAX_INT))
+        return (c + a)/2.0
     end
     itr += 1
-    fx::Float64 = f(x,envp1,envp2)
-    if b_t_x
+    fx::Float64 = f(x, envp1, envp2)
+    if flag
         if fa*fx < 0.0
-            out = golden_section_it(itr,a,fa,b,fb,x,fx,f,envp1,envp2)
+            out = golden_section_it(itr, a, fa, b, fb, x, fx, f, envp1, envp2)
         else
-            out = golden_section_it(itr,b,fb,x,fx,c,fc,f,envp1,envp2)
+            out = golden_section_it(itr, b, fb, x, fx, c, fc, f, envp1, envp2)
         end
     else
         if fa*fb < 0.0
-            out = golden_section_it(itr,a,fa,x,fx,b,fb,f,envp1,envp2)
+            out = golden_section_it(itr, a, fa, x, fx, b, fb, f, envp1, envp2)
         else
-            out = golden_section_it(itr,x,fx,b,fb,c,fc,f,envp1,envp2)
+            out = golden_section_it(itr, x, fx, b, fb, c, fc, f, envp1, envp2)
         end
     end
     return out

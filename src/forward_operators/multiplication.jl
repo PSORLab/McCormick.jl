@@ -1,348 +1,268 @@
-function sigu(x::Float64, mu1T::Float64)
-	 (0.0 <= x) ? x^(1.0/mu1T) : -abs(x)^(1.0/mu1T)
- end
+function sigu(y::Float64)
+	x = y/MC_DIFF_MU1T
+	(0.0 <= x) ? x^(1.0/MC_DIFF_MU1T) : -abs(x)^(1.0/MC_DIFF_MU1T)
+end
+abs_pu(x::Float64) = abs(x)^MC_DIFF_MU
+psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
 
 function gCxAcv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
 	            nu::Interval{Float64}, x1::MC, x2::MC)
-		# gCxA pre-terms
-		alplo::Float64 = alpha.lo
-		alphi::Float64 = alpha.hi
-		betlo::Float64 = beta.lo
-		bethi::Float64 = beta.hi
-		LmdDel::Float64 = lambda.hi-lambda.lo
-		NuDel::Float64 = nu.hi-nu.lo
-		LmdSum::Float64 = lambda.lo+lambda.hi
-		NuSum::Float64 = nu.lo+nu.hi
-		muT::Float64 = convert(Float64,MC_DIFF_MU)
-		mu1::Int64 = MC_DIFF_MU+1
-		mu1T::Float64 = convert(Float64,MC_DIFF_MU+1)
-		mu1n::Int64 = MC_DIFF_MU-1
 
-		xslo::Float64 = lambda.lo+LmdDel*(((nu.hi-betlo)/NuDel)-sigu((NuSum)/(mu1T*(NuDel)),muT)) # correct to minus?, correct internal minus? exponent to mu
-		xshi::Float64 = lambda.lo+LmdDel*(((nu.hi-bethi)/NuDel)-sigu((NuSum)/(mu1T*(NuDel)),muT)) # correct to minus?
-		yslo::Float64 = nu.lo+NuDel*(((lambda.hi-alplo)/LmdDel)-sigu((LmdSum)/(mu1T*LmdDel),muT))
-		yshi::Float64 = nu.lo+NuDel*(((lambda.hi-alphi)/LmdDel)-sigu((LmdSum)/(mu1T*LmdDel),muT))
+	# gCxA pre-terms
+	alplo = alpha.lo
+	alphi = alpha.hi
+	betlo = beta.lo
+	bethi = beta.hi
+	LmdDel = lambda.hi - lambda.lo
+	NuDel = nu.hi - nu.lo
+	LmdSum = lambda.lo + lambda.hi
+	NuSum = nu.lo + nu.hi
 
-		# calculates term 1
-		if (xslo <= alplo)
-			term1::Float64 = alplo
-		elseif (alphi <= xslo)
-			term1 = alphi
-		else
-			term1 = xslo
-		end
+	xslo = lambda.lo + LmdDel*(((nu.hi - betlo)/NuDel) - sigu(NuSum/NuDel))
+	xshi = lambda.lo + LmdDel*(((nu.hi - bethi)/NuDel) - sigu(NuSum/NuDel))
+	yslo = nu.lo + NuDel*(((lambda.hi - alplo)/LmdDel) - sigu(LmdSum/LmdDel))
+	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
-		# calculates term 2
-		if (xshi <= alplo)
-			term2::Float64 = alplo
-		elseif (alphi <= xshi)
-			term2 = alphi
-		else
-			term2 = xshi
-		end
+	term1 = mid3v(alplo, alphi, xslo)
+	term2 = mid3v(alplo, alphi, xshi)
+	term3 = mid3v(betlo, bethi, yslo)
+	term4 = mid3v(betlo, bethi, yshi)
 
-		# calculates term 3
-		if (yslo <= betlo)
-			term3::Float64 = betlo
-		elseif (bethi <= yslo)
-			term3 = bethi
-		else
-			term3 = yslo
-		end
+	# calculates the convex relaxation
+	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
+	tempGxA2a = LmdDel*NuDel*abs_pu((bethi - nu.lo)/NuDel - (lambda.hi - term2)/LmdDel)
+	tempGxA3a = LmdDel*NuDel*abs_pu((term3 - nu.lo)/NuDel - (lambda.hi - alplo)/LmdDel)
+	tempGxA4a = LmdDel*NuDel*abs_pu((term4 - nu.lo)/NuDel - (lambda.hi - alphi)/LmdDel)
 
-		# calculates term 4
-		if (yshi <= betlo)
-			term4::Float64 = betlo
-		elseif (bethi <= yshi)
-			term4 = bethi
-		else
-			term4 = yshi
-		end
+	NuDotLmd = lambda.lo*nu.lo + lambda.hi*nu.hi
+	tempGxA1 = 0.5*(term1*NuSum + betlo*LmdSum - NuDotLmd + tempGxA1a)
+	tempGxA2 = 0.5*(term2*NuSum + bethi*LmdSum - NuDotLmd + tempGxA2a)
+	tempGxA3 = 0.5*(alplo*NuSum + term3*LmdSum - NuDotLmd + tempGxA3a)
+	tempGxA4 = 0.5*(alphi*NuSum + term4*LmdSum - NuDotLmd + tempGxA4a)
 
-		# calculates the convex relaxation
-		tempGxA1a::Float64 = LmdDel*NuDel*abs((betlo-nu.lo)/NuDel-(lambda.hi-term1)/LmdDel)^mu1
-		tempGxA1::Float64 = 0.5*(term1*NuSum+betlo*LmdSum-(lambda.lo*nu.lo+lambda.hi*nu.hi)+tempGxA1a)
-		tempGxA2a::Float64 = LmdDel*NuDel*abs((bethi-nu.lo)/NuDel-(lambda.hi-term2)/LmdDel)^mu1
-		tempGxA2::Float64 = 0.5*(term2*NuSum+bethi*LmdSum-(lambda.lo*nu.lo+lambda.hi*nu.hi)+tempGxA2a)
-		tempGxA3a::Float64 = LmdDel*NuDel*abs((term3-nu.lo)/NuDel-(lambda.hi-alplo)/LmdDel)^mu1
-		tempGxA3::Float64 = 0.5*(alplo*NuSum+term3*LmdSum-(lambda.lo*nu.lo+lambda.hi*nu.hi)+tempGxA3a)
-		tempGxA4a::Float64 = LmdDel*NuDel*abs((term4-nu.lo)/NuDel-(lambda.hi-alphi)/LmdDel)^mu1
-		tempGxA4::Float64 = 0.5*(alphi*NuSum+term4*LmdSum-(lambda.lo*nu.lo+lambda.hi*nu.hi)+tempGxA4a)
+	# gets minima which is cv/cc/Intv depending on arguments
+	cv = min(tempGxA1, tempGxA2, tempGxA3, tempGxA4)
 
-		# gets minima which is cv/cc/Intv depending on arguments
-		a = min(tempGxA1,tempGxA2,tempGxA3,tempGxA4)
+	if (cv == tempGxA1)
+		psi_eval = psi_pow((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	elseif (cv == tempGxA2)
+		psi_eval = psi_pow((bethi - nu.lo)/NuDel - (lambda.hi - term2)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	elseif (cv == tempGxA3)
+		psi_eval = psi_pow((term3 - nu.lo)/NuDel - (lambda.hi - alplo)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	else
+		psi_eval = psi_pow((term4 - nu.lo)/NuDel - (lambda.hi - alphi)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	end
 
-		if (a == tempGxA1)
-				psi_mul::Float64 = (betlo-nu.lo)/NuDel - (lambda.hi-term1)/LmdDel
-				psi_mult_x1::Float64 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-				psi_mult_y1::Float64 = 0.5*(LmdSum+mu1T*(LmdDel)*(psi_mul)*abs(psi_mul)^mu1n)
-		elseif (a == tempGxA2)
-				psi_mul = (bethi-nu.lo)/NuDel-(lambda.hi-term2)/LmdDel
-				psi_mult_x1 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-				psi_mult_y1 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		elseif (a == tempGxA3)
-				psi_mul = (term3-nu.lo)/NuDel-(lambda.hi-alplo)/LmdDel
-				psi_mult_x1 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-				psi_mult_y1 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		else
-				psi_mul = (term4-nu.lo)/NuDel-(lambda.hi-alphi)/LmdDel
-				psi_mult_x1 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-				psi_mult_y1 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		end
+    cv_grad = max(0.0, psi_mx1)*x1.cv_grad + min(0.0, psi_mx1)*x1.cc_grad +
+		      max(0.0, psi_my1)*x2.cv_grad + min(0.0, psi_my1)*x2.cc_grad
 
-    	grad = max(0.0, psi_mult_x1)*x1.cv_grad+
-			   min(0.0, psi_mult_x1)*x1.cc_grad+
-			   max(0.0, psi_mult_y1)*x2.cv_grad+
-			   min(0.0, psi_mult_y1)*x2.cc_grad
-
-    return a,grad
+    return cv, cv_grad
 end
 
 function gCxAcc(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
 	            nu::Interval{Float64},x1::MC,x2::MC)
-		# gCxA pre-terms
-		alplo::Float64 = alpha.lo
-		alphi::Float64 = alpha.hi
-		betlo::Float64 = beta.lo
-		bethi::Float64 = beta.hi
-		LmdDel::Float64 = lambda.hi-lambda.lo
-		NuDel::Float64 = nu.hi-nu.lo
-		LmdSum::Float64 = lambda.lo+lambda.hi
-		NuSum::Float64 = nu.lo+nu.hi
-		NuDotLmd::Float64 = lambda.lo*nu.lo+lambda.hi*nu.hi
-		muT::Float64 = convert(Float64,MC_DIFF_MU)
-		mu1::Int64 = MC_DIFF_MU+1
-		mu1n::Int64 = MC_DIFF_MU-1
-		mu1T::Float64 = convert(Float64,MC_DIFF_MU+1)
 
-		xslo::Float64 = lambda.lo+LmdDel*(((nu.hi-betlo)/NuDel)-sigu((NuSum)/(mu1T*(NuDel)),muT))
-		xshi::Float64 = lambda.lo+LmdDel*(((nu.hi-bethi)/NuDel)-sigu((NuSum)/(mu1T*(NuDel)),muT))
-		yslo::Float64 = nu.lo+NuDel*(((lambda.hi-alplo)/LmdDel)-sigu((LmdSum)/(mu1T*LmdDel),muT))
-		yshi::Float64 = nu.lo+NuDel*(((lambda.hi-alphi)/LmdDel)-sigu((LmdSum)/(mu1T*LmdDel),muT))
+	# gCxA pre-terms
+	alplo = alpha.lo
+	alphi = alpha.hi
+	betlo = beta.lo
+	bethi = beta.hi
+	LmdDel = lambda.hi - lambda.lo
+	NuDel = nu.hi - nu.lo
+	LmdSum = lambda.lo + lambda.hi
+	NuSum = nu.lo + nu.hi
 
-		# calculates term 1
-		if (xslo <= alplo)
-			term1::Float64 = alplo
-		elseif (alphi <= xslo)
-			term1 = alphi
-		else
-			term1 = xslo
-		end
+	xslo = lambda.lo + LmdDel*(((nu.hi - betlo)/NuDel) - sigu(NuSum/NuDel))
+	xshi = lambda.lo + LmdDel*(((nu.hi - bethi)/NuDel) - sigu(NuSum/NuDel))
+	yslo = nu.lo + NuDel*(((lambda.hi - alplo)/LmdDel) - sigu(LmdSum/LmdDel))
+	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
-		# calculates term 2
-		if (xshi <= alplo)
-			term2::Float64 = alplo
-		elseif (alphi <= xshi)
-			term2 = alphi
-		else
-			term2 = xshi
-		end
+	# calculates term 1
+	term1 = mid3v(alplo, alphi, xslo)
+	term2 = mid3v(alplo, alphi, xshi)
+	term3 = mid3v(betlo, bethi, yslo)
+	term4 = mid3v(betlo, bethi, yshi)
 
-		# calculates term 3
-		if (yslo <= betlo)
-			term3::Float64 = betlo
-		elseif (bethi <= yslo)
-			term3 = bethi
-		else
-			term3 = yslo
-		end
+	# calculates the convex relaxation
+	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
+	tempGxA2a = LmdDel*NuDel*abs_pu((bethi - nu.lo)/NuDel - (lambda.hi - term2)/LmdDel)
+	tempGxA3a = LmdDel*NuDel*abs_pu((term3 - nu.lo)/NuDel - (lambda.hi - alplo)/LmdDel)
+	tempGxA4a = LmdDel*NuDel*abs_pu((term4 - nu.lo)/NuDel - (lambda.hi - alphi)/LmdDel)
 
-		# calculates term 4
-		if (yshi <= betlo)
-			term4::Float64 = betlo
-		elseif (bethi <= yshi)
-			term4 = bethi
-		else
-			term4 = yshi
-		end
+	NuDotLmd = lambda.lo*nu.lo+lambda.hi*nu.hi
+	tempGxA1 = 0.5*(term1*NuSum + betlo*LmdSum - NuDotLmd + tempGxA1a)
+	tempGxA2 = 0.5*(term2*NuSum + bethi*LmdSum - NuDotLmd + tempGxA2a)
+	tempGxA3 = 0.5*(alplo*NuSum + term3*LmdSum - NuDotLmd + tempGxA3a)
+	tempGxA4 = 0.5*(alphi*NuSum + term4*LmdSum - NuDotLmd + tempGxA4a)
 
-		# calculates the convex relaxation
-		tempGxA1a::Float64 = LmdDel*NuDel*abs((betlo-nu.lo)/NuDel-(lambda.hi-term1)/LmdDel)^mu1
-		tempGxA1::Float64 = 0.5*(term1*NuSum+betlo*LmdSum-NuDotLmd+tempGxA1a)
-		tempGxA2a::Float64 = LmdDel*NuDel*abs((bethi-nu.lo)/NuDel-(lambda.hi-term2)/LmdDel)^mu1
-		tempGxA2::Float64 = 0.5*(term2*NuSum+bethi*LmdSum-NuDotLmd+tempGxA2a)
-		tempGxA3a::Float64 = LmdDel*NuDel*abs((term3-nu.lo)/NuDel-(lambda.hi-alplo)/LmdDel)^mu1
-		tempGxA3::Float64 = 0.5*(alplo*NuSum+term3*LmdSum-NuDotLmd+tempGxA3a)
-		tempGxA4a::Float64 = LmdDel*NuDel*abs((term4-nu.lo)/NuDel-(lambda.hi-alphi)/LmdDel)^mu1
-		tempGxA4::Float64 = 0.5*(alphi*NuSum+term4*LmdSum-NuDotLmd+tempGxA4a)
+	# gets minima which is cv/cc/Intv depending on arguments
+	ncc = min(tempGxA1, tempGxA2, tempGxA3, tempGxA4)
 
-		# gets minima which is cv/cc/Intv depending on arguments
-		a::Float64 = min(tempGxA1,tempGxA2,tempGxA3,tempGxA4)
+   if (ncc == tempGxA1)
+	   psi_eval = psi_pow((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
+	   psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+	   psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	elseif (ncc == tempGxA2)
+		psi_eval = psi_pow((bethi - nu.lo)/NuDel - (lambda.hi - term2)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	elseif (ncc == tempGxA3)
+		psi_eval = psi_pow((term3 - nu.lo)/NuDel - (lambda.hi - alplo)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	else
+		psi_eval = psi_pow((term4 - nu.lo)/NuDel - (lambda.hi - alphi)/LmdDel)
+		psi_mx1 = 0.5*(NuSum + NuDel*psi_eval)
+		psi_my1 = 0.5*(LmdSum + LmdDel*psi_eval)
+	end
+	ncc_grad = max(0.0,psi_mx1)*x1.cc_grad + min(0.0,psi_mx1)*x1.cv_grad -
+		       max(0.0,psi_my1)*x2.cc_grad - min(0.0,psi_my1)*x2.cv_grad
 
-	   if (a == tempGxA1)
-		   psi_mul::Float64 = (betlo-nu.lo)/NuDel - (lambda.hi-term1)/LmdDel
-		   psi_mult_x1::Float64 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-		   psi_mult_y1::Float64 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		elseif (a == tempGxA2)
-			psi_mul = (bethi-nu.lo)/NuDel - (lambda.hi-term2)/LmdDel
-			psi_mult_x1 = 0.5*(NuSum+mu1*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-			psi_mult_y1 = 0.5*(LmdSum+mu1*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		elseif (a == tempGxA3)
-			psi_mul = (term3-nu.lo)/NuDel - (lambda.hi-alplo)/LmdDel
-			psi_mult_x1 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-			psi_mult_y1 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		else
-			psi_mul= (term4-nu.lo)/NuDel - (lambda.hi-alphi)/LmdDel
-			psi_mult_x1 = 0.5*(NuSum+mu1T*NuDel*(psi_mul)*abs(psi_mul)^mu1n)
-			psi_mult_y1 = 0.5*(LmdSum+mu1T*LmdDel*(psi_mul)*abs(psi_mul)^mu1n)
-		end
-		grad2 = max(0.0,psi_mult_x1)*x1.cc_grad+
-				min(0.0,psi_mult_x1)*x1.cv_grad-
-				max(0.0,psi_mult_y1)*x2.cc_grad-
-				min(0.0,psi_mult_y1)*x2.cv_grad
-    return a,grad2
+    return ncc, ncc_grad
 end
 
 function gCxAIntv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
 	              nu::Interval{Float64},x1::MC,x2::MC)
-		# gCxA pre-terms
-		alplo::Float64 = alpha.lo
-		alphi::Float64 = alpha.hi
-		betlo::Float64 = beta.lo
-		bethi::Float64 = beta.hi
-		LmdDel::Float64 = lambda.hi-lambda.lo
-		NuDel::Float64 = nu.hi-nu.lo
-		LmdSum::Float64 = lambda.lo+lambda.hi
-		NuSum::Float64 = nu.lo+nu.hi
-		NuLmd::Float64 = lambda.lo*nu.lo+lambda.hi*nu.hi
-		mu1::Int64 = MC_DIFF_MU+1
-		mu1n::Int64 = MC_DIFF_MU-1
-		mu1T::Float64 = convert(Float64,MC_DIFF_MU+1)
 
-		xslo::Float64 = lambda.lo+LmdDel*(((nu.hi-betlo)/NuDel)+sigu(-(NuSum)/(mu1*(NuDel)),mu1T))
-		xshi::Float64 = lambda.lo+LmdDel*(((nu.hi-bethi)/NuDel)+sigu(-(NuSum)/(mu1*(NuDel)),mu1T))
-		yslo::Float64 = nu.lo+NuDel*(((lambda.hi-alplo)/LmdDel)-sigu((LmdSum)/(mu1*LmdDel),mu1T))
-		yshi::Float64 = nu.lo+NuDel*(((lambda.hi-alphi)/LmdDel)-sigu((LmdSum)/(mu1*LmdDel),mu1T))
+	# gCxA pre-terms
+	alplo = alpha.lo
+	alphi = alpha.hi
+	betlo = beta.lo
+	bethi = beta.hi
+	LmdDel = lambda.hi-lambda.lo
+	NuDel = nu.hi-nu.lo
+	LmdSum = lambda.lo+lambda.hi
+	NuSum = nu.lo+nu.hi
 
-		# calculates term 1
-		if (xslo <= alplo)
-			term1::Float64 = alplo
-		elseif (alphi <= xslo)
-			term1 = alphi
-		else
-			term1 = xslo
-		end
+	xslo = lambda.lo + LmdDel*(((nu.hi - betlo)/NuDel) + sigu(-NuSum/NuDel))
+	xshi = lambda.lo + LmdDel*(((nu.hi - bethi)/NuDel) + sigu(-NuSum/NuDel))
+	yslo = nu.lo + NuDel*(((lambda.hi - alplo)/LmdDel) - sigu(LmdSum/LmdDel))
+	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
-		# calculates term 2
-		if (xshi <= alplo)
-			term2::Float64 = alplo
-		elseif (alphi <= xshi)
-			term2 = alphi
-		else
-			term2 = xshi
-		end
+	# calculates terms
+	term1 = mid3v(alplo, alphi, xslo)
+	term2 = mid3v(alplo, alphi, xshi)
+	term3 = mid3v(betlo, bethi, yslo)
+	term4 = mid3v(betlo, bethi, yshi)
 
-		# calculates term 3
-		if (yslo <= betlo)
-			term3::Float64 = betlo
-		elseif (bethi <= yslo)
-			term3 = bethi
-		else
-			term3 = yslo
-		end
+	# calculates the convex relaxation
+	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
+	tempGxA2a = LmdDel*NuDel*abs_pu((bethi - nu.lo)/NuDel - (lambda.hi - term2)/LmdDel)
+	tempGxA3a = LmdDel*NuDel*abs_pu((term3 - nu.lo)/NuDel - (lambda.hi - alplo)/LmdDel)
+	tempGxA4a = LmdDel*NuDel*abs_pu((term4 - nu.lo)/NuDel - (lambda.hi - alphi)/LmdDel)
 
-		# calculates term 4
-		if (yshi <= betlo)
-			term4::Float64 = betlo
-		elseif (bethi <= yshi)
-			term4 = bethi
-		else
-			term4 = yshi
-		end
+	NuLmd = lambda.lo*nu.lo+lambda.hi*nu.hi
+	tempGxA1 = 0.5*(term1*NuSum + betlo*LmdSum - NuLmd + tempGxA1a)
+	tempGxA2 = 0.5*(term2*NuSum + bethi*LmdSum - NuLmd + tempGxA2a)
+	tempGxA3 = 0.5*(alplo*NuSum + term3*LmdSum - NuLmd + tempGxA3a)
+	tempGxA4 = 0.5*(alphi*NuSum + term4*LmdSum - NuLmd + tempGxA4a)
 
-		# calculates the convex relaxation
-		tempGxA1a::Float64 = LmdDel*NuDel*abs((betlo-nu.lo)/NuDel-(lambda.hi-term1)/LmdDel)^mu1
-		tempGxA1::Float64 =  0.5*(term1*NuSum+betlo*LmdSum-NuLmd+tempGxA1a)
-		tempGxA2a::Float64 = LmdDel*NuDel*abs((bethi-nu.lo)/NuDel-(lambda.hi-term2)/LmdDel)^mu1
-		tempGxA2::Float64 =  0.5*(term2*NuSum+bethi*LmdSum-NuLmd+tempGxA2a)
-		tempGxA3a::Float64 = LmdDel*NuDel*abs((term3-nu.lo)/NuDel-(lambda.hi-alplo)/LmdDel)^mu1
-		tempGxA3::Float64 =  0.5*(alplo*NuSum+term3*LmdSum-NuLmd+tempGxA3a)
-		tempGxA4a::Float64 = LmdDel*NuDel*abs((term4-nu.lo)/NuDel-(lambda.hi-alphi)/LmdDel)^mu1
-		tempGxA4::Float64 = 0.5*(alphi*NuSum+term4*LmdSum-NuLmd+tempGxA4a)
-
-		# gets minima which is cv/cc/Intv depending on arguments
-		return min(tempGxA1,tempGxA2,tempGxA3,tempGxA4)
+	# gets minima which is cv/cc/Intv depending on arguments
+	return min(tempGxA1, tempGxA2, tempGxA3, tempGxA4)
 end
 
 function multiply_MV(x1::MC{N,Diff}, x2::MC{N,Diff}, z::Interval{Float64}) where {N}
-	x1cv::Float64 = x1.cv
-	x2cv::Float64 = x2.cv
-	x1cc::Float64 = x1.cc
-	x2cc::Float64 = x2.cc
-	x1lo::Float64 = x1.Intv.lo
-	x2lo::Float64 = x2.Intv.lo
-	x1hi::Float64 = x1.Intv.hi
-	x2hi::Float64 = x2.Intv.hi
-	x1h_l::Float64 = x1hi-x1lo
-	x1h_v::Float64 = x1hi-x1cv
-	x2h_l::Float64 = x2hi-x2lo
-	x2v_l::Float64 = x2cv-x2lo
-	cv::Float64 = 0.0
-	cc::Float64 = 0.0
-	mu1::Int64 = MC_DIFF_MU+1
-	muf1::Float64 = convert(Float64,MC_DIFF_MU+1)
-	alpha0::Interval{Float64} = Interval{Float64}(x1cv,x1cc)
-	beta0::Interval{Float64} = Interval{Float64}(x2cv,x2cc)
+
+	x1cv = x1.cv
+	x2cv = x2.cv
+	x1cc = x1.cc
+	x2cc = x2.cc
+	x1lo = x1.Intv.lo
+	x2lo = x2.Intv.lo
+	x1hi = x1.Intv.hi
+	x2hi = x2.Intv.hi
+	x1h_l = x1hi - x1lo
+	x1h_v = x1hi - x1cv
+	x2h_l = x2hi - x2lo
+	x2v_l = x2cv - x2lo
+	cv = 0.0
+	cc = 0.0
+
+	alpha0 = Interval{Float64}(x1cv, x1cc)
+	beta0 = Interval{Float64}(x2cv, x2cc)
+
 	if (0.0 <= x1lo) && (0.0 <= x2lo)
-		b1_temp1::Float64 = max(0.0,((x2v_l/x2h_l)-(x1h_v/x1h_l)))
-		b1_term2::Float64 = x2lo+muf1*x2h_l*b1_temp1^MC_DIFF_MU
-		b1_term3::Float64 = x1lo+muf1*x1h_l*b1_temp1^MC_DIFF_MU
-		cv = x1cv*x2lo + x1lo*x2v_l + x1h_l*x2h_l*b1_temp1^mu1
-		cv_grad = b1_term2*x1.cv_grad + b1_term3*x2.cv_grad
-	elseif ((x1hi <= 0.0)) && (x2hi <= 0.0)
-		b1_temp = max(0.0,(x2hi - x2cc)/x2h_l - (x1cc-x1lo)/(x1h_l))
-		cv = x1cc*x2hi + x1hi*(x2cc - x2hi) + (x1h_l)*(x2h_l)*b1_temp^mu1
-		b1_term2 = -x2hi+muf1*(x2h_l)*max(0.0,b1_temp)^MC_DIFF_MU
-		b1_term3 = -x1hi+muf1*(x1h_l)*max(0.0,b1_temp)^MC_DIFF_MU
-		cv_grad = (-b1_term2)*x1.cc_grad - b1_term3*x2.cc_grad
+
+		btemp1 = max(0.0, x2v_l/x2h_l - x1h_v/x1h_l)
+		btemp2 = x2lo + MC_DIFF_MU1T*x2h_l*btemp1^MC_DIFF_MU
+		btemp3 = x1lo + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
+
+		cv = x1cv*x2lo + x1lo*x2v_l + x1h_l*x2h_l*btemp1^MC_DIFF_MU
+		cv_grad = btemp2*x1.cv_grad + btemp3*x2.cv_grad
+
+
+	elseif (x1hi <= 0.0) && (x2hi <= 0.0)
+
+		btemp1 = max(0.0,(x2hi - x2cc)/x2h_l - (x1cc-x1lo)/x1h_l)
+		btemp2 = -x2hi + MC_DIFF_MU1T*(x2h_l)*max(0.0, btemp1)^MC_DIFF_MU
+		btemp3 = -x1hi + MC_DIFF_MU1T*(x1h_l)*max(0.0, btemp1)^MC_DIFF_MU
+
+		cv = x1cc*x2hi + x1hi*(x2cc - x2hi) + (x1h_l)*(x2h_l)*btemp1^MC_DIFF_MU
+		cv_grad = (-btemp2)*x1.cc_grad - btemp3*x2.cc_grad
+
 	else
-		cv,cv_grad = gCxAcv(alpha0,beta0,x1.Intv,x2.Intv,x1,x2)
+		cv,cv_grad = gCxAcv(alpha0, beta0, x1.Intv, x2.Intv, x1, x2)
 	end
-	if ((x1hi <= 0.0)) && ((0.0) <= x2lo)
-		btemp1 = max(0.0,x2v_l/x2h_l - (x1cc-x1lo)/(x1h_l))
-		btemp2 = x2lo+muf1*x2h_l*btemp1^MC_DIFF_MU
-		btemp3 = -x1hi+muf1*x1h_l*btemp1^MC_DIFF_MU
-		cc = x1cc*x2lo-x1hi*(x2lo-x2cv)-x1h_l*x2h_l*btemp1^mu1
+
+	if (x1hi <= 0.0) && (0.0 <= x2lo)
+
+		btemp1 = max(0.0, x2v_l/x2h_l - (x1cc-x1lo)/x1h_l)
+		btemp2 = x2lo + MC_DIFF_MU1T*x2h_l*btemp1^MC_DIFF_MU
+		btemp3 = -x1hi + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
+		cc = x1cc*x2lo - x1hi*(x2lo - x2cv) - x1h_l*x2h_l*btemp1^MC_DIFF_MU
 		cc_grad = btemp2*x1.cc_grad - btemp3*x2.cv_grad
-	elseif ((0.0)<=x1.Intv.lo) && (x2.Intv.hi<=0.0)
-		btemp1 = max(0.0,(x2hi-x2cc)/x2h_l - x1h_v/x1h_l)
-		btemp2 = -x2hi+muf1*(x2h_l)*btemp1^MC_DIFF_MU
-		btemp3 = x1lo+muf1*x1h_l*btemp1^MC_DIFF_MU
-		cc = x1cv*x2hi+x1lo*(x2cc-x2hi)-x1h_l*x2h_l*btemp1^mu1
+
+	elseif (0.0 <= x1.Intv.lo) && (x2.Intv.hi <= 0.0)
+
+		btemp1 = max(0.0, (x2hi-x2cc)/x2h_l - x1h_v/x1h_l)
+		btemp2 = -x2hi + MC_DIFF_MU1T*(x2h_l)*btemp1^MC_DIFF_MU
+		btemp3 = x1lo + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
+		cc = x1cv*x2hi + x1lo*(x2cc - x2hi) - x1h_l*x2h_l*btemp1^MC_DIFF_MU
 		cc_grad = -btemp2*x1.cv_grad + btemp3*x2.cc_grad
+
 	else
-		cct::Float64,cc_gradt = gCxAcc(-alpha0,beta0,-x1.Intv,x2.Intv,x1,x2)
+		cct::Float64, cc_gradt = gCxAcc(-alpha0, beta0, -x1.Intv, x2.Intv, x1, x2)
 		cc = -cct
 		cc_grad = cc_gradt
 	end
+
 	cnst = x2.cnst ? x1.cnst : (x1.cnst ? x2.cnst : x1.cnst || x2.cnst)
+
 	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 
 function mul1_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
-  xLc = z.lo
-  xUc = z.hi
-  cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
-  cv2 = x2.Intv.lo*x1.cv + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
-  if (cv1 > cv2)
-    cv = cv1
-    cv_grad = x2.Intv.hi*x1.cv_grad
-  else
-    cv = cv2
-    cv_grad = x2.Intv.lo*x1.cv_grad
-  end
+    xLc = z.lo
+    xUc = z.hi
+  	cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
+  	cv2 = x2.Intv.lo*x1.cv + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
+  	if (cv1 > cv2)
+    	cv = cv1
+    	cv_grad = x2.Intv.hi*x1.cv_grad
+  	else
+    	cv = cv2
+    	cv_grad = x2.Intv.lo*x1.cv_grad
+  	end
 
-  cc1 = x2.Intv.lo*x1.cc + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
-  cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
-  if (cc1 < cc2)
-    cc = cc1
-    cc_grad = x2.Intv.lo*x1.cc_grad
-  else
-    cc = cc2
-    cc_grad = x2.Intv.hi*x1.cc_grad
-  end
-  cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
-  return MC{N,T}(cv,cc,z,cv_grad,cc_grad,cnst)
+  	cc1 = x2.Intv.lo*x1.cc + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
+  	cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
+  	if (cc1 < cc2)
+    	cc = cc1
+    	cc_grad = x2.Intv.lo*x1.cc_grad
+  	else
+    	cc = cc2
+    	cc_grad = x2.Intv.hi*x1.cc_grad
+  	end
+  	cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
+  	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 function mul1_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
   xLc = z.lo
@@ -576,10 +496,10 @@ function multiply_MV_NS(x1::MC{N,MV},x2::MC{N,MV},cnst::Bool) where N
 
 
 	 z = (x1.Intv.hi*x2.Intv.lo - x1.Intv.lo*x2.Intv.hi)/(x1.Intv.hi - x1.Intv.lo)
-	 x1vta,blank = mid3(x1.cv,x1.cc,(x2.cv-z)/k)
-	 x1vtb,blank = mid3(x1.cv,x1.cc,(x2.cc-z)/k)
-	 x2vta,blank = mid3(x2.cv,x2.cc, k*x1.cv+z)
-	 x2vtb,blank = mid3(x2.cv,x2.cc, k*x1.cc+z)
+	 x1vta = mid3v(x1.cv,x1.cc,(x2.cv-z)/k)
+	 x1vtb = mid3v(x1.cv,x1.cc,(x2.cc-z)/k)
+	 x2vta = mid3v(x2.cv,x2.cc, k*x1.cv+z)
+	 x2vtb = mid3v(x2.cv,x2.cc, k*x1.cc+z)
 	 x1vt = [x1.cv, x1.cc, x1vta, x1vtb, x1.cv, x1.cc]
 	 x2vt = [x2vta, x2vtb, x2.cv, x2.cc, x2.cc, x2.cv]
 	 vt  = [mul_MV_ns3cc(x1vt[1],x2vt[1],x1,x2), mul_MV_ns3cc(x1vt[2],x2vt[2],x1,x2),
@@ -659,11 +579,8 @@ function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
 end
 
 function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
-	if isone(x1)
-		return x2
-	elseif isone(x2)
-		return x1
-	end
+	isone(x1) && (return x2)
+	isone(x2) && (return x1)
 	if (x1.Intv.lo >= 0.0)
 		return multiply_STD_NS(x1, x2, y)
 	elseif (x1.Intv.hi <= 0.0)
@@ -690,21 +607,14 @@ function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 end
 
 function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
-	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL )
-	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL )
-	if degen1 || degen2
-		error("Degenerate interval encountered. Rounding issues with differential McCormick relaxations expected.")
-	end
+	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
+	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
+	(degen1 || degen2) && error("Degenerate interval encountered. Rounding issues
+	                             with differential McCormick relaxations expected.")
 	return multiply_MV(x1, x2, y)
 end
-function *(x1::MC{N,NS}, x2::MC{N,NS}) where N
-	z = x1.Intv*x2.Intv
-	return mult_kernel(x1, x2, z)
-end
-function *(x1::MC{N,MV}, x2::MC{N,MV}) where N
-	z = x1.Intv*x2.Intv
-	return mult_kernel(x1, x2, z)
-end
+*(x1::MC{N,T}, x2::MC{N,T}) where {N, T<:Union{NS,MV}} = mult_kernel(x1, x2, x1.Intv*x2.Intv)
+
 function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) == 0.0)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) == 0.0)

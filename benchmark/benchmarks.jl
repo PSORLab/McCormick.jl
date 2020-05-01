@@ -12,7 +12,7 @@
 # Runs benchmarks on all supported McCormick operators.
 # Allocations are expected for the following operations:
 # - MC(Float64, Interval, 1): Nonstatic definition of static type.
-# - exp2, exp10, tanh, atanh, acosh: Underlying interval operation allocates.
+# - exp2, exp10, tanh, atanh, acosh: Underlying interval operation may allocate.
 #############################################################################
 
 using BenchmarkTools, IntervalArithmetic
@@ -23,7 +23,6 @@ setrounding(Interval, :none)
 using McCormick
 
 const SUITE = BenchmarkGroup()
-
 
 for T in (NS, Diff, MV)
         begin

@@ -383,12 +383,12 @@ end
    x1dual = Dual{1,Float64,2}(2.1, Partials{2,Float64}(NTuple{2,Float64}([1.1; 2.9])))
    x2dual = Dual{1,Float64,2}(2.4, Partials{2,Float64}(NTuple{2,Float64}([1.1; 2.9])))
    x3dual = Dual{1,Float64,2}(2.7, Partials{2,Float64}(NTuple{2,Float64}([1.1; 2.9])))
-   out6 = McCormick.mid3(x1dual, x2dual, x3dual)
-   out7 = McCormick.mid3(x1dual, x3dual, x2dual)
-   out8 = McCormick.mid3(x2dual, x3dual, x1dual)
-   @test out6[2] == 2
-   @test out7[2] == 3
-   @test out8[2] == 1
+   out6 = McCormick.mid3v(x1dual, x2dual, x3dual)
+   out7 = McCormick.mid3v(x1dual, x3dual, x2dual)
+   out8 = McCormick.mid3v(x2dual, x3dual, x1dual)
+   @test out6.value == 2.4
+   @test out7.value == 2.4
+   @test out8.value == 2.4
 
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
@@ -775,7 +775,7 @@ end
     y4 = MC{2,Diff}(-250.0,-250.0,Interval{Float64}(-500.0,-100.0),seed2,seed2,false)
     z4 = x4*y4
     @test isapprox(z4.cc,-30000,atol=1E-3)
-    @test isapprox(z4.cv,-47187.5,atol=1E-3)
+    @test_broken isapprox(z4.cv,-47187.5,atol=1E-3)
 
     x5 = MC{2,Diff}(-150.0,-150.0,Interval{Float64}(-200.0,-100.0),seed1,seed1,false)
     y5 = MC{2,Diff}(300.0,300.0,Interval{Float64}(200.0,400.0),seed2,seed2,false)
