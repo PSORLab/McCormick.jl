@@ -80,6 +80,7 @@ const MC_DIFF_MUT = convert(Float64, MC_DIFF_MU)
 const MC_DIFF_MU1 = MC_DIFF_MU + 1
 const MC_DIFF_MU1T = convert(Float64, MC_DIFF_MU1)
 const MC_DIFF_MU1N = MC_DIFF_MU - 1
+const MC_DIFF_DIV = MC_DIFF_MU1^(-1/MC_DIFF_MU)
 
 const MC_MV_TOL = 1E-8
 const MC_DEGEN_TOL = 1E-14
