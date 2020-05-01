@@ -78,7 +78,7 @@ function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N
     degen2 = ((y.Intv.hi - y.Intv.lo) == 0.0)
     if (x === y)
         zMC = one(x)
-    elseif  ~(degen1||degen2)
+    elseif  ~(degen1 || degen2)
         zMC = div_MV(x, y, z)
     else
         q = inv(y)

@@ -148,7 +148,7 @@ end
         maxUU = max(x.Intv.hi, y.Intv.hi)
         g2cc = maxUU + m2a*(maxUU - maxLU) + m2b*(maxUU - maxUL)
 
-        if g1cc < g2 cc
+        if g1cc < g2cc
             cc = g1cc
             cc_grad = (maxUL - maxLL)*x.cc_grad + (maxLU - maxLL)*y.cc_grad
         else

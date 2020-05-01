@@ -1048,4 +1048,46 @@ end
    out2c = intersect(x, Interval{Float64}(9.0,10.0))
    @test isnan(out2c.cv)
    @test isnan(out2c.cc)
+
+   X = Interval{Float64}(-2,2)
+   Y = Interval{Float64}(-2,2)
+   xpnt1 = 2.0; ypnt1 = 1.0
+   xpnt2 = 1.0; ypnt2 = 2.0
+   xpnt3 = 0.0; ypnt3 = 0.0
+
+   x1 = MC{1,MV}(xpnt1, X, 1)
+   y1 = MC{1,MV}(ypnt1, Y, 2)
+   out1 = max((y1-1)^2, x1^2) + min(y1^2, (x1+1)^2)
+   @test out1.cv == 5.0
+   @test isapprox(out1.cc, 9.666666666666668, atol = 1E-6)
+
+   x2 = MC{1,MV}(xpnt2, X, 1)
+   y2 = MC{1,MV}(ypnt2, Y, 2)
+   out2 = max((y2-1)^2, x2^2) + min(y2^2, (x2+1)^2)
+   @test isapprox(out2.cv, 2.7777777777777777, atol = 1E-6)
+   @test isapprox(out2.cc, 8.555555555555555, atol = 1E-6)
+
+   x3 = MC{1,MV}(xpnt3, X, 1)
+   y3 = MC{1,MV}(ypnt3, Y, 2)
+   out3 = max((y3-1)^2, x3^2) + min(y3^2, (x3+1)^2)
+   @test out3.cv == 1.0
+   @test isapprox(out3.cc, 10.777777777777779, atol = 1E-6)
+
+   x1 = MC{1,Diff}(xpnt1, X, 1)
+   y1 = MC{1,Diff}(ypnt1, Y, 2)
+   out1 = max((y1-1)^2, x1^2) + min(y1^2, (x1+1)^2)
+   @test out1.cv == 3.0
+   @test isapprox(out1.cc, 9.666666666666666, atol = 1E-6)
+
+   x2 = MC{1,Diff}(xpnt2, X, 1)
+   y2 = MC{1,Diff}(ypnt2, Y, 2)
+   out2 = max((y2-1)^2, x2^2) + min(y2^2, (x2+1)^2)
+   @test out2.cv == 1.0
+   @test isapprox(out2.cc, 8.555555555555555, atol = 1E-6)
+
+   x3 = MC{1,Diff}(xpnt3, X, 1)
+   y3 = MC{1,Diff}(ypnt3, Y, 2)
+   out3 = max((y3-1)^2, x3^2) + min(y3^2, (x3+1)^2)
+   @test isapprox(out3.cv, 0.3333333333333333, atol = 1E-6)
+   @test isapprox(out3.cc, 10.777777777777779, atol = 1E-6)
 end

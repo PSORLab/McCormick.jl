@@ -469,7 +469,7 @@ mul_MV_ns2cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.
 mul_MV_ns3cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
 
 tol_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
-function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, z::Interval{Float64}, cnst::Bool) where N
+function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cnst::Bool) where N
 
 	flag = true
 	alph1 = 0.0
@@ -589,7 +589,7 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, z::Interval{Float64}, cnst::
 		cc_grad = sigma1*cc_grad1 + sigma2*cc_grad2
 	end
 
-    return flag, MC{N,MV}(cv, cc, z, cv_grad, cc_grad, cnst)
+    return flag, MC{N,MV}(cv, cc, zIntv, cv_grad, cc_grad, cnst)
 end
 
 function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
