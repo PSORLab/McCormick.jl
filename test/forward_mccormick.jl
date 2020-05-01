@@ -700,7 +700,6 @@ end
    out2 = McCormick.flt_pow_1(X, 0.5, X.Intv^0.5)
    @test isapprox(out2.cv, 1.70710678, atol=1E-5)
    @test isapprox(out2.cc, 1.7320508, atol=1E-5)
-
 end
 
 @testset "Multiplication Operator" begin
@@ -934,6 +933,30 @@ end
     out_mc3 = McCormick.div_kernel(X, -Y, X.Intv/-Y.Intv)
     @test isapprox(out_mc3.cv, 0.72855339, atol=1E-5)
     @test isapprox(out_mc3.cc, 0.86666666666, atol=1E-5)
+
+    X = Interval{Float64}(-2,2)
+    Y = Interval{Float64}(-2,2)
+    xpnt1 = 2.0; ypnt1 = 1.0
+    xpnt2 = 1.0; ypnt2 = 2.0
+    xpnt3 = 0.0; ypnt3 = 0.0
+
+    x1 = MC{1,MV}(xpnt1, X, 1)
+    y1 = MC{1,MV}(ypnt1, Y, 2)
+    out1 =  max((y1-1)^2,x1*y1)*min(y1^2,(x1+1)*y1)
+    @test out1.cv == -29.7
+    @test isapprox(out1.cc, 22.666666666666668, atol = 1E-6)
+
+   x2 = MC{1,MV}(xpnt2, X, 1)
+   y2 = MC{1,MV}(ypnt2, Y, 2)
+   out2 = max((y2-1)^2,x2*y2)*min(y2^2,(x2+1)*y2)
+   @test isapprox(out2.cv, -7.0, atol = 1E-6)
+   @test isapprox(out2.cc, 16.0, atol = 1E-6)
+
+   x3 = MC{1,MV}(xpnt3, X, 1)
+   y3 = MC{1,MV}(ypnt3, Y, 2)
+   out3 = max((y3-1)^2,x3*y3)*min(y3^2,(x3+1)*y3)
+   @test isapprox(out3.cv, -40.666666666666664, atol = 1E-6)
+   @test isapprox(out3.cc, 27.11111111111111, atol = 1E-6)
 end
 
 @testset "Min/Max" begin
