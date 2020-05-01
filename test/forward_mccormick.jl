@@ -832,7 +832,7 @@ end
     @test isapprox(McCormick.mul_MV_ns1cc(flt1, flt2, x1a, x2a), -0.27499999, atol=1E-6)
     @test isapprox(McCormick.mul_MV_ns2cc(flt1, flt2, x1a, x2a), 5.389, atol=1E-6)
     @test isapprox(McCormick.mul_MV_ns3cc(flt1, flt2, x1a, x2a), -0.27499999, atol=1E-6)
-    @test ~McCormick.isequal_mult_MC(flt1, flt2)
+    @test ~McCormick.tol_MC(flt1, flt2)
 
     #=
     x1a = MC{2,MV}(Interval(2.0, 4.0))

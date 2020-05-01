@@ -25,7 +25,7 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            atan, asin, acos, AbstractInterval, atomic,
                            sind, cosd, tand, asind, acosd, atand,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
-                           setrounding
+                           setrounding, diam, isthin
 
 import Base.MathConstants.golden
 
@@ -35,7 +35,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        log10, log1p, acosh, sqrt, sin, cos, tan, min, max, sec, csc, cot, ^,
        abs, step, sign, pow, in, isempty, intersect, length, mid3,
        acos, asin, atan, sinh, cosh, tanh, asinh, atanh, inv, sqr, sech,
-       csch, coth, acsch, acoth, asech, rad2deg, deg2rad,
+       csch, coth, acsch, acoth, asech, rad2deg, deg2rad, diam,
        sind, cosd, tand, asind, acosd, atand,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,

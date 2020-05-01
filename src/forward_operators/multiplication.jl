@@ -1,3 +1,5 @@
+
+# Differentiable multiplication kernel definition
 function sigu(y::Float64)
 	x = y/MC_DIFF_MU1T
 	(0.0 <= x) ? x^(1.0/MC_DIFF_MU1T) : -abs(x)^(1.0/MC_DIFF_MU1T)
@@ -239,6 +241,15 @@ function multiply_MV(x1::MC{N,Diff}, x2::MC{N,Diff}, z::Interval{Float64}) where
 	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 
+function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
+	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
+	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
+	(degen1 || degen2) && error("Degenerate interval encountered. Rounding issues
+	                             with differential McCormick relaxations expected.")
+	return multiply_MV(x1, x2, y)
+end
+
+# Nonsmooth multiplication kernel definition
 function mul1_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
     xLc = z.lo
     xUc = z.hi
@@ -415,155 +426,6 @@ function mul3_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where 
 	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 
-mul_MV_ns1cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1+MC1.Intv.hi*x2-MC2.Intv.hi*MC1.Intv.hi
-mul_MV_ns2cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1+MC1.Intv.lo*x2-MC2.Intv.lo*MC1.Intv.lo
-mul_MV_ns3cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2),mul_MV_ns2cv(x1,x2,MC1,MC2))
-mul_MV_ns1cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1+MC1.Intv.hi*x2-MC2.Intv.lo*MC1.Intv.hi
-mul_MV_ns2cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1+MC1.Intv.lo*x2-MC2.Intv.hi*MC1.Intv.lo
-mul_MV_ns3cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2),mul_MV_ns2cc(x1,x2,MC1,MC2))
-
-isequal_mult_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
-function multiply_MV_NS(x1::MC{N,MV},x2::MC{N,MV},cnst::Bool) where N
-
- k = (x2.Intv.hi - x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
- z = (x1.Intv.hi*x2.Intv.hi - x1.Intv.lo*x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
-
- x1vta,blank = mid3(x1.cv,x1.cc,(x2.cv-z)/k)
- x1vtb,blank = mid3(x1.cv,x1.cc,(x2.cc-z)/k)
- x2vta,blank = mid3(x2.cv,x2.cc, k*x1.cv+z)
- x2vtb,blank = mid3(x2.cv,x2.cc, k*x1.cc+z)
- x1vt = [x1.cv, x1.cc, x1vta, x1vtb, x1.cv, x1.cc]
- x2vt = [x2vta, x2vtb, x2.cv, x2.cc, x2.cv, x2.cc]
- vt  = [mul_MV_ns3cv(x1vt[1],x2vt[1],x1,x2), mul_MV_ns3cv(x1vt[2],x2vt[2],x1,x2),
-        mul_MV_ns3cv(x1vt[3],x2vt[3],x1,x2), mul_MV_ns3cv(x1vt[4],x2vt[4],x1,x2),
-		mul_MV_ns3cv(x1vt[5],x2vt[5],x1,x2), mul_MV_ns3cv(x1vt[6],x2vt[6],x1,x2)]
- cv,cvind = findmin(vt)
-
- if isequal_mult_MC(mul_MV_ns1cv(x1vt[cvind], x2vt[cvind], x1, x2), mul_MV_ns2cv(x1vt[cvind],x2vt[cvind], x1, x2))
- 	 alph = [0.0,1.0]
-
- 	 MC1thin::Bool = isequal_mult_MC(x1.cv, x1.cc)
- 	if ~MC1thin && (x1vt[cvind] > x1.cv)
-		if ~isequal_mult_MC(x1vt[cvind], x1.cv)
-	 		alph[2] = min(alph[2],-x2.Intv.lo/(x2.Intv.hi - x2.Intv.lo))
-		end
- 	end
- 	if ~MC1thin && (x1vt[cvind] < x1.cc)
-		if ~isequal_mult_MC(x1vt[cvind], x1.cc)
-			alph[1] = max(alph[1],-x2.Intv.lo/(x2.Intv.hi - x2.Intv.lo))
-		end
- 	end
-
-	MC2thin::Bool = isequal_mult_MC(x2.cv,x2.cc)
-	if ~MC2thin && (x2vt[cvind] > x2.cv)
-		if ~isequal_mult_MC(x2vt[cvind],x2.cv)
-			alph[2] = min(alph[2],-x1.Intv.lo/(x1.Intv.hi - x1.Intv.lo))
-		end
-	end
-	if ~MC2thin && (x2vt[cvind] < x2.cc)
-		if ~isequal_mult_MC(x2vt[cvind],x2.cc)
- 			alph[1] = max(alph[1],-x1.Intv.lo/(x1.Intv.hi - x1.Intv.lo))
-		end
-	end
-
-	alphthin = isequal_mult_MC(alph[1], alph[2])
-	if ~alphthin && (alph[1] > alph[2])
- 		error("Multivariant mult error alphaL = alphaU")
-	end
-	myalph = (alph[1]+alph[2])/2.0
- elseif (mul_MV_ns1cv(x1vt[cvind],x2vt[cvind],x1,x2) > mul_MV_ns2cv(x1vt[cvind],x2vt[cvind],x1,x2))
-		myalph = 1.0
-	else
-		myalph = 0.0
-	end
-	sigma_cv1 = x2.Intv.lo + myalph*(x2.Intv.hi - x2.Intv.lo)
-	sigma_cv2 = x1.Intv.lo + myalph*(x1.Intv.hi - x1.Intv.lo)
-	if (x1.cnst)
-		term1 = zero(SVector{N,Float64})
-	elseif (sigma_cv1>=0.0)
-		term1 = x1.cv_grad
-	else
-		term1 = x1.cc_grad
-	end
-	if (x2.cnst)
-		term2 = zero(SVector{N,Float64})
-	elseif (sigma_cv1 >= 0.0)
-		term2 = x2.cv_grad
-	else
-		term2 = x2.cc_grad
-	end
-	cv_grad = term1*sigma_cv1 + term2*sigma_cv2
-
-
-	 z = (x1.Intv.hi*x2.Intv.lo - x1.Intv.lo*x2.Intv.hi)/(x1.Intv.hi - x1.Intv.lo)
-	 x1vta = mid3v(x1.cv,x1.cc,(x2.cv-z)/k)
-	 x1vtb = mid3v(x1.cv,x1.cc,(x2.cc-z)/k)
-	 x2vta = mid3v(x2.cv,x2.cc, k*x1.cv+z)
-	 x2vtb = mid3v(x2.cv,x2.cc, k*x1.cc+z)
-	 x1vt = [x1.cv, x1.cc, x1vta, x1vtb, x1.cv, x1.cc]
-	 x2vt = [x2vta, x2vtb, x2.cv, x2.cc, x2.cc, x2.cv]
-	 vt  = [mul_MV_ns3cc(x1vt[1],x2vt[1],x1,x2), mul_MV_ns3cc(x1vt[2],x2vt[2],x1,x2),
-			mul_MV_ns3cc(x1vt[3],x2vt[3],x1,x2), mul_MV_ns3cc(x1vt[4],x2vt[4],x1,x2),
-   		    mul_MV_ns3cc(x1vt[5],x2vt[5],x1,x2), mul_MV_ns3cc(x1vt[6],x2vt[6],x1,x2)]
-	 cc,ccind = findmax(vt)
-
-	 if isequal_mult_MC(mul_MV_ns1cc(x1vt[cvind],x2vt[cvind],x1,x2), mul_MV_ns2cc(x1vt[cvind],x2vt[cvind],x1,x2))
-			 alph = [0.0,1.0]
-
-			 MC1thin = isequal_mult_MC(x1.cv,x1.cc)
-			 if ~MC1thin && (x1vt[cvind] > x1.cv)
-			 	if ~isequal_mult_MC(x1vt[cvind],x1.cv)
-				 	alph[1] = max(alph[1],-x2.Intv.lo/(x2.Intv.hi - x2.Intv.lo))
-			 	end
-			 end
-			 if ~MC1thin && (x1vt[cvind] < x1.cc)
-			 	if ~isequal_mult_MC(x1vt[cvind],x1.cc)
-				 	alph[2] = min(alph[2],-x2.Intv.lo/(x2.Intv.hi - x2.Intv.lo))
-			 	end
-			 end
-
-			 MC2thin = isequal_mult_MC(x2.cv,x2.cc)
-			 if ~MC2thin && (x2vt[cvind] > x2.cv)
-			 	if ~isequal_mult_MC(x2vt[cvind],x2.cv)
-				 	alph[2] = min(alph[2],x1.Intv.hi/(x1.Intv.hi - x1.Intv.lo))
-			 	end
-			 end
-			 if ~MC2thin && (x2vt[cvind] < x2.cc)
-				if ~isequal_mult_MC(x2vt[cvind],x2.cc)
-				 	alph[1] = max(alph[1],x1.Intv.hi/(x1.Intv.hi - x1.Intv.lo))
-				end
-			 end
-
-			 alphthin = isequal_mult_MC(alph[1],alph[2])
-			 if (~alphthin && (alph[1]>alph[2]))
-			 	error("Multivariant mult error alphaL = alphaU")
-			 end
-			 myalph = (alph[1]+alph[2])/2
-		elseif (mul_MV_ns1cv(x1vt[cvind],x2vt[cvind],x1,x2) > mul_MV_ns2cv(x1vt[cvind],x2vt[cvind],x1,x2))
-		   myalph = 1.0
-	  	else
-			myalph = 0.0
-	  	end
-		sigma_cc1 = x2.Intv.lo + myalph*(x2.Intv.hi - x2.Intv.lo)
-		sigma_cc2 = x1.Intv.hi - myalph*(x1.Intv.hi - x1.Intv.lo)
-		if (x1.cnst)
-			term1 = zero(SVector{Float64,N})
-		elseif (sigma_cc1>=0.0)
-			term1 = x1.cc_grad
-		else
-			term1 = x1.cv_grad
-		end
-		if (x2.cnst)
-			term2 = zero(SVector{Float64,N})
-		elseif (sigma_cc1>= 0.0)
-			term2 = x2.cc_grad
-		else
-			term2 = x2.cv_grad
-		end
-		cc_grad = term1*sigma_cc1 + term2*sigma_cc2
- return MC{N,MV}(cv, cc, x1.Intv*x2.Intv, cv_grad, cc_grad, cnst)
-end
-
 function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
 	if x2.Intv.lo >= 0.0
     	x2.cnst && (return mul1_u1pos_u2pos(x1, x2, y, x1.cnst))
@@ -597,24 +459,152 @@ function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
 	end
 	return mul2_u1mix_u2mix(x1, x2, y)
 end
+
+# Nonsmooth multivariate multiplication kernel definition
+mul_MV_ns1cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.hi*x2 - MC2.Intv.hi*MC1.Intv.hi
+mul_MV_ns2cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.lo*x2 - MC2.Intv.lo*MC1.Intv.lo
+mul_MV_ns3cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2), mul_MV_ns2cv(x1,x2,MC1,MC2))
+mul_MV_ns1cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.hi*x2 - MC2.Intv.lo*MC1.Intv.hi
+mul_MV_ns2cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.lo*x2 - MC2.Intv.hi*MC1.Intv.lo
+mul_MV_ns3cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
+
+tol_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
+function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, z::Interval{Float64}, cnst::Bool) where N
+
+	flag = true
+	alph1 = 0.0
+	alph2 = 1.0
+
+	# convex calculation
+    k = (x2.Intv.hi - x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
+    z = (x1.Intv.hi*x2.Intv.hi - x1.Intv.lo*x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
+
+ 	x1vta = mid3v(x1.cv, x1.cc, (x2.cv - z)/k)
+ 	x1vtb = mid3v(x1.cv, x1.cc, (x2.cc - z)/k)
+ 	x2vta = mid3v(x2.cv, x2.cc, k*x1.cv + z)
+ 	x2vtb = mid3v(x2.cv ,x2.cc, k*x1.cc + z)
+
+    x1vt = (x1.cv, x1.cc, x1vta, x1vtb, x1.cv, x1.cc)
+    x2vt = (x2vta, x2vtb, x2.cv, x2.cc, x2.cv, x2.cc)
+
+	vt = mul_MV_ns3cv.(x1vt, x2vt, x1, x2)
+    cv, cvi = findmin(vt)
+
+ 	if tol_MC(mul_MV_ns1cv(x1vt[cvi], x2vt[cvi], x1, x2), mul_MV_ns2cv(x1vt[cvi], x2vt[cvi], x1, x2))
+
+		MC1thin = tol_MC(x1.cv, x1.cc)
+ 		if ~MC1thin && (x1vt[cvi] > x1.cv) && ~tol_MC(x1vt[cvi], x1.cv)
+ 			alph2 = min(alph2, -x2.Intv.lo/diam(x2))
+ 		end
+
+ 		if ~MC1thin && (x1vt[cvi] < x1.cc) && ~tol_MC(x1vt[cvi], x1.cc)
+			alph1 = max(alph1, -x2.Intv.lo/diam(x2))
+		end
+
+		MC2thin = tol_MC(x2.cv, x2.cc)
+		if ~MC2thin && (x2vt[cvi] > x2.cv) && ~tol_MC(x2vt[cvi],x2.cv)
+			alph2 = min(alph2, -x1.Intv.lo/diam(x1))
+		end
+		if ~MC2thin && (x2vt[cvi] < x2.cc) && ~tol_MC(x2vt[cvi],x2.cc)
+			alph1 = max(alph1, -x1.Intv.lo/diam(x1))
+		end
+
+		alphthin = tol_MC(alph1, alph2)
+		if (~alphthin && (alph1 > alph2))
+			flag = false
+			return flag, x1
+		end
+		myalph = (alph1 + alph2)/2.0
+	elseif mul_MV_ns1cv(x1vt[cvi], x2vt[cvi], x1,x2) > mul_MV_ns2cv(x1vt[cvi], x2vt[cvi], x1, x2)
+		myalph = 1.0
+	else
+		myalph = 0.0
+	end
+
+	sigma1 = x2.Intv.lo + myalph*diam(x2)
+	sigma2 = x1.Intv.lo + myalph*diam(x1)
+	cv_grad1 = (sigma1 > 0.0) ? x1.cv_grad :  x1.cc_grad
+	cv_grad2 = (sigma2 > 0.0) ? x2.cv_grad :  x2.cc_grad
+
+	if x1.cnst
+		cv_grad = sigma2*cv_grad2
+	elseif x2.cnst
+		cv_grad = sigma1*cv_grad1
+	else
+		cv_grad = sigma1*cv_grad1 + sigma2*cv_grad2
+	end
+
+	 # concave calculation
+	 z = (x1.Intv.hi*x2.Intv.lo - x1.Intv.lo*x2.Intv.hi)/(x1.Intv.hi - x1.Intv.lo)
+	 x1vta = mid3v(x1.cv, x1.cc, (x2.cv - z)/k)
+	 x1vtb = mid3v(x1.cv, x1.cc,(x2.cc - z)/k)
+	 x2vta = mid3v(x2.cv, x2.cc, k*x1.cv + z)
+	 x2vtb = mid3v(x2.cv, x2.cc, k*x1.cc + z)
+
+	 x1vt = (x1.cv, x1.cc, x1vta, x1vtb, x1.cv, x1.cc)
+	 x2vt = (x2vta, x2vtb, x2.cv, x2.cc, x2.cc, x2.cv)
+	 vt = mul_MV_ns3cc.(x1vt, x2vt, x1, x2)
+	 cc, cci = findmax(vt)
+
+	 if tol_MC(mul_MV_ns1cc(x1vt[cci],x2vt[cci],x1,x2), mul_MV_ns2cc(x1vt[cci],x2vt[cci],x1,x2))
+
+		 MC1thin = tol_MC(x1.cv,x1.cc)
+		 if ~MC1thin && (x1vt[cci] > x1.cv) && ~tol_MC(x1vt[cci], x1.cv)
+		 	alph1 = max(alph1, -x2.Intv.lo/diam(x2))
+		 end
+		 if ~MC1thin && (x1vt[cci] < x1.cc) && ~tol_MC(x1vt[cci],x1.cc)
+		 	alph2 = min(alph2, -x2.Intv.lo/diam(x2))
+		 end
+
+		 MC2thin = tol_MC(x2.cv, x2.cc)
+		 if ~MC2thin && (x2vt[cci] > x2.cv) && ~tol_MC(x2vt[cci], x2.cv)
+		 	alph2 = min(alph2, x1.Intv.hi/diam(x1))
+		 end
+		 if ~MC2thin && (x2vt[cci] < x2.cc) && ~tol_MC(x2vt[cci], x2.cc)
+		 	alph1 = max(alph1, x1.Intv.hi/diam(x1))
+		 end
+
+        alphthin = tol_MC(alph1, alph2)
+		if (~alphthin && (alph1 > alph2))
+			flag = false
+			return flag, x1
+		end
+	 	myalph = (alph1 + alph2)/2.0
+	elseif (mul_MV_ns1cv(x1vt[cci], x2vt[cci], x1, x2) > mul_MV_ns2cv(x1vt[cci], x2vt[cci], x1, x2))
+	 	myalph = 1.0
+	else
+		myalph = 0.0
+	end
+
+	sigma1 = x2.Intv.lo + myalph*diam(x2)
+	sigma2 = x1.Intv.hi - myalph*diam(x1)
+	cc_grad1 = (sigma1 > 0.0) ? x1.cc_grad :  x1.cv_grad
+	cc_grad2 = (sigma2 > 0.0) ? x2.cc_grad :  x2.cv_grad
+
+	if x1.cnst
+		cc_grad = sigma2*cc_grad2
+	elseif x2.cnst
+		cc_grad = sigma1*cc_grad1
+	else
+		cc_grad = sigma1*cc_grad1 + sigma2*cc_grad2
+	end
+
+    return flag, MC{N,MV}(cv, cc, z, cv_grad, cc_grad, cnst)
+end
+
 function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 	degen1 = (x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL
 	degen2 = (x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL
 	if degen1 || degen2
 		multiply_STD_NS(x1, x2)
 	end
-	return multiply_MV_NS(x1, x2, x1.cnst && x2.cnst)
+	flag, x3 = multiply_MV_NS(x1, x2, y, x1.cnst && x2.cnst)
+	flag && (return x3)
+	return multiply_STD_NS(x1, x2)
 end
 
-function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
-	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
-	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
-	(degen1 || degen2) && error("Degenerate interval encountered. Rounding issues
-	                             with differential McCormick relaxations expected.")
-	return multiply_MV(x1, x2, y)
-end
+#
 *(x1::MC{N,T}, x2::MC{N,T}) where {N, T<:Union{NS,MV}} = mult_kernel(x1, x2, x1.Intv*x2.Intv)
-
 function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) == 0.0)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) == 0.0)
