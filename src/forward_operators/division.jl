@@ -20,25 +20,23 @@ function div_nuline(x::Interval{Float64}, y::Interval{Float64}, z::T) where T <:
     return y.lo + (y.hi - y.lo)*(z - x.lo)/(x.hi - x.lo)
 end
 
-function mid3(x::T, y::T, z::T) where T<:Real
-  (((x>=y)&&(y>=z))||((z>=y)&&(y>=x))) && (return y,2)
-  (((y>=x)&&(x>=z))||((z>=x)&&(x>=y))) && (return x,1)
-  return z,3
+function mid3v(x::T, y::T, z::T) where T <: Number
+    (z <= x) && (return x)
+    (y <= z) && (return y)
+    return z
 end
 
-struct DiffMCTag end
-
 function div_diffcv(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
-    dualx_cv = Dual{DiffMCTag}(x.cv, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
-    dualy_cv = Dual{DiffMCTag}(y.cv, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
-    dualy_cc = Dual{DiffMCTag}(y.cc, Partials{N,Float64}(NTuple{N,Float64}(y.cc_grad)))
+    dualx_cv = Dual{Nothing}(x.cv, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
+    dualy_cv = Dual{Nothing}(y.cv, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
+    dualy_cc = Dual{Nothing}(y.cc, Partials{N,Float64}(NTuple{N,Float64}(y.cc_grad)))
     nu_bar = div_nuline(x.Intv, y.Intv, dualx_cv)
     if (0.0 <= x.Intv.lo)
         dual_div = div_lambdaxy(dualx_cv, dualy_cc, x.Intv)
     elseif (x.Intv.lo < 0.0) && (nu_bar <= dualy_cv)
         dual_div = div_alphaxy(dualx_cv, dualy_cv, x.Intv, y.Intv)
     elseif (x.Intv.lo < 0.0) && (nu_bar > dualy_cv)
-        dual_div = div_psixy(dualx_cv, mid(dualy_cv, dualy_cc, nu_bar - (y.Intv.hi - y.Intv.lo)*div_omegaxy(x.Intv, y.Intv)),
+        dual_div = div_psixy(dualx_cv, mid3v(dualy_cv, dualy_cc, nu_bar - (y.Intv.hi - y.Intv.lo)*div_omegaxy(x.Intv, y.Intv)),
                          x.Intv, y.Intv)
     end
     val, grad = dual_div.value, SVector{N,Float64}(dual_div.partials)
