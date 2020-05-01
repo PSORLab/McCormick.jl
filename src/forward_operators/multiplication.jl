@@ -461,23 +461,23 @@ function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
 end
 
 # Nonsmooth multivariate multiplication kernel definition
-mul_MV_ns1cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.hi*x2 - MC2.Intv.hi*MC1.Intv.hi
-mul_MV_ns2cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.lo*x2 - MC2.Intv.lo*MC1.Intv.lo
-mul_MV_ns3cv(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2), mul_MV_ns2cv(x1,x2,MC1,MC2))
-mul_MV_ns1cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.hi*x2 - MC2.Intv.lo*MC1.Intv.hi
-mul_MV_ns2cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.lo*x2 - MC2.Intv.hi*MC1.Intv.lo
-mul_MV_ns3cc(x1::Float64 ,x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
+mul_MV_ns1cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.hi*x2 - MC2.Intv.hi*MC1.Intv.hi
+mul_MV_ns2cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.lo*x2 - MC2.Intv.lo*MC1.Intv.lo
+mul_MV_ns3cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2), mul_MV_ns2cv(x1,x2,MC1,MC2))
+
+mul_MV_ns1cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.hi*x2 - MC2.Intv.lo*MC1.Intv.hi
+mul_MV_ns2cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.lo*x2 - MC2.Intv.hi*MC1.Intv.lo
+mul_MV_ns3cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
 
 tol_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
+
 function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cnst::Bool) where N
 
 	flag = true
-	alph1 = 0.0
-	alph2 = 1.0
 
 	# convex calculation
-    k = (x2.Intv.hi - x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
-    z = (x1.Intv.hi*x2.Intv.hi - x1.Intv.lo*x2.Intv.lo)/(x1.Intv.hi - x1.Intv.lo)
+    k = -diam(x2)/diam(x1)
+    z = (x1.Intv.hi*x2.Intv.hi - x1.Intv.lo*x2.Intv.lo)/diam(x1)
 
  	x1vta = mid3v(x1.cv, x1.cc, (x2.cv - z)/k)
  	x1vtb = mid3v(x1.cv, x1.cc, (x2.cc - z)/k)
@@ -492,6 +492,9 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 
  	if tol_MC(mul_MV_ns1cv(x1vt[cvi], x2vt[cvi], x1, x2), mul_MV_ns2cv(x1vt[cvi], x2vt[cvi], x1, x2))
 
+		alph1 = 0.0
+		alph2 = 1.0
+
 		MC1thin = tol_MC(x1.cv, x1.cc)
  		if ~MC1thin && (x1vt[cvi] > x1.cv) && ~tol_MC(x1vt[cvi], x1.cv)
  			alph2 = min(alph2, -x2.Intv.lo/diam(x2))
@@ -502,10 +505,10 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 		end
 
 		MC2thin = tol_MC(x2.cv, x2.cc)
-		if ~MC2thin && (x2vt[cvi] > x2.cv) && ~tol_MC(x2vt[cvi],x2.cv)
+		if ~MC2thin && (x2vt[cvi] > x2.cv) && ~tol_MC(x2vt[cvi], x2.cv)
 			alph2 = min(alph2, -x1.Intv.lo/diam(x1))
 		end
-		if ~MC2thin && (x2vt[cvi] < x2.cc) && ~tol_MC(x2vt[cvi],x2.cc)
+		if ~MC2thin && (x2vt[cvi] < x2.cc) && ~tol_MC(x2vt[cvi], x2.cc)
 			alph1 = max(alph1, -x1.Intv.lo/diam(x1))
 		end
 
@@ -523,8 +526,8 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 
 	sigma1 = x2.Intv.lo + myalph*diam(x2)
 	sigma2 = x1.Intv.lo + myalph*diam(x1)
-	cv_grad1 = (sigma1 > 0.0) ? x1.cv_grad :  x1.cc_grad
-	cv_grad2 = (sigma2 > 0.0) ? x2.cv_grad :  x2.cc_grad
+	cv_grad1 = (sigma1 > 0.0) ? x1.cv_grad : x1.cc_grad
+	cv_grad2 = (sigma2 > 0.0) ? x2.cv_grad : x2.cc_grad
 
 	if x1.cnst
 		cv_grad = sigma2*cv_grad2
@@ -535,9 +538,11 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 	end
 
 	 # concave calculation
-	 z = (x1.Intv.hi*x2.Intv.lo - x1.Intv.lo*x2.Intv.hi)/(x1.Intv.hi - x1.Intv.lo)
+	 k = diam(x2)/diam(x1)
+	 z = (x1.Intv.hi*x2.Intv.lo - x1.Intv.lo*x2.Intv.hi)/diam(x1)
+
 	 x1vta = mid3v(x1.cv, x1.cc, (x2.cv - z)/k)
-	 x1vtb = mid3v(x1.cv, x1.cc,(x2.cc - z)/k)
+	 x1vtb = mid3v(x1.cv, x1.cc, (x2.cc - z)/k)
 	 x2vta = mid3v(x2.cv, x2.cc, k*x1.cv + z)
 	 x2vtb = mid3v(x2.cv, x2.cc, k*x1.cc + z)
 
@@ -546,13 +551,16 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 	 vt = mul_MV_ns3cc.(x1vt, x2vt, x1, x2)
 	 cc, cci = findmax(vt)
 
-	 if tol_MC(mul_MV_ns1cc(x1vt[cci],x2vt[cci],x1,x2), mul_MV_ns2cc(x1vt[cci],x2vt[cci],x1,x2))
+	 if tol_MC(mul_MV_ns1cc(x1vt[cci], x2vt[cci], x1, x2), mul_MV_ns2cc(x1vt[cci], x2vt[cci], x1, x2))
 
-		 MC1thin = tol_MC(x1.cv,x1.cc)
+		alph1 = 0.0
+	 	alph2 = 1.0
+
+		 MC1thin = tol_MC(x1.cv, x1.cc)
 		 if ~MC1thin && (x1vt[cci] > x1.cv) && ~tol_MC(x1vt[cci], x1.cv)
 		 	alph1 = max(alph1, -x2.Intv.lo/diam(x2))
 		 end
-		 if ~MC1thin && (x1vt[cci] < x1.cc) && ~tol_MC(x1vt[cci],x1.cc)
+		 if ~MC1thin && (x1vt[cci] < x1.cc) && ~tol_MC(x1vt[cci], x1.cc)
 		 	alph2 = min(alph2, -x2.Intv.lo/diam(x2))
 		 end
 
@@ -570,7 +578,7 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
 			return flag, x1
 		end
 	 	myalph = (alph1 + alph2)/2.0
-	elseif (mul_MV_ns1cv(x1vt[cci], x2vt[cci], x1, x2) > mul_MV_ns2cv(x1vt[cci], x2vt[cci], x1, x2))
+	elseif (mul_MV_ns1cc(x1vt[cci], x2vt[cci], x1, x2) > mul_MV_ns2cc(x1vt[cci], x2vt[cci], x1, x2))
 	 	myalph = 1.0
 	else
 		myalph = 0.0
@@ -599,8 +607,8 @@ function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 		multiply_STD_NS(x1, x2)
 	end
 	flag, x3 = multiply_MV_NS(x1, x2, y, x1.cnst && x2.cnst)
-	flag && (return x3)
-	return multiply_STD_NS(x1, x2)
+	~flag && error("Numerical error in multivariate relaxation.")
+	return x3
 end
 
 #
