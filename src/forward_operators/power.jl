@@ -1,3 +1,17 @@
+# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# This work is licensed under the Creative Commons Attribution-NonCommercial-
+# ShareAlike 4.0 International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+#############################################################################
+# McCormick.jl
+# A McCormick operator library in Julia
+# See https://github.com/PSORLab/McCormick.jl
+#############################################################################
+# src/forward_operators/power.jl
+# Contains definitions of inv and ^.
+#############################################################################
+
 # defines square operator
 sqr(x::Float64) = x*x
 function cv_sqr_NS(x::Float64, xL::Float64, xU::Float64)
@@ -335,13 +349,13 @@ end
 (^)(x::MC, c::Float32, y::Interval{Float64}) = (^)(x, Float64(c), y)
 (^)(x::MC, c::Float16, y::Interval{Float64}) = (^)(x, Float64(c), y)
 (^)(x::MC, c::Float64) = (^)(x, c, x.Intv^c)
-(^)(x::MC, c::Float32) = x^Float64(c) # DONE
-(^)(x::MC, c::Float16) = x^Float64(c) # DONE
-(^)(x::MC, c::MC) = exp(c*log(x)) # DONE (no kernel)
+(^)(x::MC, c::Float32) = x^Float64(c)
+(^)(x::MC, c::Float16) = x^Float64(c)
+(^)(x::MC, c::MC) = exp(c*log(x))
 pow(x::MC, c::F) where {F <: AbstractFloat} = x^c
 
 # Define powers to MC of floating point number
-function pow(b::Float64, x::MC) # DONE (no kernel)
+function pow(b::Float64, x::MC)
 	(b <= 0.0) && error("Relaxations of b^x where b<=0 not currently defined in library.
 		                 Functions of this type may prevent convergences in global
 			             optimization algorithm as they may be discontinuous.")

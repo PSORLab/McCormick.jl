@@ -1,4 +1,19 @@
+# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# This work is licensed under the Creative Commons Attribution-NonCommercial-
+# ShareAlike 4.0 International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+#############################################################################
+# McCormick.jl
+# A McCormick operator library in Julia
+# See https://github.com/PSORLab/McCormick.jl
+#############################################################################
+# src/forward_operators/arithmetic.jl
+# Contains definitions of +, -, /, *, promotions, conversion, one, zero.
+#############################################################################
+
 # Defines functions required for linear algebra packages
+@inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN), fill(NaN, SVector{N,Float64}), fill(NaN, SVector{N,Float64}), true)
 @inline one(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
 @inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
 @inline zero(x::MC{N,T}) where {N, T <: RelaxTag} = zero(MC{N,T})
@@ -23,7 +38,6 @@ end
 @inline -(x::MC{N,T}, y::MC{N,T}) where {N, T <: RelaxTag} = minus_kernel(x, y, x.Intv - y.Intv)
 
 ################## CONVERT THROUGH BINARY DEFINITIONS #########################
-
 # Addition
 @inline function plus_kernel(x::MC{N,T}, y::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
 	MC{N,T}(x.cv + y, x.cc + y, z, x.cv_grad, x.cc_grad, x.cnst)
@@ -135,7 +149,6 @@ end
 # Promote and Convert
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Integer, N, T <: RelaxTag} = MC{N,T}
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:AbstractFloat, N, T <: RelaxTag} = MC{N,T}
-#promote_rule(::Type{MC{N,T}}, ::Type{Interval{Float64}}) where {N, T <: RelaxTag} = MC{N,T}
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Real, N, T <: RelaxTag} = MC{N,T}
 
 convert(::Type{MC{N,T}}, x::S) where {S<:Integer, N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(x))

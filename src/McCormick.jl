@@ -1,3 +1,17 @@
+# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# This work is licensed under the Creative Commons Attribution-NonCommercial-
+# ShareAlike 4.0 International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+#############################################################################
+# McCormick.jl
+# A McCormick operator library in Julia
+# See https://github.com/PSORLab/McCormick.jl
+#############################################################################
+# src/McCormick.jl
+# Main file for McCormick.jl. Contains constructors and helper functions.
+#############################################################################
+
 __precompile__()
 
 module McCormick
@@ -36,7 +50,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        abs, step, sign, pow, in, isempty, intersect, length, mid3,
        acos, asin, atan, sinh, cosh, tanh, asinh, atanh, inv, sqr, sech,
        csch, coth, acsch, acoth, asech, rad2deg, deg2rad, diam,
-       sind, cosd, tand, asind, acosd, atand,
+       sind, cosd, tand, asind, acosd, atand, nan,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC
@@ -290,8 +304,7 @@ Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Interval{Float64}(cv,cc),
-            zero(SVector{N,Float64}),
+    MC{N,T}(cv, cc, Interval{Float64}(cv,cc),zero(SVector{N,Float64}),
             zero(SVector{N,Float64}), true)
 end
 
@@ -302,9 +315,7 @@ Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64}) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Intv,
-            zero(SVector{N,Float64}),
-            zero(SVector{N,Float64}), true)
+    MC{N,T}(cv, cc, Intv, zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
 end
 
 """

@@ -10,6 +10,9 @@
    @test McCormick.cnst(x_exp) == x_exp.cnst
    @test McCormick.length(x_exp) == length(x_exp.cc_grad)
 
+   nanMC = nan(x_exp)
+   @test isnan(nanMC.cv) && isnan(nanMC.cc)
+
    @test MC{2,NS}(1.0) == MC{2,NS}(Interval{Float64}(1.0))
    @test MC{2,NS}(pi) == MC{2,NS}(Interval{Float64}(pi))
 
@@ -489,6 +492,26 @@ end
    mctol = 1E-4
 
    x = MC{2,NS}(4.5, 4.5, Interval{Float64}(-3.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   x1 = x + Interval(1.0,2.0); @test x1.cv == 5.5 ; @test x1.cc == 6.5
+   x2 = Interval(1.0, 2.0) + x; @test x2.cv == 5.5 ; @test x2.cc == 6.5
+
+   x1 = x - Interval(1.0, 2.0); @test x1.cv == 2.5 ; @test x1.cc == 3.5
+   x2 = Interval(1.0, 2.0) - x; @test x2.cv == -3.5 ; @test x2.cc == -2.5
+
+   x1 = min(x, Interval(1.0, 2.0)); @test isapprox(x1.cv, -0.4583333333333335, atol=1E-6) ; @test x1.cc == 2.0
+   x2 = min(Interval(1.0, 2.0), x); @test isapprox(x2.cv, -0.4583333333333335, atol=1E-6) ; @test x2.cc == 2.0
+
+   x1 = max(x, Interval(1.0, 2.0)); @test x1.cv == 4.5 ; @test isapprox(x1.cc, 6.458333333333334, atol=1E-6)
+   x2 = max(Interval(1.0, 2.0), x); @test x2.cv == 4.5 ; @test isapprox(x2.cc, 6.458333333333334, atol=1E-6)
+
+   x1 = x/Interval(1.0, 2.0); @test x1.cv == 0.75 ; @test x1.cc == 6.0
+   x2 = Interval(1.0, 2.0)/(x+10.0)
+   @test isapprox(x2.cv, 0.06896551724137931, atol=1E-6)
+   @test isapprox(x2.cc, 0.16666666666666669, atol=1E-6)
+
+   x1 = x*Interval(1.0, 2.0); @test x1.cv == 1.5 ; @test x1.cc == 12.0
+   x2 = Interval(1.0, 2.0)*x; @test x2.cv == 1.5 ; @test x2.cc == 12.0
 
    x1 = x + 2.1; @test x1.cv == x1.cc == 6.6
    x2 = 2.3 + x; @test x2.cv == x2.cc == 6.8

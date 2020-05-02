@@ -1,3 +1,17 @@
+# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# This work is licensed under the Creative Commons Attribution-NonCommercial-
+# ShareAlike 4.0 International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+#############################################################################
+# McCormick.jl
+# A McCormick operator library in Julia
+# See https://github.com/PSORLab/McCormick.jl
+#############################################################################
+# src/forward_operators/other.jl
+# Defines isempty, empty, isnan, step, sign, abs, intersect, in.
+#############################################################################
+
 empty(x::MC{N,T}) where {N,T <: RelaxTag} = MC{N,T}(Inf, -Inf, Interval{Float64}(Inf,-Inf),
                                                   SVector{N,Float64}(zeros(Float64,N)),
                                                   SVector{N,Float64}(zeros(Float64,N)), false)
@@ -170,8 +184,8 @@ end
     return MC{N, T}(cv, cc, intersect(x.Intv,y), cv_grad, cc_grad, (x.cnst))
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
-     max_MC = x - max(x - y, 0.0)   # used for convex
-     min_MC = y - max(y - x, 0.0)   # used for concave
+     max_MC = x - max(x - y, 0.0)
+     min_MC = y - max(y - x, 0.0)
      return MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv,y),
 	                    max_MC.cv_grad, min_MC.cc_grad, x.cnst)
 end

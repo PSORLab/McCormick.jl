@@ -8,7 +8,7 @@
 # A McCormick operator library in Julia
 # See https://github.com/PSORLab/McCormick.jl
 #############################################################################
-# src/forward_operators/benchmarks.jl
+# src/forward_operators/extrema.jl
 # Defines univariate and bivariate max and min operators.
 #############################################################################
 
