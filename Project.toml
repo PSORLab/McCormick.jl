@@ -1,7 +1,7 @@
 name = "McCormick"
 uuid = "53c679d3-6890-5091-8386-c291e8c8aaa1"
 authors = ["Matthew Wilhelm <matthew.wilhelm@uconn.edu>"]
-version = "0.3.2"
+version = "0.4.0"
 
 [deps]
 DiffRules = "b552c78f-8df3-52c6-915a-8e097449b14b"
