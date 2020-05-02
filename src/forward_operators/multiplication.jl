@@ -13,14 +13,14 @@
 #############################################################################
 
 # Differentiable multiplication kernel definition
-function sigu(y::Float64)
+@inline function sigu(y::Float64)
 	x = y/MC_DIFF_MU1T
 	(0.0 <= x) ? x^(1.0/MC_DIFF_MU1T) : -abs(x)^(1.0/MC_DIFF_MU1T)
 end
-abs_pu(x::Float64) = abs(x)^MC_DIFF_MU1T
-psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
+@inline abs_pu(x::Float64) = abs(x)^MC_DIFF_MU1T
+@inline psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
 
-function gCxAcv(alpha::Interval{Float64}, beta::Interval{Float64},
+@inline function gCxAcv(alpha::Interval{Float64}, beta::Interval{Float64},
 	            lambda::Interval{Float64}, nu::Interval{Float64}, x1::MC, x2::MC)
 
 	# gCxA pre-terms
@@ -82,7 +82,7 @@ function gCxAcv(alpha::Interval{Float64}, beta::Interval{Float64},
     return cv, cv_grad
 end
 
-function gCxAcc(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
+@inline function gCxAcc(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
 	            nu::Interval{Float64},x1::MC,x2::MC)
 
 	# gCxA pre-terms
@@ -144,7 +144,7 @@ function gCxAcc(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interva
     return ncc, ncc_grad
 end
 
-function gCxAIntv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
+@inline function gCxAIntv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
 	              nu::Interval{Float64},x1::MC,x2::MC)
 
 	# gCxA pre-terms
@@ -184,7 +184,7 @@ function gCxAIntv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Inter
 	return min(tempGxA1, tempGxA2, tempGxA3, tempGxA4)
 end
 
-function multiply_MV(x1::MC{N,Diff}, x2::MC{N,Diff}, z::Interval{Float64}) where {N}
+@inline function multiply_MV(x1::MC{N,Diff}, x2::MC{N,Diff}, z::Interval{Float64}) where {N}
 
 	x1cv = x1.cv
 	x2cv = x2.cv
@@ -254,7 +254,7 @@ function multiply_MV(x1::MC{N,Diff}, x2::MC{N,Diff}, z::Interval{Float64}) where
 	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 
-function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
+@inline function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
 	(degen1 || degen2) && (return nan(MC{N,Diff}))
@@ -262,7 +262,7 @@ function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where
 end
 
 # Nonsmooth multiplication kernel definition
-function mul1_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
+@inline function mul1_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
     xLc = z.lo
     xUc = z.hi
   	cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
@@ -287,7 +287,7 @@ function mul1_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::
   	cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
   	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul1_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
+@inline function mul1_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
   xLc = z.lo
   xUc = z.hi
   cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
@@ -312,7 +312,7 @@ function mul1_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::
   cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
   return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul1_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
+@inline function mul1_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
   xLc = z.lo
   xUc = z.hi
   cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
@@ -338,7 +338,7 @@ function mul1_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::
   cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
   return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul2_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
+@inline function mul2_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
 	xLc = z.lo
 	xUc = z.hi
 	cnst = x2.cnst ? x1.cnst : (x1.cnst ? x2.cnst : x1.cnst || x2.cnst)
@@ -363,7 +363,7 @@ function mul2_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where 
 	cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
 	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul2_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
+@inline function mul2_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
   xLc = z.lo
   xUc = z.hi
   cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
@@ -387,7 +387,7 @@ function mul2_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::
   cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
   return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul2_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
+@inline function mul2_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
 	xLc = z.lo
 	xUc = z.hi
   	cnst = x2.cnst ? x1.cnst : (x1.cnst ? x2.cnst : x1.cnst || x2.cnst)
@@ -412,7 +412,7 @@ function mul2_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where 
 	cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
 	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
-function mul3_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
+@inline function mul3_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
 	xLc = z.lo
 	xUc = z.hi
     cnst = x2.cnst ? x1.cnst : (x1.cnst ? x2.cnst : x1.cnst || x2.cnst)
@@ -438,7 +438,7 @@ function mul3_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where 
 	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 
-function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
+@inline function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
 	if x2.Intv.lo >= 0.0
     	x2.cnst && (return mul1_u1pos_u2pos(x1, x2, y, x1.cnst))
     	x1.cnst && (return mul1_u1pos_u2pos(x2, x1, y, x2.cnst))
@@ -452,7 +452,7 @@ function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
 	mul3_u1pos_u2mix(x1, x2, y)
 end
 
-function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
+@inline function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
 	isone(x1) && (return x2)
 	isone(x2) && (return x1)
 	if (x1.Intv.lo >= 0.0)
@@ -473,17 +473,17 @@ function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
 end
 
 # Nonsmooth multivariate multiplication kernel definition
-mul_MV_ns1cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.hi*x2 - MC2.Intv.hi*MC1.Intv.hi
-mul_MV_ns2cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.lo*x2 - MC2.Intv.lo*MC1.Intv.lo
-mul_MV_ns3cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2), mul_MV_ns2cv(x1,x2,MC1,MC2))
+@inline mul_MV_ns1cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.hi*x2 - MC2.Intv.hi*MC1.Intv.hi
+@inline mul_MV_ns2cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.lo*x2 - MC2.Intv.lo*MC1.Intv.lo
+@inline mul_MV_ns3cv(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = max(mul_MV_ns1cv(x1,x2,MC1,MC2), mul_MV_ns2cv(x1,x2,MC1,MC2))
 
-mul_MV_ns1cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.hi*x2 - MC2.Intv.lo*MC1.Intv.hi
-mul_MV_ns2cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.lo*x2 - MC2.Intv.hi*MC1.Intv.lo
-mul_MV_ns3cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
+@inline mul_MV_ns1cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.lo*x1 + MC1.Intv.hi*x2 - MC2.Intv.lo*MC1.Intv.hi
+@inline mul_MV_ns2cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = MC2.Intv.hi*x1 + MC1.Intv.lo*x2 - MC2.Intv.hi*MC1.Intv.lo
+@inline mul_MV_ns3cc(x1::Float64, x2::Float64, MC1::MC, MC2::MC) = min(mul_MV_ns1cc(x1,x2,MC1,MC2), mul_MV_ns2cc(x1,x2,MC1,MC2))
 
-tol_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
+@inline tol_MC(x::Float64, y::Float64) = abs(x-y) <= (MC_MV_TOL + MC_MV_TOL*0.5*abs(x+y))
 
-function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cnst::Bool) where N
+@inline function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cnst::Bool) where N
 
 	flag = true
 
@@ -612,7 +612,7 @@ function multiply_MV_NS(x1::MC{N,MV}, x2::MC{N,MV}, zIntv::Interval{Float64}, cn
     return flag, MC{N,MV}(cv, cc, zIntv, cv_grad, cc_grad, cnst)
 end
 
-function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
+@inline function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 	degen1 = (x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL
 	degen2 = (x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL
 	if degen1 || degen2
@@ -624,8 +624,8 @@ function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 end
 
 #
-*(x1::MC{N,T}, x2::MC{N,T}) where {N, T<:Union{NS,MV}} = mult_kernel(x1, x2, x1.Intv*x2.Intv)
-function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
+@inline *(x1::MC{N,T}, x2::MC{N,T}) where {N, T<:Union{NS,MV}} = mult_kernel(x1, x2, x1.Intv*x2.Intv)
+@inline function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) == 0.0)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) == 0.0)
 	if ~(degen1 || degen2)

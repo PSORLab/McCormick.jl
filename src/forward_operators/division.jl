@@ -24,7 +24,7 @@ end
 @inline function div_psixy(es::T, nu::T, x::Interval{Float64}, y::Interval{Float64}) where T <: Real
     return div_alphaxy(es, nu, x, y) + div_deltaxy(((es - x.lo)/(x.hi - x.lo))-((nu - y.lo)/(y.hi - y.lo)), x, y)
 end
-@inline function div_omegaxy(x::Interval{Float64}, y::Interval{Float64}) where T <: Real
+@inline function div_omegaxy(x::Interval{Float64}, y::Interval{Float64})
     return (y.hi/(y.hi-y.lo))*(1.0 - sqrt((y.lo*(x.hi-x.lo))/((-x.lo)*(y.hi-y.lo)+(y.lo)*(x.hi-x.lo))))
 end
 @inline function div_lambdaxy(es::T, nu::T, x::Interval{Float64}) where T <: Real
@@ -53,7 +53,8 @@ end
         dual_div = div_psixy(dualx_cv, mid3v(dualy_cv, dualy_cc, nu_bar - (y.Intv.hi - y.Intv.lo)*div_omegaxy(x.Intv, y.Intv)),
                          x.Intv, y.Intv)
     end
-    val, grad = dual_div.value, SVector{N,Float64}(dual_div.partials)
+    val = dual_div.value
+    grad = SVector{N,Float64}(dual_div.partials)
     return val, grad
 end
 
@@ -68,9 +69,9 @@ end
     return MC{N,Diff}(cv, -cc, z, cv_grad, -cc_grad, x.cnst && y.cnst)
 end
 
-@inline function div_kernel(x::MC{N,NS}, y::MC{N,NS}, z::Interval{Float64}) where N
+@inline function div_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T <: Union{NS,MV}}
     if (x === y)
-        zMC = one(MC{N,NS})
+        zMC = one(MC{N,T})
     else
         zMC = mult_kernel(x, inv(y), z)
     end
