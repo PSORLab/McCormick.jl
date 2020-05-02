@@ -26,17 +26,15 @@
          xU1 = min(xU+2.0*pi*kL,pi)
          if (xL1 >= -pi/2) && (xU1 <= pi/2)
              r = (abs(xL - xU) < MC_ENV_TOL) ? 0.0 : (cos(xU) - cos(xL))/(xU - xL)
-             return cos(xL)+r*(x - xL), r, tp1, tp2
+             return cos(xL) + r*(x - xL), r, tp1, tp2
          end
          val, dval, tp1 = cv_cosin(x + (2.0*pi)*kL, xL1, xU1, tp1)
          return val, dval, tp1, tp2
      end
-     kU = Base.floor((0.5 - xU/(2.0*pi)))
+     kU = Base.floor(0.5 - xU/(2.0*pi))
      if (x >= -pi - 2.0*pi*kU)
          xU2 = xU + 2.0*pi*kU
-         if xU2 <= -pi/2.0
-             return cos(x), -sin(x), tp1, tp2
-         end
+         (xU2 <= -pi/2.0) && (return cos(x), -sin(x), tp1, tp2)
          val, dval, tp2 = cv_cosin(x + 2.0*pi*kU, max(xL + 2.0*pi*kU, -pi), xU2, tp2)
          return val, dval, tp1, tp2
      end

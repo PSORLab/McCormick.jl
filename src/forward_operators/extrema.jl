@@ -156,7 +156,7 @@ end
             cc_grad = (maxUU - maxLU)*x.cc_grad + (maxUU - maxUL)*y.cc_grad
         end
     end
-    cv = max(x.cv,y.cv)
+    cv = max(x.cv, y.cv)
     cv_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
                               (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
     cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
@@ -171,7 +171,7 @@ end
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
-        ccMC = (x + y + abs(x-y))/2.0
+        ccMC = (x + y + abs(x - y))/2.0
         cc = ccMC.cc
         cc_grad = ccMC.cc_grad
     end
@@ -184,4 +184,4 @@ end
 
 @inline max(x::MC, y::MC) = max_kernel(x, y, max(x.Intv, y.Intv))
 @inline min_kernel(x::MC, y::MC, z::Interval{Float64}) = -max(-x,-y)
-@inline min(x::MC,y::MC) = -max(-x,-y)
+@inline min(x::MC, y::MC) = -max(-x,-y)

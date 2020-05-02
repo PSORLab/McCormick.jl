@@ -16,10 +16,12 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
    opMC_kernel = Symbol(String(opMC)*"_kernel")
    dop = diffrule(:Base, opMC, :midcc)
    MCexp = quote
-              xL = x.Intv.lo
-              xU = x.Intv.hi
               xLc = z.lo
               xUc = z.hi
+              (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,T}))
+              (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,T}))
+              xL = x.Intv.lo
+              xU = x.Intv.hi
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
               dcv = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -32,10 +34,12 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
         end
     dop = diffrule(:Base, opMC, :(x.cv))
     dMCexp = quote
-               xL = x.Intv.lo
-               xU = x.Intv.hi
                xLc = z.lo
                xUc = z.hi
+               (isnan(xLc) || isinf(xLc)) && (return nan(MC{N, Diff}))
+               (isnan(xUc) || isinf(xUc)) && (return nan(MC{N, Diff}))
+               xL = x.Intv.lo
+               xU = x.Intv.hi
                midcc = mid3v(x.cv, x.cc, xU)
                midcv = mid3v(x.cv, x.cc, xL)
                deltaX = (xU - xL)

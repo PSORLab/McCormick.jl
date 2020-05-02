@@ -484,6 +484,9 @@ end
    @test  isapprox(mc9.cc, 12.625732, rtol=1E-4)
    @test  isapprox(mc9.Intv.lo, 1, rtol=1E-4)
    @test isapprox(mc9.Intv.hi, 24.2515, rtol=1E-3)
+
+   a = MC{5,NS}(1.0,(Interval{Float64}(-5.1,5.9)),2)
+   @test isnan(tan(a))
 end
 
 
@@ -980,6 +983,10 @@ end
    out3 = max((y3-1)^2,x3*y3)*min(y3^2,(x3+1)*y3)
    @test isapprox(out3.cv, -40.666666666666664, atol = 1E-6)
    @test isapprox(out3.cc, 27.11111111111111, atol = 1E-6)
+
+   b = MC{5,Diff}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   a = MC{5,Diff}(1.0,(Interval{Float64}(-5.1,5.9)),2)
+   @test isnan(b/a)
 end
 
 @testset "Min/Max" begin
@@ -1138,4 +1145,27 @@ end
    out3 = max((y3-1)^2, x3^2) + min(y3^2, (x3+1)^2)
    @test isapprox(out3.cv, 0.3333333333333333, atol = 1E-6)
    @test isapprox(out3.cc, 10.777777777777779, atol = 1E-6)
+
+   a = MC{5,NS}(1.0,(Interval{Float64}(0.1,0.9)),2)
+   b = MC{5,NS}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = max(a,b)
+   @test m1.cv == 3.0
+   @test m1.cc == 3.0
+
+   a = MC{5,MV}(1.0,(Interval{Float64}(0.1,0.9)),2)
+   b = MC{5,MV}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = max(a,b)
+   @test m1.cv == 3.0
+   @test m1.cc == 3.0
+
+   a = MC{5,MV}(1.0,(Interval{Float64}(0.1,0.9)),2)
+   b = MC{5,MV}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = max(b,a)
+   @test m1.cv == 3.0
+   @test m1.cc == 3.0
+
+   b = MC{5,Diff}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = intersect(b, Interval(1.0,3.0))
+   @test isapprox(m1.cv, 0.7868421052631578, atol=1E-6)
+   @test m1.cc == 3.0
 end

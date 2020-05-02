@@ -62,12 +62,10 @@ end
         cv, cv_grad = div_diffcv(x, y)
         cc, cc_grad = div_diffcv(-x, y)
         return MC{N,Diff}(cv, -cc, z, cv_grad, -cc_grad, x.cnst && y.cnst)
-    elseif (y.Intv.hi < 0.0)
-        cv, cv_grad = div_diffcv(-x, -y)
-        cc, cc_grad = div_diffcv(-x, y)
-        return MC{N,Diff}(cv, -cc, z, cv_grad, -cc_grad, x.cnst && y.cnst)
     end
-    return nan(MC{N,Diff})
+    cv, cv_grad = div_diffcv(-x, -y)
+    cc, cc_grad = div_diffcv(-x, y)
+    return MC{N,Diff}(cv, -cc, z, cv_grad, -cc_grad, x.cnst && y.cnst)
 end
 
 @inline function div_kernel(x::MC{N,NS}, y::MC{N,NS}, z::Interval{Float64}) where N
@@ -83,7 +81,7 @@ end
     degen1 = ((x.Intv.hi - x.Intv.lo) == 0.0)
     degen2 = ((y.Intv.hi - y.Intv.lo) == 0.0)
     if (x === y)
-        zMC = one(x)
+        zMC = one(MC{N,Diff})
     elseif  ~(degen1 || degen2)
         zMC = div_MV(x, y, z)
     else
