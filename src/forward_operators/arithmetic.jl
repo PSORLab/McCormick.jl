@@ -13,10 +13,15 @@
 #############################################################################
 
 # Defines functions required for linear algebra packages
+@inline nan(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN), fill(NaN, SVector{N,Float64}), fill(NaN, SVector{N,Float64}), true)
 @inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN), fill(NaN, SVector{N,Float64}), fill(NaN, SVector{N,Float64}), true)
+
+@inline one(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
 @inline one(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
+
 @inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
 @inline zero(x::MC{N,T}) where {N, T <: RelaxTag} = zero(MC{N,T})
+
 @inline real(x::MC) = x
 @inline dist(x1::MC, x2::MC) = max(abs(x1.cc - x2.cc), abs(x1.cv - x2.cv))
 @inline eps(x::MC) = max(eps(x.cc), eps(x.cv))

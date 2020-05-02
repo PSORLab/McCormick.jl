@@ -107,7 +107,6 @@ function (d::MCCallback)()
     d.hj!(d.J, d.aff_mc, d.p_mc)
     return
 end
-# performance optimized
 
 include("preconditioner/dense.jl")
 
@@ -141,7 +140,6 @@ function affine_exp!(x::S, p::Vector{MC{N,T}}, d::MCCallback) where {S, N, T<:Re
     end
     return
 end
-# affine_exp! currently optimized....
 
 """
 $(FUNCTIONNAME)
@@ -166,7 +164,6 @@ function correct_exp!(d::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Function,
     end
     return
 end
-# correct_exp! currently optimized....
 
 include("contract.jl")
 
@@ -186,7 +183,6 @@ function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}) where {FH
     contract!(callback!.contractor, callback!)
     return
 end
-# precond_and_contract! currently optimized....
 
 """
 $(FUNCTIONNAME)
@@ -208,7 +204,6 @@ function populate_affine!(d::MCCallback{FH,FJ,C,PRE,N,T}, interval_bnds::Bool) w
     end
     return
 end
-# populate_affine! currently optimized....
 
 """
 $(FUNCTIONNAME)
@@ -230,7 +225,7 @@ $(FUNCTIONNAME)
 """
 function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
     populate_affine!(d, interval_bnds)
-    for k=1:d.kmax
+    for k = 1:d.kmax
         affine_exp!(d.param[k], d.p_mc, d)
         precond_and_contract!(d)
     end

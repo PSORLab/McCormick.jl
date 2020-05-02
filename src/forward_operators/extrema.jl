@@ -34,7 +34,7 @@ end
     gcv2,gdcv2 = cv_max(x.cc, x.Intv.lo, x.Intv.hi, c)
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
-    return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst)
+    return MC{N, Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
 @inline function max_kernel(x::MC{N, T}, c::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)

@@ -283,12 +283,9 @@ function pow_kernel(x::MC{N,T}, c::Z, y::Interval{Float64}) where {Z<:Integer,N,
     end
 	return z
 end
-function pow(x::MC{N,T}, c::Z) where {Z<:Integer,N,T<:RelaxTag}
+function pow(x::MC{N,T}, c::Z) where {Z<:Integer, N, T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		error("Domain Error: When computing the relaxations of y^c (c < 0) the
-			   interval bounds of y contained zero. As such the y^c is unbounded
-			   and the relaxations do not exist. This may occur due to the expansiveness
-			   in long calculations. Reformulating the function may remedy this.")
+		return nan(MC{N,T})
 	end
 	return pow_kernel(x, c, pow(x.Intv,c))
 end
@@ -321,12 +318,9 @@ function flt_pow_1(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-function (^)(x::MC{N,T}, c::Float64, y::Interval{Float64})  where {N, T<:Union{NS,MV}}
+function (^)(x::MC{N,T}, c::Float64, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		error("Domain Error: When computing the relaxations of y^c (c < 0) the
-			   interval bounds of y contained zero. As such the y^c is unbounded
-			   and the relaxations do not exist. This may occur due to the expansiveness
-			   in long calculations. Reformulating the function may remedy this.")
+		return nan(MC{N,T})
 	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
@@ -335,10 +329,7 @@ function (^)(x::MC{N,T}, c::Float64, y::Interval{Float64})  where {N, T<:Union{N
 end
 function (^)(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		error("Domain Error: When computing the relaxations of y^c (c < 0) the
-			   interval bounds of y contained zero. As such the y^c is unbounded
-			   and the relaxations do not exist. This may occur due to the expansiveness
-			   in long calculations. Reformulating the function may remedy this.")
+		return nan(MC{N, Diff})
 	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
@@ -355,10 +346,8 @@ end
 pow(x::MC, c::F) where {F <: AbstractFloat} = x^c
 
 # Define powers to MC of floating point number
-function pow(b::Float64, x::MC)
-	(b <= 0.0) && error("Relaxations of b^x where b<=0 not currently defined in library.
-		                 Functions of this type may prevent convergences in global
-			             optimization algorithm as they may be discontinuous.")
+function pow(b::Float64, x::MC{N,T}) where {N,T<:RelaxTag}
+	(b <= 0.0) && (return nan(MC{N,T}))
 	exp(x*log(b))
 end
 ^(b::Float64, x::MC) = pow(b, x) # DONE (no kernel)
@@ -396,13 +385,7 @@ function inv1(x::MC{N,Diff}, y::Interval{Float64}) where N
 end
 function inv_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:RelaxTag}
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi)
-		error("Domain Error: When computing the relaxations of inv(x) the
-			   interval bounds of x contained zero. As such the y is unbounded
-			   and the relaxations do not exist. This may occur due to the expansiveness
-			   in long calculations. Reformulating the function may remedy this. Also,
-			   consider setting the MC_DOMAIN_CATCH flag to true. This will treat
-			   inv(x) as union(inv(Interval(x.Intv.lo,-MC_DOMAIN_TOL),
-			   inv(Interval(MC_DOMAIN_TOL, x.Intv.hi)")
+		return nan(MC{N,T})
 	end
 	if (x.Intv.hi < 0.0)
 		x = neg_powneg_odd(x, -1, y)

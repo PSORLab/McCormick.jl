@@ -12,11 +12,11 @@
 # Defines isempty, empty, isnan, step, sign, abs, intersect, in.
 #############################################################################
 
-empty(x::MC{N,T}) where {N,T <: RelaxTag} = MC{N,T}(Inf, -Inf, Interval{Float64}(Inf,-Inf),
+@inline empty(x::MC{N,T}) where {N,T <: RelaxTag} = MC{N,T}(Inf, -Inf, Interval{Float64}(Inf,-Inf),
                                                   SVector{N,Float64}(zeros(Float64,N)),
                                                   SVector{N,Float64}(zeros(Float64,N)), false)
 
-function interval_MC(x::MC{S,T}) where {S,T<:RelaxTag}
+@inline function interval_MC(x::MC{S,T}) where {S,T<:RelaxTag}
 	MC{S,T}(x.Intv)
 end
 
@@ -152,13 +152,13 @@ end
 end
 
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
-    max_MC = x - max(x - y, 0.0)   # used for convex
-    min_MC = y - max(y - x, 0.0)   # used for concave
-    return MC{N,Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv,y.Intv), max_MC.cv_grad, min_MC.cc_grad, (x.cnst && y.cnst))
+    max_MC = x - max(x - y, 0.0)
+    min_MC = y - max(y - x, 0.0)
+    return MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv,y.Intv),
+	                   max_MC.cv_grad, min_MC.cc_grad, (x.cnst && y.cnst))
 end
 
 @inline function intersect(x::MC{N, T}, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
-
 	if (x.cv >= y.lo)
   		cv = x.cv
   		cv_grad = x.cv_grad
@@ -173,15 +173,9 @@ end
   		cc = y.hi
   		cc_grad = zero(SVector{N,Float64})
 	end
-	if (cc < y.lo)
-		cv = NaN
-		cc = NaN
-	end
-	if (y.hi < cv)
-		cv = NaN
-		cc = NaN
-	end
-    return MC{N, T}(cv, cc, intersect(x.Intv,y), cv_grad, cc_grad, (x.cnst))
+	(cc < y.lo) && (return nan(MC{N, T}))
+	(y.hi < cv) && (return nan(MC{N, T}))
+	return MC{N, T}(cv, cc, intersect(x.Intv,y), cv_grad, cc_grad, (x.cnst))
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
      max_MC = x - max(x - y, 0.0)

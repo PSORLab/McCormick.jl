@@ -1,3 +1,19 @@
+# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# This work is licensed under the Creative Commons Attribution-NonCommercial-
+# ShareAlike 4.0 International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+#############################################################################
+# McCormick.jl
+# A McCormick operator library in Julia
+# See https://github.com/PSORLab/McCormick.jl
+#############################################################################
+# src/forward_operators/mixed_convexity.jl
+# Defines the operators: cos, sin, sinh, atanh, tanh, atan, asin, tan, acos,
+#                        asinh, cosh, rad2deg, deg2rad, sind, cosd..., sec,
+#                        csc..., sech, csch, ...asech...
+#############################################################################
+
 # convex relaxation (envelope) of cos function
 @inline function cv_cos(x::Float64, xL::Float64, xU::Float64, tp1::Float64, tp2::Float64)
   r = 0.0
@@ -30,7 +46,6 @@
   end
   return -1.0, 0.0, tp1, tp2
 end
-
 # function for computing convex relaxation over nonconvex and nonconcave regions
 @inline function cv_cosin(x::Float64, xL::Float64, xU::Float64, xj::Float64)
   if (abs(xL) <= abs(xU))
@@ -61,7 +76,6 @@ end
 end
 @inline cv_cosenv(x::Float64, y::Float64, z::Float64) = (x - y)*sin(x) + cos(x) - cos(y)
 @inline dcv_cosenv(x::Float64, y::Float64, z::Float64) = (x - y)*cos(x)
-
 # concave relaxation (envelope) of cos function
 @inline function cc_cos(x::Float64, xL::Float64, xU::Float64, tp1::Float64, tp2::Float64)
   temp = cv_cos(x - pi, xL - pi, xU - pi, tp1, tp2)
@@ -99,7 +113,6 @@ end
   end
   return arg1,arg2
 end
-
 @inline function cos_kernel(x::MC{N, Diff}, y::Interval{Float64}, cv_tp1::Float64,
                               cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where N
   xL = x.Intv.lo
@@ -119,7 +132,6 @@ end
   cc_grad = min(0.0,gdcc1)*x.cv_grad + max(0.0,gdcc2)*x.cc_grad
   return MC{N, Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
 end
-
 @inline function cos_kernel(x::MC{N, T}, y::Interval{Float64}, cv_tp1::Float64,
                               cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where {N,T<:Union{NS,MV}}
   xL = x.Intv.lo
@@ -136,7 +148,6 @@ end
   cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
   return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
 end
-
 @inline function cos(x::MC)
   y, tp1, tp2, tp3, tp4 = cos_kernel(x, cos(x.Intv), Inf, Inf, Inf, Inf)
   return y
@@ -146,7 +157,6 @@ end
                             cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64)
     cos_kernel(x-pi/2.0, y, cv_tp1, cv_tp2, cc_tp1, cc_tp2)
 end
-
 @inline function sin(x::MC)
   y, tp1, tp2, tp3, tp4 = sin_kernel(x, sin(x.Intv), Inf, Inf, Inf, Inf)
   return y

@@ -881,11 +881,11 @@ end
 
    X1 = MC{2,Diff}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
-   @test_throws ErrorException X1/Y1
+   @test isnan(X1/Y1)
 
    X2 = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
-   @test_throws ErrorException X2/Y2
+   @test isnan(X2/Y2)
 
    @test X1/X1 == one(X1)
    @test X2/X2 == one(X2)
@@ -1009,6 +1009,8 @@ end
    @test McCormick.plus_kernel(x, z) == x
 
    @test zero(x) == zero(MC{2,NS})
+   @test one(x) == one(MC{2,NS})
+   @test nan(x) == nan(MC{2,NS})
    @test real(x) == x
    @test dist(x, x0) == max(abs(x.cc - x0.cc), abs(x.cv - x0.cv))
    @test eps(x) == max(eps(x.cc), eps(x.cv))
