@@ -175,7 +175,7 @@ end
         cc = ccMC.cc
         cc_grad = ccMC.cc_grad
     end
-    cv = max(x.cv,y.cv)
+    cv = max(x.cv, y.cv)
     cv_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
                               (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
     cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)

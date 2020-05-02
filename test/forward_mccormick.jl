@@ -196,7 +196,7 @@ end
    @test check_vs_ref1(tan, x_tan_n, yref_tan_ns_n, mctol)
    @test check_vs_ref1(tan, x_tan_z, yref_tan_ns_z, mctol)
    @test check_vs_ref1(tan, x_tan_d1_z, yref_tan_d1_z, mctol)
-   @test_throws ErrorException tan(x_tan_err)
+   @test isnan(tan(x_tan_err))
 
    #####  Arcsine #####
    x_asin_p = MC{2,NS}(-0.7, -0.7, Interval{Float64}(-0.9,-0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -396,14 +396,14 @@ end
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
 
-   @test_throws ErrorException inv(Y1)
-   @test_throws ErrorException inv(Y2)
+   @test isnan(inv(Y1))
+   @test isnan(inv(Y2))
 
-   @test_throws ErrorException Y1^(-3)
-   @test_throws ErrorException Y2^(-3)
+   @test isnan(Y1^(-3))
+   @test isnan(Y2^(-3))
 
-   @test_throws ErrorException Y1^(-3.0)
-   @test_throws ErrorException Y2^(-3.0)
+   @test isnan(Y1^(-3.0))
+   @test isnan(Y2^(-3.0))
 
    @test isapprox(McCormick.tanh_deriv(3.0, 2.0, 4.0), 0.009866, rtol=1E-3)
    @test isapprox(McCormick.tanh_envd(3.0, 2.0, 4.0), 6.258589, rtol=1E-3)
@@ -425,7 +425,7 @@ end
    @test in(2,xD)
    @test ~isempty(xD)
 
-   @test_throws ErrorException (-0.5)^xNS
+   @test isnan((-0.5)^xNS)
 
    xD = MC{2,Diff}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    xNS = MC{2,NS}(2.0,2.0,Interval{Float64}(1.0,4.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)

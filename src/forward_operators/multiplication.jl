@@ -20,8 +20,8 @@ end
 abs_pu(x::Float64) = abs(x)^MC_DIFF_MU
 psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
 
-function gCxAcv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Interval{Float64},
-	            nu::Interval{Float64}, x1::MC, x2::MC)
+function gCxAcv(alpha::Interval{Float64}, beta::Interval{Float64},
+	            lambda::Interval{Float64}, nu::Interval{Float64}, x1::MC, x2::MC)
 
 	# gCxA pre-terms
 	alplo = alpha.lo

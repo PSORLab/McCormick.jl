@@ -367,7 +367,7 @@ function newton(x0::Float64, xL::Float64, xU::Float64, f::Function, df::Function
     xk = max(xL, min(x0, xU))
     fk::Float64 = f(xk, envp1, envp2)
 
-    for i=1:MC_ENV_MAX_INT
+    for i = 1:MC_ENV_MAX_INT
         dfk = df(xk, envp1, envp2)
         if (abs(fk) < MC_ENV_TOL)
             return (xk, false)
@@ -400,7 +400,7 @@ function secant(x0::Float64, x1::Float64, xL::Float64, xU::Float64, f::Function,
     xk = max(xL, min(xU, x1))
     fkm::Float64 = f(xkm, envp1, envp2)
 
-    for i=1:MC_ENV_MAX_INT
+    for i = 1:MC_ENV_MAX_INT
         fk::Float64  = f(xk, envp1, envp2)
         Bk = (fk - fkm)/(xk - xkm)
         if (abs(fk) < MC_ENV_TOL)
@@ -431,11 +431,11 @@ calculation parameters.
 """
 function golden_section(xL::Float64, xU::Float64, f::Function, envp1::Float64,
                         envp2::Float64)
-  fL::Float64 = f(xL,envp1,envp2)
-  fU::Float64 = f(xU,envp1,envp2)
+  fL::Float64 = f(xL, envp1, envp2)
+  fU::Float64 = f(xU, envp1, envp2)
 
   (fL*fU > 0.0) && error("GOLDEN EXCEPTION: No root present in range [xL, xU]")
-  xm = xU-(2.0-golden)*(xU-xL)
+  xm = xU - (2.0 - golden)*(xU - xL)
   fm::Float64 = f(xm,envp1,envp2)
   return golden_section_it(1, xL, fL, xm, fm, xU, fU, f, envp1, envp2)
 end

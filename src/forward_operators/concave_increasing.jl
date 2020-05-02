@@ -23,7 +23,7 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
               dcv = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
-              convex = dcv*(midcv - xL)+ xLc
+              convex = dcv*(midcv - xL) + xLc
               concave = ($opMC)(midcc)
               concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*$dop
               convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
@@ -36,8 +36,8 @@ for opMC in (:log, :log2, :log10, :log1p, :acosh, :sqrt)
                xU = x.Intv.hi
                xLc = z.lo
                xUc = z.hi
-               midcc, cc_id = mid3(x.cc, x.cv, xU)
-               midcv, cv_id = mid3(x.cc, x.cv, xL)
+               midcc = mid3v(x.cv, x.cc, xU)
+               midcv = mid3v(x.cv, x.cc, xL)
                deltaX = (xU - xL)
                slope = (xUc - xLc)/deltaX
                dcv = (xUc > xLc) ? slope : 0.0
