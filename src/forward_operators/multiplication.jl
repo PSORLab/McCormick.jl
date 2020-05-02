@@ -17,7 +17,7 @@ function sigu(y::Float64)
 	x = y/MC_DIFF_MU1T
 	(0.0 <= x) ? x^(1.0/MC_DIFF_MU1T) : -abs(x)^(1.0/MC_DIFF_MU1T)
 end
-abs_pu(x::Float64) = abs(x)^MC_DIFF_MU
+abs_pu(x::Float64) = abs(x)^MC_DIFF_MU1T
 psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
 
 function gCxAcv(alpha::Interval{Float64}, beta::Interval{Float64},
@@ -157,8 +157,8 @@ function gCxAIntv(alpha::Interval{Float64},beta::Interval{Float64},lambda::Inter
 	LmdSum = lambda.lo+lambda.hi
 	NuSum = nu.lo+nu.hi
 
-	xslo = lambda.lo + LmdDel*(((nu.hi - betlo)/NuDel) + sigu(-NuSum/NuDel))
-	xshi = lambda.lo + LmdDel*(((nu.hi - bethi)/NuDel) + sigu(-NuSum/NuDel))
+	xslo = lambda.lo + LmdDel*(((nu.hi - betlo)/NuDel) - sigu(NuSum/NuDel))
+	xshi = lambda.lo + LmdDel*(((nu.hi - bethi)/NuDel) - sigu(NuSum/NuDel))
 	yslo = nu.lo + NuDel*(((lambda.hi - alplo)/LmdDel) - sigu(LmdSum/LmdDel))
 	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
@@ -257,8 +257,7 @@ end
 function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
-	(degen1 || degen2) && error("Degenerate interval encountered. Rounding issues
-	                             with differential McCormick relaxations expected.")
+	(degen1 || degen2) && (return nan(MC{N,Diff}))
 	return multiply_MV(x1, x2, y)
 end
 
@@ -620,7 +619,7 @@ function mult_kernel(x1::MC{N,MV}, x2::MC{N,MV}, y::Interval{Float64}) where N
 		multiply_STD_NS(x1, x2)
 	end
 	flag, x3 = multiply_MV_NS(x1, x2, y, x1.cnst && x2.cnst)
-	~flag && error("Numerical error in multivariate relaxation.")
+	~flag && (return nan(MC{N,MV}))
 	return x3
 end
 
@@ -629,7 +628,7 @@ end
 function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) == 0.0)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) == 0.0)
-	if ~(degen1||degen2)
+	if ~(degen1 || degen2)
 		if (min(x1.Intv.lo, x2.Intv.lo) < 0.0 < max(x1.Intv.hi, x2.Intv.hi))
 			lo_Intv_calc::Float64 = gCxAIntv(x1.Intv, x2.Intv, x1.Intv, x2.Intv, x1, x2)
 			hi_Intv_calc::Float64 = -gCxAIntv(-x1.Intv, x2.Intv, -x1.Intv, x2.Intv, x1, x2)

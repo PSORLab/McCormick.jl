@@ -489,7 +489,6 @@ end
    @test isnan(tan(a))
 end
 
-
 @testset "Test Arithmetic w/Constant" begin
 
    mctol = 1E-4
@@ -726,6 +725,20 @@ end
    out2 = McCormick.flt_pow_1(X, 0.5, X.Intv^0.5)
    @test isapprox(out2.cv, 1.70710678, atol=1E-5)
    @test isapprox(out2.cc, 1.7320508, atol=1E-5)
+
+   a = MC{5,NS}(1.0,(Interval{Float64}(0.1,0.9)),2)
+   b = MC{5,NS}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = b^a
+   @test isapprox(m1.cv, 2.8948832853594535, atol=1E-6)
+   @test isapprox(m1.cc, 3.1156729751564813, atol=1E-6)
+
+   b = MC{5,NS}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   m1 = pow(b, Float32(2))
+   @test m1.cv == 9.0
+   @test isapprox(m1.cc, 9.809999999999999, atol=1E-6)
+
+   b = MC{5,NS}(3.0,(Interval{Float64}(-2.1,3.9)),2)
+   @test isnan(pow(b,-3))
 end
 
 @testset "Multiplication Operator" begin
@@ -800,7 +813,7 @@ end
     y4 = MC{2,Diff}(-250.0,-250.0,Interval{Float64}(-500.0,-100.0),seed2,seed2,false)
     z4 = x4*y4
     @test isapprox(z4.cc,-30000,atol=1E-3)
-    @test_broken isapprox(z4.cv,-47187.5,atol=1E-3)
+    @test isapprox(z4.cv,-47187.5,atol=1E-3)
 
     x5 = MC{2,Diff}(-150.0,-150.0,Interval{Float64}(-200.0,-100.0),seed1,seed1,false)
     y5 = MC{2,Diff}(300.0,300.0,Interval{Float64}(200.0,400.0),seed2,seed2,false)
@@ -859,25 +872,7 @@ end
     @test isapprox(McCormick.mul_MV_ns3cc(flt1, flt2, x1a, x2a), -0.27499999, atol=1E-6)
     @test ~McCormick.tol_MC(flt1, flt2)
 
-    #=
-    x1a = MC{2,MV}(Interval(2.0, 4.0))
-    x2b = MC{2,MV}(Interval(0.25, 0.5))
-    x2c = MC{2,MV}(Interval(1.0, 2.0))
-    z1 = Interval(2.0, 4.0)*Interval(0.25, 0.5)
-    z2 = Interval(2.0, 4.0)*Interval(1.0, 2.0)
 
-    out1 = x1a*x2b
-    @test out1.cv == 0.5
-    @test out1.cc == 2.0
-    @test isapprox(out1.Intv.lo, 0.5, atol=1E-4)
-    @test isapprox(out1.Intv.hi, 2.0, atol=1E-4)
-
-    out2 = x2b*x2c
-    @test out2.cv == 0.25
-    @test out2.cc == 1.0
-    @test isapprox(out2.Intv.lo, 0.25, atol=1E-4)
-    @test isapprox(out2.Intv.hi, 1.0, atol=1E-4)
-    =#
 end
 
 @testset "Division" begin
@@ -987,6 +982,12 @@ end
    b = MC{5,Diff}(3.0,(Interval{Float64}(2.1,3.9)),2)
    a = MC{5,Diff}(1.0,(Interval{Float64}(-5.1,5.9)),2)
    @test isnan(b/a)
+
+   b = MC{5,Diff}(3.0,(Interval{Float64}(2.1,3.9)),2)
+   a = MC{5,Diff}(5.5,(Interval{Float64}(5.1,5.9)),2)
+   m1 = b/a
+   @test isapprox(m1.cv, 0.5328925094773488, atol=1E-6)
+   @test isapprox(m1.cc, 0.5603190428713859, atol=1E-6)
 end
 
 @testset "Min/Max" begin
@@ -1168,4 +1169,28 @@ end
    m1 = intersect(b, Interval(1.0,3.0))
    @test isapprox(m1.cv, 0.7868421052631578, atol=1E-6)
    @test m1.cc == 3.0
+
+   X = Interval{Float64}(-2,2)
+   Y = Interval{Float64}(-2,2)
+   xpnt1 = 2.0; ypnt1 = 1.0
+   xpnt2 = 1.0; ypnt2 = 2.0
+   xpnt3 = 0.0; ypnt3 = 0.0
+
+   x1 = MC{1,Diff}(xpnt1, X, 1)
+   y1 = MC{1,Diff}(ypnt1, Y, 2)
+   out1 = max((y1-1)^2, x1*y1)*min(y1^2, (x1+1)*y1)
+   @test isapprox(out1.cv, -33.79070216049382, atol=1E-6)
+   @test isapprox(out1.cc, 33.160493827160494, atol=1E-6)
+
+   x1 = MC{1,Diff}(xpnt2, X, 1)
+   y1 = MC{1,Diff}(ypnt2, Y, 2)
+   out1 = max((y1-1)^2, x1*y1)*min(y1^2, (x1+1)*y1)
+   @test isapprox(out1.cv, -30.21738254458162, atol=1E-6)
+   @test isapprox(out1.cc, 29.47050754458162, atol=1E-6)
+
+   x1 = MC{1,Diff}(xpnt3, X, 1)
+   y1 = MC{1,Diff}(ypnt3, Y, 2)
+   out1 = max((y1-1)^2, x1*y1)*min(y1^2, (x1+1)*y1)
+   @test isapprox(out1.cv, -46.30651577503429, atol=1E-6)
+   @test isapprox(out1.cc, 35.478737997256516, atol=1E-6)
 end
