@@ -132,6 +132,7 @@ end
    yref_abs_ns = MC{2,NS}(4.5, 6.409090909090908, Interval{Float64}(0.0, 8.0), @SVector[1.0, 0.0], @SVector[0.454545, 0.0], false)
    yref_abs_d1 = MC{2,Diff}(0.5714285714285714, 6.166666666666667, Interval{Float64}(0.0, 7.0), @SVector[0.5714285714285714, 0.0], @SVector[0.16666666666666666, 0.0], false)
 
+   @test McCormick.cv_abs(-1.0, -2.0, 3.0) == (0.5,-1.0)
    @test check_vs_ref1(abs, x_abs_ns, yref_abs_ns, mctol)
    @test check_vs_ref1(abs, x_abs_d1, yref_abs_d1, mctol)
 
@@ -393,6 +394,11 @@ end
    @test out7.value == 2.4
    @test out8.value == 2.4
 
+   Y1 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+   out1 = Y1^4
+   @test out1.cv == 256.0
+   @test out1.cc == 538.0
+
    Y1 = MC{2,Diff}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
    Y2 = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,2.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
 
@@ -487,6 +493,12 @@ end
 
    a = MC{5,NS}(1.0,(Interval{Float64}(-5.1,5.9)),2)
    @test isnan(tan(a))
+
+   cv,dcv = McCormick.cv_neg_powneg_odd(3.0, 3.0, 3.0, 2)
+   @test cv == 9.0
+   @test dcv == 0.0
+
+   @test McCormick.pow_kernel(xNS, 1, xNS.Intv) == xNS
 end
 
 @testset "Test Arithmetic w/Constant" begin
@@ -1202,4 +1214,20 @@ end
    out1 = max((y1-1)^2, x1*y1)*min(y1^2, (x1+1)*y1)
    @test isapprox(out1.cv, -46.30651577503429, atol=1E-6)
    @test isapprox(out1.cc, 35.478737997256516, atol=1E-6)
+
+   x1 = MC{1,Diff}(xpnt3, X, 1)
+   y1 = MC{1,Diff}(ypnt3, Y, 2)
+   out1 = McCormick.final_cut(x1, y1)
+   @test isapprox(out1.cv, -2.0, atol=1E-6)
+   @test isapprox(out1.cc, 0.0, atol=1E-6)
+
+   x1 = MC{1,NS}(xpnt1, X, 1)
+   y1 = MC{1,NS}(ypnt2, Y, 2)
+   out1 = intersect(x1, y1)
+   @test isapprox(out1.cv, 2.0, atol=1E-6)
+   @test isapprox(out1.cc, 2.0, atol=1E-6)
+
+   out1 = intersect(y1, x1)
+   @test isapprox(out1.cv, 2.0, atol=1E-6)
+   @test isapprox(out1.cc, 2.0, atol=1E-6)
 end

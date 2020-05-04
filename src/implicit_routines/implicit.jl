@@ -39,7 +39,7 @@ function final_cut(x_mc::MC{N,NS}, x_mc_int::MC{N,NS}) where {N}
   return x_out
 end
 function final_cut(x_mc::MC{N,Diff},x_mc_int::MC{N,Diff}) where {N}
-  x_out = smooth_cut(x_mc,x_mc_int)
+  x_out = intersect(x_mc, x_mc_int)
   return x_out
 end
 
