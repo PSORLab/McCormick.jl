@@ -288,55 +288,55 @@ end
   	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 @inline function mul1_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
-  xLc = z.lo
-  xUc = z.hi
-  cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
-  cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
-  if (cv1 > cv2)
-    cv = cv1
-    cv_grad = x2.Intv.hi*x1.cv_grad
-  else
-    cv = cv2
-    cv_grad = x2.Intv.lo*x1.cc_grad
-  end
+    xLc = z.lo
+    xUc = z.hi
+    cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
+    cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
+    if (cv1 > cv2)
+        cv = cv1
+        cv_grad = x2.Intv.hi*x1.cv_grad
+    else
+        cv = cv2
+        cv_grad = x2.Intv.lo*x1.cc_grad
+    end
 
-  cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
-  cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
-  if (cc1 < cc2)
-    cc = cc1
-    cc_grad = x2.Intv.lo*x1.cv_grad
-  else
-    cc = cc2
-    cc_grad = x2.Intv.hi*x1.cc_grad
-  end
-  cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
-  return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
+    cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
+    cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
+    if (cc1 < cc2)
+        cc = cc1
+        cc_grad = x2.Intv.lo*x1.cv_grad
+    else
+        cc = cc2
+        cc_grad = x2.Intv.hi*x1.cc_grad
+    end
+    cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
+    return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 @inline function mul1_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
-  xLc = z.lo
-  xUc = z.hi
-  cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
-  cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.lo
-  cv = cv1
-  if (cv1 > cv2)
+    xLc = z.lo
+    xUc = z.hi
+    cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
+    cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.lo
     cv = cv1
-    cv_grad = x2.Intv.hi*x1.cv_grad
-  else
-    cv = cv2
-    cv_grad = x2.Intv.lo*x1.cc_grad
-  end
-  cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
-  cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.hi
-  cc = cc1
-  if (cc1 < cc2)
+    if (cv1 > cv2)
+        cv = cv1
+        cv_grad = x2.Intv.hi*x1.cv_grad
+    else
+        cv = cv2
+        cv_grad = x2.Intv.lo*x1.cc_grad
+    end
+    cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
+    cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.hi
     cc = cc1
-    cc_grad = x2.Intv.lo*x1.cv_grad
-  else
-    cc = cc2
-    cc_grad = x2.Intv.hi*x1.cc_grad
-  end
-  cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
-  return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
+    if (cc1 < cc2)
+        cc = cc1
+        cc_grad = x2.Intv.lo*x1.cv_grad
+    else
+        cc = cc2
+        cc_grad = x2.Intv.hi*x1.cc_grad
+    end
+    cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
+    return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 @inline function mul2_u1pos_u2pos(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
 	xLc = z.lo
@@ -364,28 +364,28 @@ end
 	return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 @inline function mul2_u1pos_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}, cnst::Bool) where {N,T<:RelaxTag}
-  xLc = z.lo
-  xUc = z.hi
-  cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
-  cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
-  if (cv1 > cv2)
-    cv = cv1
-    cv_grad = x1.Intv.hi*x2.cv_grad
-  else
-    cv = cv2
-    cv_grad = x1.Intv.lo*x2.cc_grad
-  end
-  cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
-  cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
-  if (cc1 < cc2)
-    cc = cc1
-    cc_grad = x1.Intv.hi*x2.cc_grad
-  else
-    cc = cc2
-    cc_grad = x1.Intv.lo*x2.cc_grad
-  end
-  cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
-  return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
+    xLc = z.lo
+    xUc = z.hi
+    cv1 = x2.Intv.hi*x1.cv + x1.Intv.hi*x2.cv - x1.Intv.hi*x2.Intv.hi
+    cv2 = x2.Intv.lo*x1.cc + x1.Intv.lo*x2.cv - x1.Intv.lo*x2.Intv.lo
+    if (cv1 > cv2)
+        cv = cv1
+        cv_grad = x1.Intv.hi*x2.cv_grad
+    else
+        cv = cv2
+        cv_grad = x1.Intv.lo*x2.cc_grad
+    end
+    cc1 = x2.Intv.lo*x1.cv + x1.Intv.hi*x2.cc - x1.Intv.hi*x2.Intv.lo
+    cc2 = x2.Intv.hi*x1.cc + x1.Intv.lo*x2.cc - x1.Intv.lo*x2.Intv.hi
+    if (cc1 < cc2)
+        cc = cc1
+        cc_grad = x1.Intv.hi*x2.cc_grad
+    else
+        cc = cc2
+        cc_grad = x1.Intv.lo*x2.cc_grad
+    end
+    cv, cc, cv_grad, cc_grad = cut(xLc, xUc, cv, cc, cv_grad, cc_grad)
+    return MC{N,T}(cv, cc, z, cv_grad, cc_grad, cnst)
 end
 @inline function mul2_u1mix_u2mix(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64}) where {N,T<:RelaxTag}
 	xLc = z.lo

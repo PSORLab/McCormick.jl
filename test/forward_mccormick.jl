@@ -322,8 +322,6 @@ end
 
    xextras = MC{2,NS}(2.0, 3.0, Interval{Float64}(1.0,4.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
 
-#   @test asec(xextras) == acos(inv(xextras))
-#   @test acsc(xextras) == asin(inv(xextras))
    @test acot(xextras) == atan(inv(xextras))
    @test sech(xextras) == inv(cosh(xextras))
    @test csch(xextras) == inv(sinh(xextras))
@@ -337,8 +335,6 @@ end
    @test cscd(xextras) == inv(sind(xextras))
    @test cotd(xextras) == inv(tand(xextras))
    @test atand(xextras) == rad2deg(atan(xextras))
-#   @test asecd(xextras) == rad2deg(asec(xextras))
-#   @test acscd(xextras) == rad2deg(acsc(xextras))
    @test acotd(xextras) == rad2deg(acot(xextras))
 
    xextras1 = xextras = MC{2,NS}(0.1, 0.2, Interval{Float64}(0.05,0.21), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -917,8 +913,6 @@ end
     @test isapprox(McCormick.mul_MV_ns2cc(flt1, flt2, x1a, x2a), 5.389, atol=1E-6)
     @test isapprox(McCormick.mul_MV_ns3cc(flt1, flt2, x1a, x2a), -0.27499999, atol=1E-6)
     @test ~McCormick.tol_MC(flt1, flt2)
-
-
 end
 
 @testset "Division" begin
@@ -1262,4 +1256,78 @@ end
    out1 = intersect(y1, x1)
    @test isapprox(out1.cv, 2.0, atol=1E-6)
    @test isapprox(out1.cc, 2.0, atol=1E-6)
+end
+
+@testset "NaN Propagation" begin
+
+   function check_and_print2(f, T, a::MC)
+       flag = isnan(f(a, nan(a)))
+       ~flag && println("f = $f, T = $T")
+       flag
+   end
+
+   function check_and_print1c(f, T, a::MC, c)
+       flag = isnan(f(a, c))
+       ~flag && println("f = $f, T = $T")
+       flag
+   end
+
+   function check_and_print1(f, T, a::MC)
+       flag = isnan(f(a))
+       ~flag && println("f = $f, T = $T")
+       flag
+   end
+
+   for T in (NS, MV, Diff)
+
+      a = MC{2, T}(0.0, 0.0, Interval{Float64}(-2.0,1.0),
+                   seed_gradient(1,Val(2)),
+                   seed_gradient(1,Val(2)), false)
+
+      for f in (+, -, /, *, min, max)
+          @test check_and_print2(f, T, a)
+      end
+
+      anan = nan(a)
+      for f in (+, -, /, *, ^, min, max)
+          @test check_and_print1c(f, T, anan, 4)
+          @test check_and_print1c(f, T, anan, 3)
+          @test check_and_print1c(f, T, anan, 2)
+          @test check_and_print1c(f, T, anan, 1)
+          @test check_and_print1c(f, T, anan, 0)
+          @test check_and_print1c(f, T, anan, -1)
+          @test check_and_print1c(f, T, anan, -2)
+          @test check_and_print1c(f, T, anan, -3)
+      end
+
+      for f in (exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh, sqrt, inv,
+                cos, sin, sinh, tanh, asinh, atanh, tan, acos, asin, atan, cosh,
+                deg2rad, rad2deg, sec, csc, cot, asec, acsc, acot, sech, csch,
+                coth, acsch, acoth, sind, cosd, tand, secd, cscd, cotd, asind,
+                acosd, atand, asecd, acscd, acotd)
+          @test check_and_print1(f, T, anan)
+      end
+   end
+end
+
+@testset "Domain Exceptions" begin
+
+   for T in (NS, MV, Diff)
+
+       mc = MC{2,T}(-3.0, Interval(-5.0, -1.5), 1)
+       for f in (log, log2, log10, log1p, sqrt, acosh, asin, acos, atanh)
+           @test_nowarn f(mc)
+       end
+
+       mc = MC{2,T}(pi/2, Interval(-pi/2, pi/2 + 2.0*pi), 1)
+       for f in (tan, sec)
+            @test_nowarn f(mc)
+       end
+
+       mc = MC{2,T}(0.0, Interval(-0.5, 0.5), 1)
+       for f in (inv, asec, acsc, cot, csc, csch, coth, acoth, acsch)
+           @test_nowarn f(mc)
+       end
+
+   end
 end

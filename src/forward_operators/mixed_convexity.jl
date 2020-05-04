@@ -342,6 +342,7 @@ eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
 eps_max_dict = Dict{Symbol,Symbol}(:sinh => :xU, :tanh => :xU, :asinh => :xU,
                                  :atanh => :xU, :tan => :xU, :acos => :xL,
                                  :asin => :xU, :atan => :xU)
+
 for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
@@ -350,7 +351,7 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     eps_max = eps_max_dict[expri]
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-        if (y.lo == -Inf) || (y.hi == Inf)
+        if isinf(y) || isempty(y) || isnan(x)
             return nan(MC{N,T}), NaN, NaN
         end
         xL = x.Intv.lo
@@ -366,8 +367,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     end
     @eval @inline function ($expri_kernel)(x::MC{N, Diff}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where N
-        if (y.lo == -Inf) || (y.hi == Inf)
-          return nan(MC{N, Diff}), NaN, NaN
+        if isinf(y) || isempty(y) || isnan(x)
+            return nan(MC{N, Diff}), NaN, NaN
         end
         xL = x.Intv.lo
         xU = x.Intv.hi
@@ -393,6 +394,7 @@ end
 @inline cv_cosh(x::Float64, xL::Float64, xU::Float64) = cosh(x), sinh(x)
 @inline cc_cosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(cosh, sinh, x, xL, xU)
 @inline function cosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
+    isnan(x) && nan(MC{N,T})
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL
@@ -407,6 +409,7 @@ end
     return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline function cosh_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
+    isnan(x) && nan(MC{N,Diff})
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL
