@@ -526,8 +526,7 @@ end
 
 		alphthin = tol_MC(alph1, alph2)
 		if (~alphthin && (alph1 > alph2))
-			flag = false
-			return flag, x1
+			return false, x1
 		end
 		myalph = (alph1 + alph2)/2.0
 	elseif mul_MV_ns1cv(x1vt[cvi], x2vt[cvi], x1,x2) > mul_MV_ns2cv(x1vt[cvi], x2vt[cvi], x1, x2)
@@ -541,13 +540,10 @@ end
 	cv_grad1 = (sigma1 > 0.0) ? x1.cv_grad : x1.cc_grad
 	cv_grad2 = (sigma2 > 0.0) ? x2.cv_grad : x2.cc_grad
 
-	if x1.cnst
-		cv_grad = sigma2*cv_grad2
-	elseif x2.cnst
-		cv_grad = sigma1*cv_grad1
-	else
-		cv_grad = sigma1*cv_grad1 + sigma2*cv_grad2
-	end
+	x1.cnst && (cv_grad = sigma2*cv_grad2)
+	x2.cnst && (cv_grad = sigma1*cv_grad1)
+	(~x1.cnst && ~x1.cnst) && (cv_grad = sigma1*cv_grad1 + sigma2*cv_grad2)
+	(x1.cnst && x1.cnst) && (cv_grad = zero(SVector{N,Float64}))
 
 	 # concave calculation
 	 k = diam(x2)/diam(x1)
@@ -586,8 +582,7 @@ end
 
         alphthin = tol_MC(alph1, alph2)
 		if (~alphthin && (alph1 > alph2))
-			flag = false
-			return flag, x1
+			return false, x1
 		end
 	 	myalph = (alph1 + alph2)/2.0
 	elseif (mul_MV_ns1cc(x1vt[cci], x2vt[cci], x1, x2) > mul_MV_ns2cc(x1vt[cci], x2vt[cci], x1, x2))
@@ -601,13 +596,10 @@ end
 	cc_grad1 = (sigma1 > 0.0) ? x1.cc_grad :  x1.cv_grad
 	cc_grad2 = (sigma2 > 0.0) ? x2.cc_grad :  x2.cv_grad
 
-	if x1.cnst
-		cc_grad = sigma2*cc_grad2
-	elseif x2.cnst
-		cc_grad = sigma1*cc_grad1
-	else
-		cc_grad = sigma1*cc_grad1 + sigma2*cc_grad2
-	end
+	x1.cnst && (cc_grad = sigma2*cc_grad2)
+	x2.cnst && (cc_grad = sigma1*cc_grad1)
+	(~x1.cnst && ~x1.cnst) && (cc_grad = sigma1*cc_grad1 + sigma2*cc_grad2)
+	(x1.cnst && x1.cnst) && (cc_grad = zero(SVector{N,Float64}))
 
     return flag, MC{N,MV}(cv, cc, zIntv, cv_grad, cc_grad, cnst)
 end

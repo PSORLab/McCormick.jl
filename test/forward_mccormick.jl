@@ -753,6 +753,38 @@ end
    @test isnan(pow(b,-3))
 
    @test McCormick.pow_deriv(1.2, 2) == 2.4
+
+   b = acos(MC{5,NS}(0.1,(Interval{Float64}(-0.9,0.8)),2))
+   @test isapprox(b.cc, 1.5168930889582808, atol=1E-6)
+   @test isapprox(b.cv, 1.4241657599950592, atol=1E-6)
+
+   b = acos(MC{5,NS}(-0.1,(Interval{Float64}(-0.9,0.8)),2))
+   @test isapprox(b.cc, 1.7516276395253312, atol=1E-6)
+   @test isapprox(b.cv, 1.6472128031955662, atol=1E-6)
+
+   b = acos(MC{5,NS}(-0.3,(Interval{Float64}(-0.9,-0.1)),2))
+   @test isapprox(b.cc, 1.8754889808102941, atol=1E-6)
+   @test isapprox(b.cv, 1.9258642714157252, atol=1E-6)
+
+   b = acos(MC{5,NS}(0.3,(Interval{Float64}(0.1,0.9)),2))
+   @test isapprox(b.cc, 1.2157283821740683, atol=1E-6)
+   @test isapprox(b.cv, 1.2661036727794992, atol=1E-6)
+
+   b = asec(MC{5,NS}(1.3,(Interval{Float64}(1.1,2.9)),2))
+   @test isapprox(b.cc, 0.6252740702428741, atol=1E-6)
+   @test isapprox(b.cv, 0.5616171714855654, atol=1E-6)
+
+   b = acsc(MC{5,NS}(1.3,(Interval{Float64}(1.1,2.9)),2))
+   @test isapprox(b.cc, 1.0534253760507535, atol=1E-6)
+   @test isapprox(b.cv, 0.8776364192181427, atol=1E-6)
+
+   b = asecd(MC{5,NS}(1.3,(Interval{Float64}(1.1,2.9)),2))
+   @test isapprox(b.cc, 35.82556526388326, atol=1E-6)
+   @test isapprox(b.cv, 32.1782936281979, atol=1E-6)
+
+   b = acscd(MC{5,NS}(1.3,(Interval{Float64}(1.1,2.9)),2))
+   @test isapprox(b.cc, 60.356828079689805, atol=1E-6)
+   @test isapprox(b.cv, 50.28486276817379, atol=1E-6)
 end
 
 @testset "Multiplication Operator" begin
@@ -906,11 +938,11 @@ end
     Y = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,-3.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
     out = X/Y
     @test isapprox(out.cc,-0.7000000000000002,atol=1E-6)
-    @test isapprox(out.cv, -1.0, atol=1E-6)
+    @test isapprox(out.cv, -0.8666666666666665, atol=1E-6)
     @test isapprox(out.cc_grad[1],-0.19999999999999998, atol=1E-6)
     @test isapprox(out.cc_grad[2],-0.125,atol=1E-6)
     @test isapprox(out.cv_grad[1], -0.33333333333333337, atol=1E-6)
-    @test isapprox(out.cv_grad[2], 0.0, atol=1E-6)
+    @test isapprox(out.cv_grad[2], -0.1333333333333333, atol=1E-6)
     @test isapprox(out.Intv.lo,-1.33333333,atol=1E-6)
     @test isapprox(out.Intv.hi,-0.39999999999999997,atol=1E-6)
 

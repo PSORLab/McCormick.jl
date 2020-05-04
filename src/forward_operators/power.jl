@@ -397,7 +397,7 @@ end
 		return nan(MC{N,T})
 	end
 	if x.Intv.hi < 0.0
-		x = neg_powneg_odd(x, -1, y)
+		x = pos_odd(x, -1, y)
   	else x.Intv.lo > 0.0
 		x = inv1(x, y)
 	end

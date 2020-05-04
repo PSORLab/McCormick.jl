@@ -291,7 +291,7 @@ end
 
 @inline acos_deriv(x::Float64, y::Float64, z::Float64) = -1.0/sqrt(1.0-x^2)
 @inline acos_env(x::Float64, y::Float64, z::Float64) = -(acos(x) - acos(y))*sqrt(1-x^2) - x + y
-@inline function cv_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
+@inline function cc_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(acos, acos_deriv, x, xL, xU)..., p)
     (xU <= 0.0) && (return acos(x), -1.0/sqrt(1.0-x^2), p)
     if p === Inf
@@ -301,7 +301,7 @@ end
     (x <= p) && (return dline_seg(acos, acos_deriv, x, xL, p)..., p)
     return acos(x), -1.0/sqrt(1.0-x^2), p
 end
-@inline function cc_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
+@inline function cv_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return acos(x), -1.0/sqrt(1.0-x^2), p)
     (xU <= 0.0) && (return dline_seg(acos, acos_deriv, x, xL, xU)..., p)
     if p === Inf
