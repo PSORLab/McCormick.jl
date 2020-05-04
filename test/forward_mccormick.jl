@@ -739,6 +739,8 @@ end
 
    b = MC{5,NS}(3.0,(Interval{Float64}(-2.1,3.9)),2)
    @test isnan(pow(b,-3))
+
+   @test McCormick.pow_deriv(1.2, 2) == 2.4
 end
 
 @testset "Multiplication Operator" begin
@@ -892,11 +894,11 @@ end
     Y = MC{2,NS}(-4.0,-4.0,Interval{Float64}(-5.0,-3.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
     out = X/Y
     @test isapprox(out.cc,-0.7000000000000002,atol=1E-6)
-    @test isapprox(out.cv,-0.8666666666666665,atol=1E-6)
-    @test isapprox(out.cc_grad[1],-0.19999999999999998,atol=1E-6)
+    @test isapprox(out.cv, -1.0, atol=1E-6)
+    @test isapprox(out.cc_grad[1],-0.19999999999999998, atol=1E-6)
     @test isapprox(out.cc_grad[2],-0.125,atol=1E-6)
-    @test isapprox(out.cv_grad[1],-0.33333333333333337,atol=1E-6)
-    @test isapprox(out.cv_grad[2],-0.1333333333333333,atol=1E-6)
+    @test isapprox(out.cv_grad[1], -0.33333333333333337, atol=1E-6)
+    @test isapprox(out.cv_grad[2], 0.0, atol=1E-6)
     @test isapprox(out.Intv.lo,-1.33333333,atol=1E-6)
     @test isapprox(out.Intv.hi,-0.39999999999999997,atol=1E-6)
 
@@ -988,10 +990,17 @@ end
    m1 = b/a
    @test isapprox(m1.cv, 0.5328925094773488, atol=1E-6)
    @test isapprox(m1.cc, 0.5603190428713859, atol=1E-6)
+
+   b = MC{5,Diff}(3.0,Interval{Float64}(2.1,3.9), 2)
+   m1 = McCormick.inv1(b, Interval{Float64}(2.1,3.9))
+   @test isapprox(m1.cv, 0.3333333333333333, atol=1E-6)
+   @test isapprox(m1.cc, 0.36630036630036633, atol=1E-6)
 end
 
 @testset "Min/Max" begin
 
+
+   @test McCormick.deriv_max(2.0, 1.0) == 1.0
    c = 5.0
    z = Interval{Float64}(2.1,3.4)
    x = MC{2,NS}(z)

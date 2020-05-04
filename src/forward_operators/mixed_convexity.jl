@@ -73,9 +73,7 @@ end
     kL = Base.ceil(-0.5 - xL/(2.0*pi))
     xL1 = xL + 2.0*pi*kL
     xU1 = xU + 2.0*pi*kL
-    if ~((xL1 >= -pi) && (xL1 <= pi))
-        return NaN, NaN
-    end
+    ~((xL1 >= -pi) && (xL1 <= pi)) && (return NaN, NaN)
     if xL1 <= 0.0
         if xU1 <= 0.0
             arg1 = xL
