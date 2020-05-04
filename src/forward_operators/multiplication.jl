@@ -608,7 +608,7 @@ end
 	degen1 = (x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL
 	degen2 = (x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL
 	if degen1 || degen2
-		multiply_STD_NS(x1, x2)
+		multiply_STD_NS(x1, x2, y)
 	end
 	flag, x3 = multiply_MV_NS(x1, x2, y, x1.cnst && x2.cnst)
 	~flag && (return nan(MC{N,MV}))
