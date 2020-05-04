@@ -124,21 +124,27 @@ end
 
 @inline function intersect(x_mc::MC{N,T}, x_mc_int::MC{N,T}) where {N, T<:Union{NS,MV}}
      Intv = x_mc.Intv ∩ x_mc_int.Intv
+	 cnst1 = false
+	 cnst2 = false
      if x_mc.cc < x_mc_int.cc
+		 cnst1 = x_mc.cnst
          cc = x_mc.cc
          cc_grad = x_mc.cc_grad
      else
+		 cnst1 = x_mc_int.cnst
          cc = x_mc_int.cc
          cc_grad = x_mc_int.cc_grad
      end
      if x_mc.cv > x_mc_int.cv
+		 cnst2 = x_mc.cnst
          cv = x_mc.cv
          cv_grad = x_mc.cv_grad
      else
+		 cnst2 = x_mc_int.cnst
          cv = x_mc_int.cv
          cv_grad = x_mc_int.cv_grad
      end
-     MC{N,T}(cv, cc, (x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, x_mc.cnst)
+     MC{N,T}(cv, cc, (x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, cnst1 && cnst2)
 end
 
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
@@ -149,10 +155,13 @@ end
 end
 
 @inline function intersect(x::MC{N, T}, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
+	cnst1 = x.cnst
+	cnst2 = x.cnst
 	if x.cv >= y.lo
   		cv = x.cv
   		cv_grad = x.cv_grad
 	else
+		cnst1 = true
   		cv = y.lo
   		cv_grad = zero(SVector{N,Float64})
 	end
@@ -160,12 +169,13 @@ end
   		cc = x.cc
   		cc_grad = x.cc_grad
 	else
+		cnst2 = true
   		cc = y.hi
   		cc_grad = zero(SVector{N,Float64})
 	end
 	(cc < y.lo) && (return nan(MC{N,T}))
 	(y.hi < cv) && (return nan(MC{N,T}))
-	return MC{N, T}(cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, x.cnst)
+	return MC{N, T}(cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
      max_MC = x - max(x - y, 0.0)
