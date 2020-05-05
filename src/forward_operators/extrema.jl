@@ -120,7 +120,7 @@ end
     elseif (y.Intv.lo <= x.Intv.lo) & (x.Intv.lo < y.Intv.hi)
         temp = mid3v(x.cv, x.cc, y.cv - (y.Intv.hi - x.Intv.lo)*MC_DIFF_DIV)
         cv, cv_grad = psil_max(temp, y.cv, x.Intv, y.Intv, x, y)
-    elseif (x.Intv.lo < y.Intv.lo) & (y.Intv.lo < x.Intv.hi)
+    else
         temp = mid3v(y.cv, y.cc, x.cv - (x.Intv.hi - y.Intv.lo)*MC_DIFF_DIV)
         cv, cv_grad = psil_max(x.cv, temp, x.Intv, y.Intv, x, y)
     end

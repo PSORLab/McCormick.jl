@@ -49,11 +49,9 @@ end
         dual_div = div_lambdaxy(dualx_cv, dualy_cc, x.Intv)
     elseif (x.Intv.lo < 0.0) && (nu_bar <= dualy_cv)
         dual_div = div_alphaxy(dualx_cv, dualy_cv, x.Intv, y.Intv)
-    elseif (x.Intv.lo < 0.0) && (nu_bar > dualy_cv)
-        dual_div = div_psixy(dualx_cv, mid3v(dualy_cv, dualy_cc, nu_bar - (y.Intv.hi - y.Intv.lo)*div_omegaxy(x.Intv, y.Intv)),
-                         x.Intv, y.Intv)
     else
-        dual_div = Dual{Nothing}(NaN, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
+        mid3c = mid3v(dualy_cv, dualy_cc, nu_bar - diam(y)*div_omegaxy(x.Intv, y.Intv))
+        dual_div = div_psixy(dualx_cv, mid3c, x.Intv, y.Intv)
     end
     val = dual_div.value
     grad = SVector{N,Float64}(dual_div.partials)

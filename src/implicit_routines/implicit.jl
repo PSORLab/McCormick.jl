@@ -168,12 +168,14 @@ function correct_exp!(d::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Function,
     @inbounds for i = 1:d.nx
         if (d.z_mc[i].Intv.lo - d.eps < d.X[i].lo) && (d.z_mc[i].Intv.hi + d.eps > d.X[i].hi)
             d.x_mc[i] = MC{N,T}(d.X[i])
-        elseif (d.z_mc[i].Intv.lo - d.eps < d.X[i].lo)
+        elseif d.z_mc[i].Intv.lo - d.eps < d.X[i].lo
             d.x_mc[i] = MC{N,T}(d.X[i].lo, d.x_mc[i].cc, Interval(d.X[i].lo, d.x_mc[i].Intv.hi),
                                 zero_grad, d.x_mc[i].cc_grad, d.x_mc[i].cnst)
-        elseif (d.z_mc[i].Intv.hi + d.eps > d.X[i].hi)
-            d.x_mc[i] = MC{N,T}(d.x_mc[i].cv, d.X[i].hi, Interval(d.x_mc[i].Intv.lo, d.X[i].hi),
+        else
+            if d.z_mc[i].Intv.hi + d.eps > d.X[i].hi
+                d.x_mc[i] = MC{N,T}(d.x_mc[i].cv, d.X[i].hi, Interval(d.x_mc[i].Intv.lo, d.X[i].hi),
                                 d.x_mc[i].cv_grad, zero_grad, d.x_mc[i].cnst)
+            end
         end
     end
     return
