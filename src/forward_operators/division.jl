@@ -13,10 +13,10 @@
 #############################################################################
 
 @inline function div_alphaxy(es::T, nu::T, x::Interval{Float64}, y::Interval{Float64}) where T <: Real
-    return (es/y.hi) + (x.lo/(y.lo*y.hi))*(y.hi-nu)
+    return (es/y.hi) + (x.lo/(y.lo*y.hi))*(y.hi - nu)
 end
 @inline function div_gammay(omega::T, y::Interval{Float64}) where T <: Real
-    return (y.lo*(max(0.0, omega))^2)/(y.hi - omega*(y.hi-y.lo))
+    return (y.lo*(max(0.0, omega))^2)/(y.hi - omega*(y.hi - y.lo))
 end
 @inline function div_deltaxy(omega::T, x::Interval{Float64}, y::Interval{Float64}) where T <: Real
     return (1.0/(y.hi*y.lo))*(x.hi - x.lo)*(y.hi - y.lo)*div_gammay(omega, y)
@@ -25,7 +25,7 @@ end
     return div_alphaxy(es, nu, x, y) + div_deltaxy(((es - x.lo)/(x.hi - x.lo))-((nu - y.lo)/(y.hi - y.lo)), x, y)
 end
 @inline function div_omegaxy(x::Interval{Float64}, y::Interval{Float64})
-    return (y.hi/(y.hi-y.lo))*(1.0 - sqrt((y.lo*(x.hi-x.lo))/((-x.lo)*(y.hi-y.lo)+(y.lo)*(x.hi-x.lo))))
+    return (y.hi/(y.hi - y.lo))*(1.0 - sqrt((y.lo*(x.hi - x.lo))/((-x.lo)*(y.hi - y.lo) + (y.lo)*(x.hi - x.lo))))
 end
 @inline function div_lambdaxy(es::T, nu::T, x::Interval{Float64}) where T <: Real
     return (((es + sqrt(x.lo*x.hi))/(sqrt(x.lo) + sqrt(x.hi)))^2)/nu
@@ -35,8 +35,8 @@ end
 end
 
 @inline function mid3v(x::T, y::T, z::T) where T <: Number
-    (z <= x) && (return x)
-    (y <= z) && (return y)
+    z <= x && (return x)
+    y <= z && (return y)
     return z
 end
 
@@ -52,6 +52,8 @@ end
     elseif (x.Intv.lo < 0.0) && (nu_bar > dualy_cv)
         dual_div = div_psixy(dualx_cv, mid3v(dualy_cv, dualy_cc, nu_bar - (y.Intv.hi - y.Intv.lo)*div_omegaxy(x.Intv, y.Intv)),
                          x.Intv, y.Intv)
+    else
+        dual_div = Dual{Nothing}(NaN, Partials{N,Float64}(NTuple{N,Float64}(x.cv_grad)))
     end
     val = dual_div.value
     grad = SVector{N,Float64}(dual_div.partials)
@@ -80,11 +82,11 @@ end
 
 @inline function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N}
     (isnan(x) || isnan(y)) && (return nan(MC{N,Diff}))
-    degen1 = ((x.Intv.hi - x.Intv.lo) == 0.0)
-    degen2 = ((y.Intv.hi - y.Intv.lo) == 0.0)
-    if (x === y)
+    degen1 = (x.Intv.hi - x.Intv.lo == 0.0)
+    degen2 = (y.Intv.hi - y.Intv.lo == 0.0)
+    if x === y
         zMC = one(MC{N,Diff})
-    elseif  ~(degen1 || degen2)
+    elseif  !degen1 || !degen2
         zMC = div_MV(x, y, z)
     else
         zMC = mult_kernel(x, inv(y), z)
@@ -93,6 +95,6 @@ end
 end
 
 @inline function /(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
-    ~in(0.0, y) && (return div_kernel(x, y, x.Intv/y.Intv))
+    0.0 ∉ y && (return div_kernel(x, y, x.Intv/y.Intv))
     return nan(MC{N,T})
 end

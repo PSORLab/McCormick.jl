@@ -24,25 +24,25 @@ using McCormick
 
 const SUITE = BenchmarkGroup()
 
-function test_comp1(f, x)
+function test_comp1(f, x, n)
     z = f(x)
-    for i = 1:1000
+    for i = 1:n
         z = f(z)
     end
     z
 end
 
-function test_comp2l(f, x, y)
+function test_comp2l(f, x, y, n)
     z = f(x, y)
-    for i = 1:1000
+    for i = 1:n
         z = f(z, y)
     end
     z
 end
 
-function test_comp2r(f, x, y)
+function test_comp2r(f, x, y, n)
     z = f(x, y)
-    for i = 1:1000
+    for i = 1:n
         z = f(x, z)
     end
     z
@@ -61,35 +61,34 @@ for T in (NS, Diff, MV)
         for op in (+, -, exp, expm1, log, log2, log10, log1p,
                    abs, one, zero, real, max, min, inv, cosh, sqrt,
                    isone, isnan)
-            S[string(op)*"(x)"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(1.0,$(Interval{Float64}(0.1,2.0)),2))
+            S[string(op)*"(x)"] = @benchmarkable $(test_comp1)($op, a, 1000) setup = (a = MC{5,$T}(1.0,$(Interval{Float64}(0.1,2.0)),2))
         end
         # domain violations asin, asind, acos, acosd, atan, atand, tan, tand, sec, secd,
-        # no root in range sinh
-        for op in (sin, sind, cos, cosd, step, sign)
-            S[string(op)*"(x), x > 0"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-            S[string(op)*"(x), 0 ∈ x"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
-            S[string(op)*"(x), x < 0"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        for op in (sin, sind, cos, cosd, step, sign, sinh)
+            S[string(op)*"(x), x > 0"] = @benchmarkable $(test_comp1)($op, a, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+            S[string(op)*"(x), 0 ∈ x"] = @benchmarkable $(test_comp1)($op, a, 1000) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
+            S[string(op)*"(x), x < 0"] = @benchmarkable $(test_comp1)($op, a, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
         end
         for op in (min, max, *, -, +, /)
-            S[string(op)*"(x, Float64)"] =  @benchmarkable $(test_comp2l)($op, x, q) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
-            S[string(op)*"(Float64, x)"] =  @benchmarkable $(test_comp2r)($op, q, x) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
-            S[string(op)*"(x, y)"] =   @benchmarkable $(test_comp2l)($op, x, y) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2);
+            S[string(op)*"(x, Float64)"] =  @benchmarkable $(test_comp2l)($op, x, q, 10000) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
+            S[string(op)*"(Float64, x)"] =  @benchmarkable $(test_comp2r)($op, q, x, 10000) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
+            S[string(op)*"(x, y)"] =   @benchmarkable $(test_comp2l)($op, x, y, 1000) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2);
                                                                             y = MC{5,$T}(0.5,$(Interval{Float64}(0.3,0.9)),2);)
         end
-        S["x^2, x > 0"] = @benchmarkable a^2 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^2, 0 ∈ x"] = @benchmarkable a^2 setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
-        S["x^2, x < 0"] = @benchmarkable a^2 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
-        S["x^3, x > 0"] = @benchmarkable a^3 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^3, 0 ∈ x"] = @benchmarkable a^3 setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
-        S["x^3, x < 0"] = @benchmarkable a^3 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
-        S["x^4, x > 0"] = @benchmarkable a^4 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^4, 0 ∈ x"] = @benchmarkable a^4 setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
-        S["x^4, x < 0"] = @benchmarkable a^4 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
-        S["x^-1, x > 0"] = @benchmarkable a^-1 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^-1, x < 0"] = @benchmarkable a^-1 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
-        S["x^-2, x > 0"] = @benchmarkable a^-2 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^-2, x < 0"] = @benchmarkable a^-2 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
-        S["x^-3, x > 0"] = @benchmarkable a^-3 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-        S["x^-3, x < 0"] = @benchmarkable a^-3 setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^2, x > 0"] = @benchmarkable test_comp2l($^, a, 2, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^2, 0 ∈ x"] = @benchmarkable test_comp2l($^, a, 2, 1000) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
+        S["x^2, x < 0"] = @benchmarkable test_comp2l($^, a, 2, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^3, x > 0"] = @benchmarkable test_comp2l($^, a, 3, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^3, 0 ∈ x"] = @benchmarkable test_comp2l($^, a, 3, 1000) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
+        S["x^3, x < 0"] = @benchmarkable test_comp2l($^, a, 3, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^4, x > 0"] = @benchmarkable test_comp2l($^, a, 4, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^4, 0 ∈ x"] = @benchmarkable test_comp2l($^, a, 4, 1000) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
+        S["x^4, x < 0"] = @benchmarkable test_comp2l($^, a, 4, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^-1, x > 0"] = @benchmarkable test_comp2l($^, a, -1, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^-1, x < 0"] = @benchmarkable test_comp2l($^, a, -1, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^-2, x > 0"] = @benchmarkable test_comp2l($^, a, -2, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^-2, x < 0"] = @benchmarkable test_comp2l($^, a, -2, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        S["x^-3, x > 0"] = @benchmarkable test_comp2l($^, a, -3, 1000) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+        S["x^-3, x < 0"] = @benchmarkable test_comp2l($^, a, -3, 1000) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
     end
 end

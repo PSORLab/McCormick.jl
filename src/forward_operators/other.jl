@@ -23,24 +23,24 @@ interval_MC(x::MC{S,T}) where {S, T<:RelaxTag} = MC{S,T}(x.Intv)
 
 ########### Defines differentiable step relaxations
 @inline function cv_step(x::Float64, xL::Float64, xU::Float64)
-	 (xU <= 0.0) && (return 0.0, 0.0)
-	 (xL >= 0.0) && (return 1.0, 0.0)
-	 (x >= 0.0) ? ((x/xU)^2, 2.0*x/xU^2) : (0.0, 0.0)
+	 xU <= 0.0 && (return 0.0, 0.0)
+	 xL >= 0.0 && (return 1.0, 0.0)
+	 x >= 0.0 ? ((x/xU)^2, 2.0*x/xU^2) : (0.0, 0.0)
 end
 @inline function cc_step(x::Float64, xL::Float64, xU::Float64)
-	 (xU <= 0.0) && (return 0.0, 0.0)
-	 (xL >= 0.0) && (return 1.0, 0.0)
-	 (x >= 0.0) ? (1.0, 0.0) : (1.0-(x/xL)^2, -2.0*x/xL^2)
+	 xU <= 0.0 && (return 0.0, 0.0)
+	 xL >= 0.0 && (return 1.0, 0.0)
+	 x >= 0.0 ? (1.0, 0.0) : (1.0-(x/xL)^2, -2.0*x/xL^2)
 end
 @inline function cv_step_NS(x::Float64, xL::Float64, xU::Float64)
-	 (xU <= 0.0) && (return 0.0, 0.0)
-	 (xL >= 0.0) && (return 1.0, 0.0)
-	 (x > 0.0) ? (x/xU, 1.0/xU) : (0.0, 0.0)
+	 xU <= 0.0 && (return 0.0, 0.0)
+	 xL >= 0.0 && (return 1.0, 0.0)
+	 x > 0.0 ? (x/xU, 1.0/xU) : (0.0, 0.0)
 end
 @inline function cc_step_NS(x::Float64, xL::Float64, xU::Float64)
-	 (xU <= 0.0) && (return 0.0, 0.0)
-	 (xL >= 0.0) && (return 1.0, 0.0)
-	 (x >= 0.0) ? (1.0, 0.0) : ((1.0 - (x/xL)), (-x/xL))
+	 xU <= 0.0 && (return 0.0, 0.0)
+	 xL >= 0.0 && (return 1.0, 0.0)
+	 x >= 0.0 ? (1.0, 0.0) : ((1.0 - (x/xL)), (-x/xL))
 end
 @inline function step_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	 xL = x.Intv.lo
@@ -79,9 +79,9 @@ end
 @inline sign(x::MC) = sign_kernel(x, sign(x.Intv))
 
 @inline function cv_abs(x::Float64, xL::Float64, xU::Float64)
-	(xL >= 0.0) && (return x, 1.0)
-	(xU <= 0.0) && (return -x, -1.0)
-	if (x >= 0.0)
+	xL >= 0.0 && (return x, 1.0)
+	xU <= 0.0 && (return -x, -1.0)
+	if x >= 0.0
 		return xU*(x/xU)^(MC_DIFF_MU+1), (MC_DIFF_MU+1)*(x/xU)^MC_DIFF_MU
 	end
 	return -xL*(x/xL)^(MC_DIFF_MU+1), -(MC_DIFF_MU+1)*(x/xL)^MC_DIFF_MU

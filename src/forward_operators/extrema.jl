@@ -15,8 +15,8 @@
 # Univariate min/max operators
 @inline deriv_max(x::Float64, c::Float64) = (x < c) ? 0.0 : 1.0
 @inline function cv_max(x::Float64, xL::Float64, xU::Float64, a::Float64)
-    (xU <= a) && (return a, 0.0)
-    (a <= xL) && (return x, 1.0)
+    xU <= a && (return a, 0.0)
+    a <= xL && (return x, 1.0)
     term = max(0.0, (x - a)/(xU - a))
     val = a + (xU - a)*term^MC_DIFF_MU1
     dval = MC_DIFF_MU1T*term^MC_DIFF_MU
@@ -52,18 +52,18 @@ end
 
 # Multivariate min/max operators
 @inline function psil_max(x::Float64, y::Float64, lambda::Interval{Float64}, nu::Interval{Float64}, f1::MC{N, Diff}, f2::MC{N, Diff}) where N
-    if (nu.hi <= lambda.lo)
+    if nu.hi <= lambda.lo
         val = x
-    elseif (lambda.hi <= nu.lo)
+    elseif lambda.hi <= nu.lo
         val = y
     elseif ((nu.lo <= lambda.lo) && (lambda.lo < nu.hi))
         val = x + (nu.hi - lambda.lo)*max(0.0, (y - x)/(nu.hi - lambda.lo))^MC_DIFF_MU1
     else
         val = y + (lambda.hi - nu.lo)*max(0.0, (x - y)/(lambda.hi - nu.lo))^MC_DIFF_MU1
     end
-    if (nu.hi <= lambda.lo)
+    if nu.hi <= lambda.lo
         grad_val = f1.cv_grad
-    elseif (lambda.hi <= nu.lo)
+    elseif lambda.hi <= nu.lo
         grad_val = f1.cv_grad
     else
         grad_val = max(0.0, psil_max_dx(x, y, lambda, nu))*f1.cv_grad +
@@ -130,10 +130,10 @@ end
 end
 
 @inline function max_kernel(x::MC{N, MV}, y::MC{N, MV}, z::Interval{Float64}) where N
-    if (x.Intv.hi <= y.Intv.lo)
+    if x.Intv.hi <= y.Intv.lo
         cc = y.cc
         cc_grad = y.cnst ? zero(SVector{N,Float64}) : y.cc_grad
-    elseif (x.Intv.lo >= y.Intv.hi)
+    elseif x.Intv.lo >= y.Intv.hi
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
@@ -166,10 +166,10 @@ end
 end
 
 @inline function max_kernel(x::MC{N, NS}, y::MC{N, NS}, z::Interval{Float64}) where N
-    if (x.Intv.hi <= y.Intv.lo)
+    if x.Intv.hi <= y.Intv.lo
         cc = y.cc
         cc_grad = y.cnst ? zero(SVector{N,Float64}) : y.cc_grad
-    elseif (x.Intv.lo >= y.Intv.hi)
+    elseif x.Intv.lo >= y.Intv.hi
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
@@ -185,5 +185,5 @@ end
 end
 
 @inline max(x::MC, y::MC) = max_kernel(x, y, max(x.Intv, y.Intv))
-@inline min_kernel(x::MC, y::MC, z::Interval{Float64}) = -max(-x,-y)
-@inline min(x::MC, y::MC) = -max(-x,-y)
+@inline min_kernel(x::MC, y::MC, z::Interval{Float64}) = -max(-x, -y)
+@inline min(x::MC, y::MC) = -max(-x, -y)

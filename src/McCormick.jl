@@ -112,6 +112,9 @@ const two_intv = Interval{Float64}(2.0)
 const log2_intv = log(Interval{Float64}(2.0))
 const log10_intv = log(Interval{Float64}(10.0))
 
+const NumberNotRelax = Union{Bool, Float16, Float32, Float64, Signed, Unsigned, BigFloat,
+                             Int8, Int64, Int32, Int16, Int128}
+
 ########### number list
 int_list = [Int8,UInt8,Int16,UInt16,
             Int32,UInt32,Int64,UInt64,Int128,UInt128]
