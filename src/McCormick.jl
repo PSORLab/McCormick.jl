@@ -143,9 +143,9 @@ $(FUNCTIONNAME)
 Calculates the middle of three numbers returning the value and the index.
 """
 function mid3(x::Float64, y::Float64, z::Float64)
-  (((x>=y)&&(y>=z))||((z>=y)&&(y>=x))) && (return y,2)
-  (((y>=x)&&(x>=z))||((z>=x)&&(x>=y))) && (return x,1)
-  return z,3
+  (((x >= y) && (y >= z)) || ((z >= y) && (y >= x))) && (return y, 2)
+  (((y >= x) && (x >= z)) || ((z >= x) && (x >= y))) && (return x, 1)
+  return z, 3
 end
 
 """
@@ -154,8 +154,8 @@ $(FUNCTIONNAME)
 Calculates the middle of three numbers (x,y,z) returning the value where x <= y.
 """
 function mid3v(x::Float64, y::Float64, z::Float64)
-    (z <= x) && (return x)
-    (y <= z) && (return y)
+    z <= x && (return x)
+    y <= z && (return y)
     return z
 end
 
@@ -218,21 +218,21 @@ $(FUNCTIONNAME)
 function cut(xL::Float64,xU::Float64, cv::Float64,cc::Float64,
              cv_grad::SVector{N,Float64},cc_grad::SVector{N,Float64}) where {N}
 
-    if (cc > xU)
+    if cc > xU
         cco = xU
         cc_grado = zero(SVector{N,Float64})
     else
         cco = cc
         cc_grado = cc_grad
     end
-    if (cv < xL)
+    if cv < xL
         cvo = xL
         cv_grado = zero(SVector{N,Float64})
     else
         cvo = cv
         cv_grado = cv_grad
     end
-    return (cvo, cco, cv_grado, cc_grado)
+    return cvo, cco, cv_grado, cc_grado
 end
 
 lo(x::Interval{Float64}) = x.lo
@@ -346,11 +346,11 @@ diam(x::MC) = diam(x.Intv)
 isthin(x::MC) = isthin(x.Intv)
 
 function isone(x::MC)
-  flag = true
-  flag &= (x.Intv.lo == 1.0)
-  flag &= (x.Intv.hi == 1.0)
-  flag &= x.cnst
-  return flag
+    flag = true
+    flag &= (x.Intv.lo == 1.0)
+    flag &= (x.Intv.hi == 1.0)
+    flag &= x.cnst
+    return flag
 end
 
 """
@@ -434,7 +434,7 @@ function golden_section(xL::Float64, xU::Float64, f::Function, envp1::Float64,
   fL::Float64 = f(xL, envp1, envp2)
   fU::Float64 = f(xU, envp1, envp2)
 
-  (fL*fU > 0.0) && error("GOLDEN EXCEPTION: No root present in range [xL, xU]")
+  fL*fU > 0.0 && (return NaN)
   xm = xU - (2.0 - golden)*(xU - xL)
   fm::Float64 = f(xm,envp1,envp2)
   return golden_section_it(1, xL, fL, xm, fm, xU, fU, f, envp1, envp2)
@@ -452,9 +452,9 @@ function golden_section_it(init::Int, a::Float64, fa::Float64, b::Float64,
                            fb::Float64, c::Float64, fc::Float64, f::Function,
                            envp1::Float64, envp2::Float64)
     flag = (c - b > b - a)
-    x = flag ? (b + (2.0 - golden)*(c - b)) : (b - (2.0 - golden)*(b - a))
+    x = flag ? b + (2.0 - golden)*(c - b) : b - (2.0 - golden)*(b - a)
     itr = init
-    if (abs(c-a) < MC_ENV_TOL*(abs(b) + abs(x)) || (itr > MC_ENV_MAX_INT))
+    if abs(c-a) < MC_ENV_TOL*(abs(b) + abs(x)) || (itr > MC_ENV_MAX_INT)
         return (c + a)/2.0
     end
     itr += 1

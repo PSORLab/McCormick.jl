@@ -24,6 +24,30 @@ using McCormick
 
 const SUITE = BenchmarkGroup()
 
+function test_comp1(f, x)
+    z = f(x)
+    for i = 1:1000
+        z = f(z)
+    end
+    z
+end
+
+function test_comp2l(f, x, y)
+    z = f(x, y)
+    for i = 1:1000
+        z = f(z, y)
+    end
+    z
+end
+
+function test_comp2r(f, x, y)
+    z = f(x, y)
+    for i = 1:1000
+        z = f(x, z)
+    end
+    z
+end
+
 for T in (NS, Diff, MV)
         begin
             S = SUITE["Constructors $(T)"] = BenchmarkGroup()
@@ -34,21 +58,22 @@ for T in (NS, Diff, MV)
             S = SUITE["OOP $(T) McCormick"] = BenchmarkGroup()
         end
     begin
-        for op in (+, -, exp, exp2, exp10, expm1, log, log2, log10, log1p,
-                   abs, one, zero, real, max, min, inv, cosh, acosh, sqrt,
+        for op in (+, -, exp, expm1, log, log2, log10, log1p,
+                   abs, one, zero, real, max, min, inv, cosh, sqrt,
                    isone, isnan)
-            S[string(op)*"(x)"] = @benchmarkable $(op)(a) setup = (a = MC{5,$T}(1.0,$(Interval{Float64}(0.1,2.0)),2))
+            S[string(op)*"(x)"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(1.0,$(Interval{Float64}(0.1,2.0)),2))
         end
-        for op in (asin, sin, asind, sind, acos, acosd, cos, cosd, atan, atand,
-                   tan, tand, sec, secd, step, sign, sinh, atanh, tanh, )
-            S[string(op)*"(x), x > 0"] = @benchmarkable $(op)(a) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
-            S[string(op)*"(x), 0 ∈ x"] = @benchmarkable $(op)(a) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
-            S[string(op)*"(x), x < 0"] = @benchmarkable $(op)(a) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
+        # domain violations asin, asind, acos, acosd, atan, atand, tan, tand, sec, secd,
+        # no root in range sinh
+        for op in (sin, sind, cos, cosd, step, sign)
+            S[string(op)*"(x), x > 0"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
+            S[string(op)*"(x), 0 ∈ x"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(0.1,$(Interval{Float64}(-0.4,0.3)),2))
+            S[string(op)*"(x), x < 0"] = @benchmarkable $(test_comp1)($op, a) setup = (a = MC{5,$T}(-0.5,$(Interval{Float64}(-0.9,-0.1)),2))
         end
         for op in (min, max, *, -, +, /)
-            S[string(op)*"(x, Float64)"] =  @benchmarkable $(op)(x,q) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
-            S[string(op)*"(Float64, x)"] =   @benchmarkable $(op)(q,x) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
-            S[string(op)*"(x, y)"] =   @benchmarkable $(op)(x,y) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2);
+            S[string(op)*"(x, Float64)"] =  @benchmarkable $(test_comp2l)($op, x, q) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
+            S[string(op)*"(Float64, x)"] =  @benchmarkable $(test_comp2r)($op, q, x) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2); q = 1.34534)
+            S[string(op)*"(x, y)"] =   @benchmarkable $(test_comp2l)($op, x, y) setup = (x = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2);
                                                                             y = MC{5,$T}(0.5,$(Interval{Float64}(0.3,0.9)),2);)
         end
         S["x^2, x > 0"] = @benchmarkable a^2 setup = (a = MC{5,$T}(0.4,$(Interval{Float64}(0.1,0.9)),2))
