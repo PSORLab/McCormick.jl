@@ -15,7 +15,7 @@
 # Differentiable multiplication kernel definition
 @inline function sigu(y::Float64)
 	x = y/MC_DIFF_MU1T
-	(0.0 <= x) ? x^(1.0/MC_DIFF_MU1T) : -abs(x)^(1.0/MC_DIFF_MU1T)
+	(0.0 <= x) ? x^(1.0/MC_DIFF_MU) : -abs(x)^(1.0/MC_DIFF_MU)
 end
 @inline abs_pu(x::Float64) = abs(x)^MC_DIFF_MU1T
 @inline psi_pow(x::Float64) = MC_DIFF_MU1T*x*abs(x)^MC_DIFF_MU1N
@@ -38,10 +38,10 @@ end
 	yslo = nu.lo + NuDel*(((lambda.hi - alplo)/LmdDel) - sigu(LmdSum/LmdDel))
 	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
-	term1 = mid3v(alplo, alphi, xslo)
-	term2 = mid3v(alplo, alphi, xshi)
-	term3 = mid3v(betlo, bethi, yslo)
-	term4 = mid3v(betlo, bethi, yshi)
+	term1, _ = mid3(alplo, alphi, xslo)
+	term2, _ = mid3(alplo, alphi, xshi)
+	term3, _ = mid3(betlo, bethi, yslo)
+	term4, _ = mid3(betlo, bethi, yshi)
 
 	# calculates the convex relaxation
 	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
@@ -101,10 +101,10 @@ end
 	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
 	# calculates term 1
-	term1 = mid3v(alplo, alphi, xslo)
-	term2 = mid3v(alplo, alphi, xshi)
-	term3 = mid3v(betlo, bethi, yslo)
-	term4 = mid3v(betlo, bethi, yshi)
+	term1, _ = mid3(alplo, alphi, xslo)
+	term2, _ = mid3(alplo, alphi, xshi)
+	term3, _ = mid3(betlo, bethi, yslo)
+	term4, _ = mid3(betlo, bethi, yshi)
 
 	# calculates the convex relaxation
 	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
@@ -163,10 +163,10 @@ end
 	yshi = nu.lo + NuDel*(((lambda.hi - alphi)/LmdDel) - sigu(LmdSum/LmdDel))
 
 	# calculates terms
-	term1 = mid3v(alplo, alphi, xslo)
-	term2 = mid3v(alplo, alphi, xshi)
-	term3 = mid3v(betlo, bethi, yslo)
-	term4 = mid3v(betlo, bethi, yshi)
+	term1, _ = mid3(alplo, alphi, xslo)
+	term2, _ = mid3(alplo, alphi, xshi)
+	term3, _ = mid3(betlo, bethi, yslo)
+	term4, _ = mid3(betlo, bethi, yshi)
 
 	# calculates the convex relaxation
 	tempGxA1a = LmdDel*NuDel*abs_pu((betlo - nu.lo)/NuDel - (lambda.hi - term1)/LmdDel)
@@ -210,7 +210,7 @@ end
 		btemp2 = x2lo + MC_DIFF_MU1T*x2h_l*btemp1^MC_DIFF_MU
 		btemp3 = x1lo + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
 
-		cv = x1cv*x2lo + x1lo*x2v_l + x1h_l*x2h_l*btemp1^MC_DIFF_MU
+		cv = x1cv*x2lo + x1lo*x2v_l + x1h_l*x2h_l*btemp1^MC_DIFF_MU1T
 		cv_grad = btemp2*x1.cv_grad + btemp3*x2.cv_grad
 
 
@@ -220,7 +220,7 @@ end
 		btemp2 = -x2hi + MC_DIFF_MU1T*(x2h_l)*max(0.0, btemp1)^MC_DIFF_MU
 		btemp3 = -x1hi + MC_DIFF_MU1T*(x1h_l)*max(0.0, btemp1)^MC_DIFF_MU
 
-		cv = x1cc*x2hi + x1hi*(x2cc - x2hi) + (x1h_l)*(x2h_l)*btemp1^MC_DIFF_MU
+		cv = x1cc*x2hi + x1hi*(x2cc - x2hi) + (x1h_l)*(x2h_l)*btemp1^MC_DIFF_MU1T
 		cv_grad = (-btemp2)*x1.cc_grad - btemp3*x2.cc_grad
 
 	else
@@ -232,7 +232,7 @@ end
 		btemp1 = max(0.0, x2v_l/x2h_l - (x1cc-x1lo)/x1h_l)
 		btemp2 = x2lo + MC_DIFF_MU1T*x2h_l*btemp1^MC_DIFF_MU
 		btemp3 = -x1hi + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
-		cc = x1cc*x2lo - x1hi*(x2lo - x2cv) - x1h_l*x2h_l*btemp1^MC_DIFF_MU
+		cc = x1cc*x2lo - x1hi*(x2lo - x2cv) - x1h_l*x2h_l*btemp1^MC_DIFF_MU1T
 		cc_grad = btemp2*x1.cc_grad - btemp3*x2.cv_grad
 
 	elseif (0.0 <= x1.Intv.lo) && (x2.Intv.hi <= 0.0)
@@ -240,7 +240,7 @@ end
 		btemp1 = max(0.0, (x2hi-x2cc)/x2h_l - x1h_v/x1h_l)
 		btemp2 = -x2hi + MC_DIFF_MU1T*(x2h_l)*btemp1^MC_DIFF_MU
 		btemp3 = x1lo + MC_DIFF_MU1T*x1h_l*btemp1^MC_DIFF_MU
-		cc = x1cv*x2hi + x1lo*(x2cc - x2hi) - x1h_l*x2h_l*btemp1^MC_DIFF_MU
+		cc = x1cv*x2hi + x1lo*(x2cc - x2hi) - x1h_l*x2h_l*btemp1^MC_DIFF_MU1T
 		cc_grad = -btemp2*x1.cv_grad + btemp3*x2.cc_grad
 
 	else
