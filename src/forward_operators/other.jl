@@ -146,7 +146,6 @@ end
      end
      MC{N,T}(cv, cc, (x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, cnst1 && cnst2)
 end
-
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
     max_MC = x - max(x - y, 0.0)
     min_MC = y - max(y - x, 0.0)
@@ -183,6 +182,14 @@ end
      return MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv, y),
 	                    max_MC.cv_grad, min_MC.cc_grad, x.cnst)
 end
+
+@inline function intersect(c::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
+	isempty(x) && (return empty(x))
+	isnan(x) && (return nan(x))
+	c ∈ x &&  (return MC{N,T}(c))
+	empty(x)
+end
+@inline intersect(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag} = intersect(c, x)
 
 @inline in(a::Int, x::MC) = in(a, x.Intv)
 @inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
