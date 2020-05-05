@@ -56,7 +56,7 @@ end
         val = x
     elseif lambda.hi <= nu.lo
         val = y
-    elseif ((nu.lo <= lambda.lo) && (lambda.lo < nu.hi))
+    elseif nu.lo <= lambda.lo && lambda.lo < nu.hi
         val = x + (nu.hi - lambda.lo)*max(0.0, (y - x)/(nu.hi - lambda.lo))^MC_DIFF_MU1
     else
         val = y + (lambda.hi - nu.lo)*max(0.0, (x - y)/(lambda.hi - nu.lo))^MC_DIFF_MU1

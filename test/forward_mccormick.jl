@@ -495,6 +495,27 @@ end
    @test dcv == 0.0
 
    @test McCormick.pow_kernel(xNS, 1, xNS.Intv) == xNS
+
+   X = Interval(-0.9, 0.8)
+   x = MC{1,Diff}(-0.75, X, 1)
+   y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
+   @test y.cv == -0.5610120753581359
+   @test y.cc == 0.11281176084484947
+
+   x = MC{1,Diff}(-0.25, X, 1)
+   y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
+   @test y.cv == -0.4255132669583401
+   @test y.cc == 0.2664785395034585
+
+   x = MC{1,Diff}(0.25, X, 1)
+   y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
+   @test y.cv == -0.23783870584548902
+   @test y.cc == 0.22923736914602943
+
+   x = MC{1,Diff}(0.7, X, 1)
+   y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
+   @test y.cv == 0.02549714244205218
+   @test y.cc == 0.17002351564507798
 end
 
 @testset "Test Arithmetic w/Constant" begin

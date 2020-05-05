@@ -525,9 +525,7 @@ end
 		end
 
 		alphthin = tol_MC(alph1, alph2)
-		if (~alphthin && (alph1 > alph2))
-			return false, x1
-		end
+		(~alphthin && (alph1 > alph2)) && (return false, x1)
 		myalph = (alph1 + alph2)/2.0
 	elseif mul_MV_ns1cv(x1vt[cvi], x2vt[cvi], x1,x2) > mul_MV_ns2cv(x1vt[cvi], x2vt[cvi], x1, x2)
 		myalph = 1.0
@@ -581,9 +579,7 @@ end
 		 end
 
         alphthin = tol_MC(alph1, alph2)
-		if ~alphthin && (alph1 > alph2)
-			return false, x1
-		end
+		(~alphthin && (alph1 > alph2)) && (return false, x1)
 	 	myalph = (alph1 + alph2)/2.0
 	elseif mul_MV_ns1cc(x1vt[cci], x2vt[cci], x1, x2) > mul_MV_ns2cc(x1vt[cci], x2vt[cci], x1, x2)
 	 	myalph = 1.0
