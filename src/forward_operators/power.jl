@@ -260,14 +260,14 @@ end
 
 @inline function pow_kernel(x::MC{N,T}, c::Z, y::Interval{Float64}) where {Z<:Integer, N, T<:RelaxTag}
 	isnan(x) && (return nan(MC{N,T}))
-	(c == 0) && (return one(MC{N,T}))
-	(c == 1) && (return x)
-	if (c > 0)
-        (c == 2) && (return sqr_kernel(x, y))
+	c == 0 && (return one(MC{N,T}))
+	c == 1 && (return x)
+	if c > 0
+        c == 2 && (return sqr_kernel(x, y))
 		isodd(c) && (return pos_odd(x, c, y))
 		return npp_or_pow4(x, c, y)
     else
-        if (x.Intv.hi < 0.0)
+        if lo(x) < 0.0
         	isodd(c) && (return neg_powneg_odd(x, c, y))
         	return neg_powneg_even(x, c, y)
 		end
@@ -278,6 +278,7 @@ end
 	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
 		return nan(MC{N,T})
 	end
+	(c < 0) && pow_kernel(x, c, inv(pow(x.Intv,-c)))
 	return pow_kernel(x, c, pow(x.Intv,c))
 end
 @inline (^)(x::MC, c::Z) where {Z <: Integer} = pow(x,c)
