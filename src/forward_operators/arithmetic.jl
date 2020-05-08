@@ -94,6 +94,8 @@ end
 @inline *(x::MC, c::C) where {C <: NumberNotRelax}  = x*Float64(c)
 
 # Division
+@inline div_kernel(x::MC, y::Float64, z::Interval{Float64}) = mult_kernel(x, inv(y), z)
+@inline div_kernel(x::Float64, y::MC, z::Interval{Float64}) = mult_kernel(x, inv(y), z)
 @inline div_kernel(x::MC, y::C, z::Interval{Float64}) where {C <: NumberNotRelax}  = mult_kernel(x, inv(y), z)
 @inline div_kernel(x::C, y::MC, z::Interval{Float64}) where {C <: NumberNotRelax}  = mult_kernel(x, inv(y), z)
 @inline /(x::MC, y::Float64) = x*y
