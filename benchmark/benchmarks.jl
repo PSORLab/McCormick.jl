@@ -48,7 +48,7 @@ function test_comp2r(f, x, y, n)
     z
 end
 
-for T in (NS, Diff, MV)
+for T in (NS, ) #(NS, Diff, MV)
         begin
             S = SUITE["Constructors $(T)"] = BenchmarkGroup()
             S["MC(Float64)"] = @benchmarkable MC{5,$T}(2.1)
