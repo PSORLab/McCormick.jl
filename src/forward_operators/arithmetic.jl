@@ -96,6 +96,8 @@ end
 # Division
 @inline div_kernel(x::MC, y::C, z::Interval{Float64}) where {C <: NumberNotRelax}  = mult_kernel(x, inv(y), z)
 @inline div_kernel(x::C, y::MC, z::Interval{Float64}) where {C <: NumberNotRelax}  = mult_kernel(x, inv(y), z)
+@inline /(x::MC, y::Float64) = x*y
+@inline /(x::Float64, y::MC) = x*inv(y)
 @inline /(x::MC, y::C) where {C <: NumberNotRelax} = x*inv(convert(Float64,y))
 @inline /(x::C, y::MC) where {C <: NumberNotRelax} = convert(Float64,x)*inv(y)
 @inline /(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x/MC{N,T}(y)
