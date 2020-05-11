@@ -173,7 +173,7 @@ end
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
-        ccMC = (x + y + abs(x - y))/2.0
+        ccMC = 0.5*(x + y + abs(x - y))
         cc = ccMC.cc
         cc_grad = ccMC.cc_grad
     end
@@ -184,6 +184,25 @@ end
     return MC{N, NS}(cv, cc, z, cv_grad, cc_grad, y.cnst ? x.cnst : (x.cnst ? y.cnst : (x.cnst || y.cnst)))
 end
 
+@inline function min_kernel(x::MC{N, NS}, y::MC{N, NS}, z::Interval{Float64}) where N
+    if x.Intv.hi <= y.Intv.lo
+        cv = x.cv
+        cv_grad = x.cnst ? zero(SVector{N,Float64}) : x.cv_grad
+    elseif x.Intv.lo >= y.Intv.hi
+        cv = y.cv
+        cv_grad = y.cnst ? zero(SVector{N,Float64}) : y.cv_grad
+    else
+        cvMC = 0.5*(x + y - abs(x - y))
+        cv = cvMC.cv
+        cv_grad = cvMC.cv_grad
+    end
+    cc = min(x.cc, y.cc)
+    cc_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
+                              (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
+    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N, NS}(cv, cc, z, cv_grad, cc_grad, y.cnst ? x.cnst : (x.cnst ? y.cnst : (x.cnst || y.cnst)))
+end
+
 @inline max(x::MC, y::MC) = max_kernel(x, y, max(x.Intv, y.Intv))
-@inline min_kernel(x::MC, y::MC, z::Interval{Float64}) = -max(-x, -y)
-@inline min(x::MC, y::MC) = -max(-x, -y)
+@inline min_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{MV, Diff}} = -max(-x, -y)
+@inline min(x::MC, y::MC) = min_kernel(x, y, min(x.Intv, y.Intv))
