@@ -175,6 +175,8 @@ end
 @inline atanh_deriv(x::Float64) = 1.0/(1.0 - x^2)
 @inline atanh_env(x::Float64, y::Float64, z::Float64) = (atanh(x) - atanh(y))*(1.0 - x^2) - x + y
 @inline function cv_atanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL <= -1.0) && (return NaN, NaN, NaN)
+    (xU >= 1.0) && (return NaN, NaN, NaN)
     (xL >= 0.0) && (return atanh(x), atanh_deriv(x), p)
     (xU <= 0.0) && (return dline_seg(atanh, atanh_deriv, x, xL, xU)..., p)
     if p === Inf
@@ -185,6 +187,8 @@ end
     return atanh(x), atanh_deriv(x), p
 end
 @inline function cc_atanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL <= -1.0) && (return NaN, NaN, NaN)
+    (xU >= 1.0) && (return NaN, NaN, NaN)
     (xL >= 0.0) && (return dline_seg(atanh, atanh_deriv, x, xL, xU)..., p)
     (xU <= 0.0) && (return atanh(x), atanh_deriv(x), p)
     if p === Inf
@@ -446,8 +450,8 @@ end
 @inline csch(x::MC) = inv(sinh(x))
 @inline coth(x::MC) = inv(tanh(x))
 
-@inline acsch(x::MC) = log(sqrt(1.0+inv(sqr(x)))+inv(x))
-@inline acoth(x::MC) = 0.5*(log(1.0+inv(x))-log(1.0-inv(x)))
+@inline acsch(x::MC) = log(sqrt(1.0 + inv(sqr(x))) + inv(x))
+@inline acoth(x::MC) = 0.5*(log(1.0 + inv(x)) - log(1.0 - inv(x)))
 
 @inline sind(x::MC) = sin(deg2rad(x))
 @inline cosd(x::MC) = cos(deg2rad(x))
