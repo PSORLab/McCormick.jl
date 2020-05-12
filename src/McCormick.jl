@@ -299,6 +299,7 @@ MC{N,T}(y::Float64) where {N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(y))
 function MC{N,T}(y::Y) where {N, T <: RelaxTag, Y <: AbstractIrrational}
     MC{N,T}(Interval{Float64}(y))
 end
+MC{N,T}(y::Q) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(Interval{Float64}(y))
 
 """
 $(TYPEDSIGNATURES)
