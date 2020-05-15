@@ -17,18 +17,18 @@ $(TYPEDEF)
 
 A dense LU preconditioner for implicit McCormick relaxation.
 """
-struct DenseMidInv <: AbstractPreconditionerMC
+struct DenseMidInv{S <: VecOrMat{Float64}} <: AbstractPreconditionerMC
     "Storage for the midpoint matrix and inverse"
-    Y::Array{Float64,2}
-    "Storage for the interval matrix"
-    YInterval::Array{Interval{Float64},2}
+    Y::S
+    "Vector for intermediate calculation "
+    YInterval::Vector{Interval{Float64}}
     "Number of state space variables"
     nx::Int
     "Number of decision space variables"
     np::Int
 end
 DenseMidInv(nx::Int, np::Int) = DenseMidInv(zeros(Float64,nx,nx), zeros(Interval{Float64},1), nx, np)
-function precondition!(d::DenseMidInv, H::Vector{MC{N,T}}, J::Array{MC{N,T},2}) where {N, T <: RelaxTag}
+function precondition!(d::DenseMidInv{S}, H::Vector{MC{N,T}}, J::Array{MC{N,T},2}) where {N, T <: RelaxTag, S <: VecOrMat{Float64}}
     for i in eachindex(J)
         @inbounds d.YInterval[1] = J[i].Intv
         @inbounds d.Y[i] = 0.5*(d.YInterval[1].lo + d.YInterval[1].hi)
@@ -39,7 +39,8 @@ function precondition!(d::DenseMidInv, H::Vector{MC{N,T}}, J::Array{MC{N,T},2}) 
     return
 end
 function (d::DenseMidInv)(h!::FH, hj!::FJ, nx::Int, np::Int) where {FH <: Function, FJ <: Function}
-    return DenseMidInv(zeros(nx,nx), zeros(Interval{Float64},1), nx, np)
+    S = nx == 1 ? Vector{Float64} : Array{Float64,2}
+    return DenseMidInv{S}(zeros(nx,nx), zeros(Interval{Float64},1), nx, np)
 end
 function preconditioner_storage(d::DenseMidInv, tag::T) where T <: RelaxTag
     zeros(MC{d.np, T}, (d.nx, d.nx))

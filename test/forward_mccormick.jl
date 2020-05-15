@@ -691,7 +691,7 @@ end
    @test check_vs_refv(^, x5_d1, 4, yref_d1_pow13, mctol)
    @test check_vs_refv(^, x6_d1, 4, yref_d1_pow14, mctol)
 
-   x = MC{2,NS}(2.1, 3.3, Interval(1.1,4.3))
+   x = MC{2,NS}(2.1, 3.3, Interval(1.1,4.3), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    c = 1.2
    cInt = 2
 
@@ -918,8 +918,8 @@ end
     @test isapprox(out4.Intv.lo, 2.0, atol =1E-6)
     @test isapprox(out4.Intv.hi, 8.0, atol =1E-6)
 
-    x1a = MC{2,NS}(1.1, 2.3, Interval(0.1,3.3))
-    x2a = MC{2,NS}(2.1, 3.3, Interval(1.1,4.3))
+    x1a = MC{2,NS}(1.1, 2.3, Interval(0.1,3.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+    x2a = MC{2,NS}(2.1, 3.3, Interval(1.1,4.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
     mc1 = McCormick.mul1_u1mix_u2mix(x1a, x2a, x1a.Intv*x2a.Intv, false)
     mc2 = McCormick.mul1_u1mix_u2mix(x2a, x1a, x1a.Intv*x2a.Intv, false)
     @test mc1.cv == 2.75
@@ -965,8 +965,8 @@ end
     @test isapprox(out.Intv.lo,-1.33333333,atol=1E-6)
     @test isapprox(out.Intv.hi,-0.39999999999999997,atol=1E-6)
 
-    x1a = MC{2,MV}(1.1, 2.3, Interval(0.1,3.3))
-    x2a = MC{2,MV}(2.1, 3.3, Interval(1.1,4.3))
+    x1a = MC{2,MV}(1.1, 2.3, Interval(0.1,3.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+    x2a = MC{2,MV}(2.1, 3.3, Interval(1.1,4.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
 
     div1 = x2a/Float32(1.1)
     div2 = x2a/Int32(2)

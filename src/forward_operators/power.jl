@@ -85,6 +85,7 @@ end
 @inline sqr(x::MC) = sqr_kernel(x, pow(x.Intv,2))
 
 # convex/concave relaxation (Khan 3.1-3.2) of integer powers of 1/x for positive reals
+@inline pow_deriv(x::Float64, c::T) where {T <: AbstractFloat} = c*x^(c-1)
 @inline pow_deriv(x::Float64, n::Z) where {Z <: Integer} = n*x^(n-1)
 @inline function cv_npp_or_pow4(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
 	temp = x^(n-1)
