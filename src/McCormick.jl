@@ -242,10 +242,10 @@ lo(x::Interval{Float64}) = x.lo
 hi(x::Interval{Float64}) = x.hi
 
 function step(x::Interval{Float64})
-      isempty(x) && return emptyinterval(x)
-      xmin::Float64 = ((x.lo) < 0.0) ? 0.0 : 1.0
-      xmax::Float64 = ((x.hi) >= 0.0) ? 1.0 : 0.0
-      return Interval{Float64}(xmin,xmax)
+     isempty(x) && return emptyinterval(x)
+     xmin::Float64 = ((x.lo) < 0.0) ? 0.0 : 1.0
+     xmax::Float64 = ((x.hi) >= 0.0) ? 1.0 : 0.0
+     return Interval{Float64}(xmin,xmax)
 end
 
 
@@ -255,7 +255,6 @@ $(TYPEDEF)
 
 `MC{N, T <: RelaxTag} <: Real` is the McCormick (w/ (sub)gradient) structure which is used to overload
 standard calculations. The fields are:
-
 $(TYPEDFIELDS)
 """
 struct MC{N, T <: RelaxTag} <: Real
@@ -269,17 +268,19 @@ struct MC{N, T <: RelaxTag} <: Real
     cv_grad::SVector{N,Float64}
     "(Sub)gradient of concave relaxation"
     cc_grad::SVector{N,Float64}
-    "Flag for whether the bounds are constant"
+    "Boolean indicating whether the relaxations are constant over the domain. True if bounding an interval/constant.
+     False, otherwise. This may change over the course of a calculation `cnst` for `zero(x)` is `true` even if `x.cnst`
+     is `false`."
     cnst::Bool
     function MC{N,T}(cv1::Float64, cc1::Float64, Intv1::Interval{Float64},
-                 cv_grad1::SVector{N,Float64} ,cc_grad1::SVector{N,Float64},
-                 cnst1::Bool) where {N, T <: RelaxTag}
-        new(cv1,cc1,Intv1,cv_grad1,cc_grad1,cnst1)
+                     cv_grad1::SVector{N,Float64}, cc_grad1::SVector{N,Float64},
+                     cnst1::Bool) where {N, T <: RelaxTag}
+        new(cv1, cc1, Intv1, cv_grad1, cc_grad1, cnst1)
     end
 end
 
 """
-$(TYPEDSIGNATURES)
+MC{N,T}(y::Interval{Float64})
 
 Constructs McCormick relaxation with convex relaxation equal to `y.lo` and
 concave relaxation equal to `y.hi`.
@@ -290,7 +291,7 @@ function MC{N,T}(y::Interval{Float64}) where {N, T <: RelaxTag}
 end
 
 """
-$(TYPEDSIGNATURES)
+MC{N,T}(y::Float64)
 
 Constructs McCormick relaxation with convex relaxation equal to `y` and
 concave relaxation equal to `y`.
@@ -302,28 +303,18 @@ end
 MC{N,T}(y::Q) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(Interval{Float64}(y))
 
 """
-$(TYPEDSIGNATURES)
+MC{N,T}(cv::Float64, cc::Float64)
 
 Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Interval{Float64}(cv,cc),zero(SVector{N,Float64}),
+    MC{N,T}(cv, cc, Interval{Float64}(cv, cc),zero(SVector{N,Float64}),
             zero(SVector{N,Float64}), true)
 end
 
 """
-$(TYPEDSIGNATURES)
-
-Constructs McCormick relaxation with convex relaxation equal to `cv` and
-concave relaxation equal to `cc`.
-"""
-function MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64}) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Intv, zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
-end
-
-"""
-$(TYPEDSIGNATURES)
+MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64)
 
 Constructs McCormick relaxation with convex relaxation equal to `val`,
 concave relaxation equal to `val`, interval bounds of `Intv`, and a unit subgradient

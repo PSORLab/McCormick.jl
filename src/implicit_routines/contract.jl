@@ -21,7 +21,7 @@ the inputs have been preconditioned.
 function contract! end
 
 """
-$(TYPEDSIGNATURES)
+$(FUNCTIONNAME)
 
 Applies the Gauss-Siedel variant of the Newton type contractor.
 """
@@ -45,7 +45,7 @@ function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Fun
 end
 
 """
-$(TYPEDSIGNATURES)
+$(FUNCTIONNAME)
 
 Applies the componentwise variant of the Krawczyk type contractor.
 """

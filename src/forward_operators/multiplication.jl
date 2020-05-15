@@ -455,15 +455,15 @@ end
 @inline function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
 	isone(x1) && (return x2)
 	isone(x2) && (return x1)
-	if (x1.Intv.lo >= 0.0)
+	if x1.Intv.lo >= 0.0
 		return multiply_STD_NS(x1, x2, y)
-	elseif (x1.Intv.hi <= 0.0)
+	elseif x1.Intv.hi <= 0.0
 		(x2.Intv.lo >= 0.0) && (return -mult_kernel(-x1, x2, -y))
 	    (x2.Intv.hi <= 0.0) && (return mult_kernel(-x1, -x2, y))
 		return -mult_kernel(x2, -x1, -y)
-	elseif (x2.Intv.lo >= 0.0)
+	elseif x2.Intv.lo >= 0.0
 		return mult_kernel(x2, x1, y)
-	elseif (x2.Intv.hi <= 0.0)
+	elseif x2.Intv.hi <= 0.0
 		return -mult_kernel(-x2, x1, -y)
 	else
     	x2.cnst && (return mul1_u1mix_u2mix(x1, x2, y, x1.cnst))

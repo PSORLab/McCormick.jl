@@ -13,14 +13,18 @@
 #############################################################################
 
 """
-$(FUNCTIONNAME)
+$(TYPEDEF)
 
 A dense LU preconditioner for implicit McCormick relaxation.
 """
 struct DenseMidInv <: AbstractPreconditionerMC
+    "Storage for the midpoint matrix and inverse"
     Y::Array{Float64,2}
-    YInterval::Vector{Interval{Float64}}
+    "Storage for the interval matrix"
+    YInterval::Array{Interval{Float64},2}
+    "Number of state space variables"
     nx::Int
+    "Number of decision space variables"
     np::Int
 end
 DenseMidInv(nx::Int, np::Int) = DenseMidInv(zeros(Float64,nx,nx), zeros(Interval{Float64},1), nx, np)

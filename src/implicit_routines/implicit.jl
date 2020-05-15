@@ -15,58 +15,108 @@
 """
 $(FUNCTIONNAME)
 
-An operator that cuts the `x_mc` object using the `x_mc_int bounds` in a
-differentiable or nonsmooth fashion to achieve a composite relaxation within
-`x_mc_int`.
+An operator that cuts the `x` object using the `y bounds` in a differentiable
+or nonsmooth fashion to achieve a composite relaxation within `y`.
 """
-function final_cut(x_mc::MC{N,NS}, x_mc_int::MC{N,NS}) where {N}
-    Intv = x_mc.Intv ∩ x_mc_int.Intv
-    if (x_mc.cc < x_mc_int.cc)
-      cc = x_mc.cc
-      cc_grad::SVector{N,Float64} = x_mc.cc_grad
+function final_cut(x::MC{N,NS}, y::MC{N,NS}) where N
+    Intv = x.Intv ∩ y.Intv
+    if x.cc < y.cc
+        cc = x.cc
+        cc_grad::SVector{N,Float64} = x.cc_grad
     else
-      cc = x_mc_int.cc
-      cc_grad = x_mc_int.cc_grad
+        cc = y.cc
+        cc_grad = y.cc_grad
     end
-    if (x_mc.cv > x_mc_int.cv)
-      cv = x_mc.cv
-      cv_grad::SVector{N,Float64} = x_mc.cv_grad
+    if x.cv > y.cv
+        cv = x.cv
+        cv_grad::SVector{N,Float64} = x.cv_grad
     else
-      cv = x_mc_int.cv
-      cv_grad = x_mc_int.cv_grad
+        cv = y.cv
+        cv_grad = y.cv_grad
     end
-    x_out::MC{N,NS} = MC{N,NS}(cv, cc,(x_mc.Intv ∩ x_mc_int.Intv), cv_grad, cc_grad, x_mc.cnst)
-  return x_out
+    x_out::MC{N,NS} = MC{N,NS}(cv, cc, Intv, cv_grad, cc_grad, x.cnst && y.cnst)
+    return x_out
 end
-function final_cut(x_mc::MC{N,Diff},x_mc_int::MC{N,Diff}) where {N}
-  x_out = intersect(x_mc, x_mc_int)
-  return x_out
+function final_cut(x::MC{N,Diff}, y::MC{N,Diff}) where N
+    x_out = intersect(x, y)
+    return x_out
 end
 
+"""
+$(TYPEDEF)
+
+An abstract type for each manner of contractor using in the implicit function relaxation algorithms.
+"""
 abstract type AbstractContractorMC end
+
+"""
+$(TYPEDEF)
+
+The Gauss-Seidel implementation of the Newton contractor used in the implicit relaxation scheme.
+"""
 struct NewtonGS <: AbstractContractorMC end
+
+"""
+$(TYPEDEF)
+
+The componentwise implementation of the Krawczyk contractor used in the implicit relaxation scheme.
+"""
 struct KrawczykCW <: AbstractContractorMC end
 
+
+"""
+$(TYPEDEF)
+
+An abstract type for each manner of preconditioner used in the implicit function relaxation algorithms.
+"""
 abstract type AbstractPreconditionerMC end
-function preconditioner_storage(x::AbstractPreconditionerMC, t::T) where T<:RelaxTag
+
+"""
+$(FUNCTIONNAME)
+
+Creates storage corresponding to `x::AbstractPreconditionerMC` and `t::T where T<:RelaxTag`.
+"""
+function preconditioner_storage(x::AbstractPreconditionerMC, t::T) where T <: RelaxTag
     error("Must define function that generates appropriate storage type for preconditioner")
 end
 
+"""
+$(TYPEDEF)
+
+An abstract type for each manner of callback functions used in the implicit function relaxation algorithms.
+"""
 abstract type AbstractMCCallback end
+
+"""
+$(TYPEDEF)
+
+A structure used to compute implicit relaxations.
+
+$(TYPEDFIELDS)
+"""
 struct MCCallback{FH <: Function, FJ <: Function, C <: AbstractContractorMC,
-                  PRE <: AbstractPreconditionerMC, N, T<:RelaxTag,
+                  PRE <: AbstractPreconditionerMC, N, T <: RelaxTag,
                   AMAT <: AbstractMatrix} <:  AbstractMCCallback
+    "Function h(x,p) = 0 defined in place by h!(out,x,p)"
     h!::FH
+    "Jacobian of h(x,p) w.r.t x"
     hj!::FJ
+    ""
     H::Vector{MC{N,T}}
+    ""
     J::AMAT
     xmid::Vector{Float64}
     X::Vector{Interval{Float64}}
     P::Vector{Interval{Float64}}
+    "State space dimension"
     nx::Int
+    "Decision space dimension"
     np::Int
+    "Convex combination parameter"
     lambda::Float64
+    "Tolerance for interval equality"
     eps::Float64
+    "Number of contractor steps to take"
     kmax::Int
     pref_mc::Vector{MC{N,T}}
     p_mc::Vector{MC{N,T}}
@@ -76,8 +126,11 @@ struct MCCallback{FH <: Function, FJ <: Function, C <: AbstractContractorMC,
     xA_mc::Vector{MC{N,T}}
     aff_mc::Vector{MC{N,T}}
     z_mc::Vector{MC{N,T}}
+    "Type of contractor used in implicit relaxation routine."
     contractor::C
+    "Preconditioner used in the implicit relaxation routine."
     preconditioner::PRE
+    "Boolean indicating that the preconditioner should be applied"
     apply_precond::Bool
     param::Vector{Vector{MC{N,T}}}
 end
@@ -223,6 +276,8 @@ end
 
 """
 $(FUNCTIONNAME)
+
+Constructs parameters need to compute relaxations of `h`.
 """
 function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
     populate_affine!(d, interval_bnds)
@@ -238,6 +293,8 @@ end
 
 """
 $(FUNCTIONNAME)
+
+Compute relaxations of `x(p)` defined by `h(x,p) = 0` where `h` is specifed as `h(out, x, p)`.
 """
 function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
     populate_affine!(d, interval_bnds)
