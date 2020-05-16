@@ -10,6 +10,10 @@
    @test McCormick.cnst(x_exp) == x_exp.cnst
    @test McCormick.length(x_exp) == length(x_exp.cc_grad)
 
+   xcnst = MC{2,Diff}(1)
+   @test xcnst.cv == 1.0
+   @test xcnst.cc == 1.0
+
    nanMC = nan(x_exp)
    @test isnan(nanMC.cv) && isnan(nanMC.cc)
 
@@ -287,6 +291,15 @@ end
    yref_acosh = MC{2,NS}(1.9805393289917226, 2.0634370688955608, Interval{Float64}(1.76274,2.63392), @SVector[0.217792, 0.0], @SVector[0.258199, 0.0], false)
    @test check_vs_ref1(acosh, x_acosh, yref_acosh, mctol)
 
+   x_acosh = MC{2,Diff}(2.1, 2.2, Interval{Float64}(2.0,3.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   yref_acosh = acosh(x_acosh)
+   @test yref_acosh.cv == 1.3574838571457233
+   @test yref_acosh.cc == 1.4254169430706127
+   @test yref_acosh.Intv.lo == 1.3169578969248166
+   @test yref_acosh.Intv.hi == 1.9248473002384139
+   @test yref_acosh.cv_grad[1] == 0.4052596022090649
+   @test yref_acosh.cc_grad[1] == 0.5415303610738823
+
    ##### Inverse Hyperbolic Tangent #####
    x_atanh_p = MC{2,Diff}(0.6, 0.6, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_atanh_n = MC{2,Diff}(-0.6, -0.6, Interval{Float64}(-0.7,-0.1), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -521,6 +534,16 @@ end
 @testset "Test Arithmetic w/Constant" begin
 
    mctol = 1E-4
+
+   x0 = MC{2,NS}(4.5, 4.5, Interval{Float64}(2.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   x0a = McCormick.div_kernel(x0, 2.0, x0.Intv/2.0)
+   x0b = McCormick.div_kernel(2.0, x0, 2.0/x0.Intv)
+
+   @test x0a.cv == 2.25
+   @test x0a.cc == 2.25
+   @test isapprox(x0b.cv, 0.4444444444444444, atol=1E-7)
+   @test x0b.cc == 0.6875
 
    x = MC{2,NS}(4.5, 4.5, Interval{Float64}(-3.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
 
