@@ -20,7 +20,7 @@ A dense LU preconditioner for implicit McCormick relaxation.
 struct DenseMidInv{S <: VecOrMat{Float64}} <: AbstractPreconditionerMC
     "Storage for the midpoint matrix and inverse"
     Y::S
-    "Vector for intermediate calculation "
+    "Vector of length(1) used for intermediate calculation"
     YInterval::Vector{Interval{Float64}}
     "Number of state space variables"
     nx::Int
@@ -39,8 +39,7 @@ function precondition!(d::DenseMidInv{S}, H::Vector{MC{N,T}}, J::Array{MC{N,T},2
     return
 end
 function (d::DenseMidInv)(h!::FH, hj!::FJ, nx::Int, np::Int) where {FH <: Function, FJ <: Function}
-    S = nx == 1 ? Vector{Float64} : Array{Float64,2}
-    return DenseMidInv{S}(zeros(nx,nx), zeros(Interval{Float64},1), nx, np)
+    return DenseMidInv{Array{Float64,2}}(zeros(nx,nx), zeros(Interval{Float64},1), nx, np)
 end
 function preconditioner_storage(d::DenseMidInv, tag::T) where T <: RelaxTag
     zeros(MC{d.np, T}, (d.nx, d.nx))
