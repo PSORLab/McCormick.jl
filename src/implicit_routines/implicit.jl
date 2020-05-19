@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 An operator that cuts the `x` object using the `y bounds` in a differentiable
 or nonsmooth fashion to achieve a composite relaxation within `y`.
@@ -72,7 +72,7 @@ An abstract type for each manner of preconditioner used in the implicit function
 abstract type AbstractPreconditionerMC end
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Creates storage corresponding to `x::AbstractPreconditionerMC` and `t::T where T<:RelaxTag`.
 """
@@ -178,7 +178,7 @@ end
 include("preconditioner/dense.jl")
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Computates the affine relaxations of the state variable.
 """
@@ -209,7 +209,7 @@ function affine_exp!(x::S, p::Vector{MC{N,T}}, d::MCCallback) where {S, N, T<:Re
 end
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Corrects the relaxation of the state variable `x_mc` if the affine relaxation,
 """
@@ -237,7 +237,7 @@ end
 include("contract.jl")
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 """
 function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Function,
                                                                               FJ <: Function,
@@ -254,7 +254,7 @@ function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}) where {FH
 end
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Populates `x_mc`, `xa_mc`, `xA_mc`, and `z_mc` with affine bounds.
 """
@@ -275,7 +275,7 @@ function populate_affine!(d::MCCallback{FH,FJ,C,PRE,N,T}, interval_bnds::Bool) w
 end
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Constructs parameters need to compute relaxations of `h`.
 """
@@ -292,7 +292,7 @@ function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where 
 end
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Compute relaxations of `x(p)` defined by `h(x,p) = 0` where `h` is specifed as `h(out, x, p)`.
 """

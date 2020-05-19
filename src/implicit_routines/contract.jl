@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-$(FUNCTIONNAME)
+$(SIGNATURES)
 
 Performs a single step of the parametric method associated with `t` assumes that
 the inputs have been preconditioned.
@@ -21,7 +21,7 @@ the inputs have been preconditioned.
 function contract! end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Applies the Gauss-Siedel variant of the Newton type contractor.
 """
@@ -45,7 +45,7 @@ function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Fun
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Applies the componentwise variant of the Krawczyk type contractor.
 """

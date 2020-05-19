@@ -132,7 +132,7 @@ OtherList = Symbol[:sin,:cos,:min,:max,:abs,:step, :sign, :inv, :*, :+, :-, :/,
 :promote_rule, :convert, :one, :zero, :real, :dist, :eps, :fma, :^]
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Creates a `x::SVector{N,Float64}` object that is one at `x[j]` and zero everywhere else.
 """
@@ -141,7 +141,7 @@ function seed_gradient(j::Int64, x::Val{N}) where N
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Calculates the middle of three numbers returning the value and the index.
 """
@@ -152,7 +152,7 @@ function mid3(x::Float64, y::Float64, z::Float64)
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Calculates the middle of three numbers (x,y,z) returning the value where x <= y.
 """
@@ -163,7 +163,7 @@ function mid3v(x::Float64, y::Float64, z::Float64)
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Takes the concave relaxation gradient 'cc_grad', the convex relaxation gradient
 'cv_grad', and the index of the midpoint returned 'id' and outputs the appropriate
@@ -179,7 +179,7 @@ function mid_grad(cc_grad::SVector{N,Float64}, cv_grad::SVector{N,Float64}, id::
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
 
 Calculates the value of the slope line segment between `(xL, f(xL))` and `(xU, f(xU))`
 defaults to evaluating the derivative of the function if the interval is tight.
@@ -216,10 +216,14 @@ end
 end
 
 """
-$(FUNCTIONNAME)
+$(TYPEDSIGNATURES)
+
+Refines convex/concave relaxations `cv` and `cc` with associated subgradients
+`cv_grad` and `cc_grad` by intersecting them with the interval boudns `xL`
+and `xU`.
 """
-function cut(xL::Float64,xU::Float64, cv::Float64,cc::Float64,
-             cv_grad::SVector{N,Float64},cc_grad::SVector{N,Float64}) where {N}
+function cut(xL::Float64, xU::Float64, cv::Float64, cc::Float64,
+             cv_grad::SVector{N,Float64}, cc_grad::SVector{N,Float64}) where N
 
     if cc > xU
         cco = xU
