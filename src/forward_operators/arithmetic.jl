@@ -47,6 +47,9 @@ end
 @inline function plus_kernel(x::MC{N,T}, y::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
 	MC{N,T}(x.cv + y, x.cc + y, z, x.cv_grad, x.cc_grad, x.cnst)
 end
+@inline function plus_kernel(y::Float64, x::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag}
+	MC{N,T}(x.cv + y, x.cc + y, z, x.cv_grad, x.cc_grad, x.cnst)
+end
 @inline +(x::MC, y::Float64) = plus_kernel(x, y, x.Intv + y)
 @inline +(y::Float64, x::MC) = plus_kernel(x, y, x.Intv + y)
 @inline +(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = x + MC{N,T}(y)
@@ -76,7 +79,7 @@ end
 
 # Multiplication
 @inline function mult_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
-	if (c >= 0.0)
+	if c >= 0.0
 		zMC = MC{N,T}(c*x.cv, c*x.cc, z, c*x.cv_grad, c*x.cc_grad, x.cnst)
 	else
 		zMC = MC{N,T}(c*x.cc, c*x.cv, z, c*x.cc_grad, c*x.cv_grad, x.cnst)

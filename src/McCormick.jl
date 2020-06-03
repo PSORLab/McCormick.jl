@@ -55,20 +55,18 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        secd, cscd, cotd, asecd, acscd, acotd,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC
 
-# Export inplace operators
-export plus!, mult!, min!, max!, minus!, div!, exp!, exp2!, exp10!, expm1!,
-       log!, log2!, log10!, log1p!, sin!, cos!, tan!, asin!, acos!, atan!,
-       sinh!, cosh!, tanh!, asinh!, acosh!, atanh!, abs!, sqr!, sqrt!, pow!
+# Export kernel operators
+export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kernel,
+       log_kernel, log2_kernel, log10_kernel, log1p_kernel, acosh_kernel, sqrt_kernel,
+       exp_kernel, exp2_kernel, exp10_kernel, expm1_kernel, div_kernel, cos_kernel,
+       sin_kernel, sinh_kernel, tanh_kernel, asinh_kernel, atanh_kernel, tan_kernel,
+       acos_kernel, asin_kernel, atan_kernel, cosh_kernel, deg2rad_kernel, rad2deg_kernel,
+       sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel, acot_kernel, sech_kernel,
+       csch_kernel, coth_kernel, acsch_kernel, acoth_kernel, sind_kernel, cosd_kernel,
+       tand_kernel, secd_kernel, cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
-
-# Export reverse operators
-export plus_rev, mul_rev, min_rev, max_rev, minus_rev, div_rev, exp_rev,
-       exp2_rev, exp10_rev, expm1_rev, log_rev, log2_rev, log10_rev,
-       log1p_rev, sin_rev, cos_rev, tan_rev, asin_rev, acos_rev, atan_rev,
-       sinh_rev, cosh_rev, tanh_rev, asinh_rev, acosh_rev, atanh_rev,
-       abs_rev, sqr_rev, sqrt_rev, power_rev
-
 
 export MCCallback, gen_expansion_params!, implicit_relax_h!, DenseMidInv,
        NewtonGS, KrawczykCW
@@ -89,6 +87,11 @@ struct Diff <: RelaxTag end
 
 const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10
+
+const MC_INTERSECT_NOOP_FALLBACK = true
+const MC_INTERSECT_TOL = 1E-13
+
+
 const MC_DIFF_MU = 1
 const MC_DIFF_MUT = convert(Float64, MC_DIFF_MU)
 const MC_DIFF_MU1 = MC_DIFF_MU + 1

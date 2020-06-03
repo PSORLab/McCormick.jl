@@ -466,3 +466,14 @@ end
 @inline asecd(x::MC) = rad2deg(asec(x))
 @inline acscd(x::MC) = rad2deg(acsc(x))
 @inline acotd(x::MC) = rad2deg(acot(x))
+
+@inline deg2rad_kernel(x::MC, y::Interval{Float64}) = deg2rad(x,y)
+@inline rad2deg_kernel(x::MC, y::Interval{Float64}) = rad2deg(x,y)
+
+for expri in (:sec, :csc, :cot, :asec, :acsc, :acot, :sech, :csch, :coth,
+              :acsch, :acoth, :sind, :cosd, :tand, :secd, :cscd, :cotd,
+              :asind, :acosd, :atand, :asecd, :acscd, :acotd)
+
+     expri_kernel = Symbol(String(expri)*"_kernel")
+     @eval @inline ($expri)(x::MC, y::Interval{Float64}) = ($expri)(x)
+ end
