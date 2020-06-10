@@ -140,7 +140,7 @@ $(TYPEDSIGNATURES)
 Creates a `x::SVector{N,Float64}` object that is one at `x[j]` and zero everywhere else.
 """
 function seed_gradient(j::Int64, x::Val{N}) where N
-  return SVector{N,Float64}([i == j ? 1.0 : 0.0 for i = 1:N]...)
+  return SVector{N,Float64}(ntuple(i -> i == j ? 1.0 : 0.0, Val{N}()))
 end
 
 """
@@ -316,7 +316,7 @@ Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Interval{Float64}(cv, cc),zero(SVector{N,Float64}),
+    MC{N,T}(cv, cc, Interval{Float64}(cv, cc), zero(SVector{N,Float64}),
             zero(SVector{N,Float64}), true)
 end
 
@@ -328,7 +328,7 @@ concave relaxation equal to `val`, interval bounds of `Intv`, and a unit subgrad
 with nonzero's ith dimension of length N.
 """
 function MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64) where {N, T <: RelaxTag}
-    MC{N,T}(val, val, Intv, seed_gradient(i,Val(N)), seed_gradient(i,Val(N)), false)
+    MC{N,T}(val, val, Intv, seed_gradient(i, Val{N}()), seed_gradient(i, Val{N}()), false)
 end
 function MC{N,T}(x::MC{N,T}) where {N, T <: RelaxTag}
     MC{N,T}(x.cv, x.cc, x.Intv, x.cv_grad, x.cc_grad, x.cnst)

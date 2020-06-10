@@ -127,7 +127,43 @@ end
 end
 @inline abs(x::MC) = abs_kernel(x, abs(x.Intv))
 
-@inline function intersect(x::MC{N,T}, y::MC{N,T}) where {N, T<:Union{NS,MV}}
+
+@inline function correct_intersect(x::MC{N,T}, cv::Float64, cc::Float64, Intv::Interval{Float64}, cv_grad::SVector{N,Float64},
+	                               cc_grad::SVector{N,Float64}, cnst::Bool) where {N, T <: RelaxTag}
+
+    if cv - cc < MC_INTERSECT_TOL
+		if diam(Intv) > 3.0*MC_INTERSECT_TOL
+			cv = max(cv - MC_INTERSECT_TOL, Intv.lo)
+			cc = min(cc + MC_INTERSECT_TOL, Intv.hi)
+			if cv === Intv.lo
+				cv_grad  = zero(SVector{N,Float64})
+			end
+			if cc === Intv.hi
+				cc_grad = zero(SVector{N,Float64})
+			end
+			return MC{N,T}(cv, cc, Intv, cv_grad, cc_grad, cnst)
+		else
+			MC_INTERSECT_NOOP_FALLBACK && (return x)
+		end
+	end
+	return MC{N,T}(NaN, NaN, Intv, cv_grad, cc_grad, false)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Intersects two McCormick objects by computing setting `cv = max(cv1, cv2)`
+and `cc = min(cc1, cc2)` with appropriate subgradients. Interval are intersected in the
+usual fashion. Note that in a typical reverse propagation scheme this may result in
+`cv > cc` due to rounding error. This is addressed in the following manner:
+- if `cv - cc < MC_INTERSECT_TOL` and `diam(x.Intv ∩ y.Intv) > 3*MC_INTERSECT_TOL`,
+then `cv = max(cv - MC_INTERSECT_TOL, Intv.lo)` and `cc = min(cc - MC_INTERSECT_TOL, Intv.hi)`.
+Subgradients set to zero if `cv == Intv.lo` or `cc == Intv.hi`.
+- if `cv - cc < MC_INTERSECT_TOL` and `diam(x.Intv ∩ y.Intv) < 3*MC_INTERSECT_TOL` and
+`MC_INTERSECT_NOOP_FALLBACK == true` then return `x`.
+- else return `MC{N,T}(NaN, NaN, x.Intv ∩ y.Intv, ...)`
+"""
+@inline function intersect(x::MC{N,T}, y::MC{N,T}) where {N, T<:Union{NS, MV}}
 
      Intv = x.Intv ∩ y.Intv
 	 isempty(Intv) && (return empty(x))
@@ -141,17 +177,39 @@ end
      cv = (x.cv > y.cv) ? x.cv : y.cv
      cv_grad = (x.cv > y.cv) ? x.cv_grad : y.cv_grad
 
-	 (cv > cc) && (return nan(x))
-     MC{N,T}(cv, cc, Intv, cv_grad, cc_grad, cnst1 && cnst2)
+	 if cv <= cc
+		 return MC{N,T}(cv, cc, Intv, cv_grad, cc_grad, cnst1 && cnst2)
+	 end
+
+	 return correct_intersect(x, cv, cc, Intv, cv_grad, cc_grad, cnst1 && cnst2)
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Intersects two `MC{N, Diff}` in a manner than preserves differentiability. Interval are intersected in the
+usual fashion. Note that in a typical reverse propagation scheme this may result in
+`cv > cc` due to rounding error. This is addressed in the following manner:
+- if `cv - cc < MC_INTERSECT_TOL` and `diam(x.Intv ∩ y.Intv) > 3*MC_INTERSECT_TOL`,
+then `cv = max(cv - MC_INTERSECT_TOL, Intv.lo)` and `cc = min(cc - MC_INTERSECT_TOL, Intv.hi)`.
+Subgradients set to zero if `cv == Intv.lo` or `cc == Intv.hi`.
+- if `cv - cc < MC_INTERSECT_TOL` and `diam(x.Intv ∩ y.Intv) < 3*MC_INTERSECT_TOL` and
+`MC_INTERSECT_NOOP_FALLBACK == true` then return `x`.
+- else return `MC{N,T}(NaN, NaN, x.Intv ∩ y.Intv, ...)`
+"""
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
-    max_MC = x - max(x - y, 0.0)
-    min_MC = y - max(y - x, 0.0)
+
 	Intv = intersect(x.Intv, y.Intv)
 	isempty(Intv) && (return empty(x))
-	(max_MC.cv > min_MC.cc) && return nan(x)
-    return MC{N, Diff}(max_MC.cv, min_MC.cc, Intv,
-	                   max_MC.cv_grad, min_MC.cc_grad, (x.cnst && y.cnst))
+
+    max_MC = x - max(x - y, 0.0)
+    min_MC = y - max(y - x, 0.0)
+
+	if max_MC.cv <= min_MC.cc
+    	return MC{N, Diff}(max_MC.cv, min_MC.cc, Intv, max_MC.cv_grad, min_MC.cc_grad, x.cnst && y.cnst)
+	end
+
+	return correct_intersect(x, max_MC.cv, min_MC.cc, Intv, max_MC.cv_grad, min_MC.cc_grad, x.cnst && y.cnst)
 end
 
 @inline function intersect(x::MC{N, T}, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
@@ -173,22 +231,36 @@ end
   		cc = y.hi
   		cc_grad = zero(SVector{N,Float64})
 	end
-	(cc < y.lo) && (return nan(MC{N,T}))
-	(y.hi < cv) && (return nan(MC{N,T}))
-	return MC{N, T}(cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
+	if cv <= cc
+		return MC{N, T}(cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
+	end
+	return correct_intersect(x, cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
      max_MC = x - max(x - y, 0.0)
      min_MC = y - max(y - x, 0.0)
-     return MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv, y),
-	                    max_MC.cv_grad, min_MC.cc_grad, x.cnst)
+	 if max_MC.cv <= min_MC.cc
+		 MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst)
+	 end
+     return correct_intersect(x, max_MC.cv, min_MC.cc, intersect(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst && y.cnst)
 end
 
 @inline function intersect(c::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
 	isempty(x) && (return empty(x))
 	isnan(x) && (return nan(x))
-	c ∈ x &&  (return MC{N,T}(c))
-	empty(x)
+
+	intv = intersect(x.Intv, c)
+	isempty(intv) && (return empty(x))
+
+	cv = max(c, x.cv)
+	cc = min(c, x.cc)
+
+	cv_grad = (cv == c) ? zero(SVector{N,Float64}) : x.cv_grad
+	cc_grad = (cc == c) ? zero(SVector{N,Float64}) : x.cc_grad
+	if cv <= c <= cc
+		return MC{N, T}(c, c, intv(x.Intv, c), cv_grad, cc_grad, true)
+	end
+	correct_intersect(x, cv, cc, intv, cv_grad, cc_grad, cnst1 && cnst2)
 end
 @inline intersect(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag} = intersect(c, x)
 

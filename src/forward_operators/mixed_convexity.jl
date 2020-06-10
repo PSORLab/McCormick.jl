@@ -360,8 +360,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
         end
         xL = x.Intv.lo
         xU = x.Intv.hi
-        midcv, cv_id = mid3(x.cv, x.cc, $eps_min)
-        midcc, cc_id = mid3(x.cv, x.cc, $eps_max)
+        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
+        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
         cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
@@ -388,7 +388,7 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
         cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
         return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
-    @eval @inline function ($expri)(x::MC)
+    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
         z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
         return z
     end
