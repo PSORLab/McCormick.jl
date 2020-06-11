@@ -1262,7 +1262,7 @@ end
 
    b = MC{5,Diff}(3.0,(Interval{Float64}(2.1,3.9)),2)
    m1 = intersect(b, Interval(1.0,3.0))
-   @test isapprox(m1.cv, 0.7868421052631578, atol=1E-6)
+   @test isapprox(m1.cv, 2.1, atol=1E-6)
    @test m1.cc == 3.0
 
    X = Interval{Float64}(-2,2)
