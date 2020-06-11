@@ -439,7 +439,6 @@ end
 end
 
 @inline function multiply_STD_NS(x1::MC, x2::MC, y::Interval{Float64})
-	#println("stds...")
 	if x2.Intv.lo >= 0.0
     	x2.cnst && (return mul1_u1pos_u2pos(x1, x2, y, x1.cnst))
     	x1.cnst && (return mul1_u1pos_u2pos(x2, x1, y, x2.cnst))
@@ -454,7 +453,6 @@ end
 end
 
 @inline function mult_kernel(x1::MC{N,NS}, x2::MC{N,NS}, y::Interval{Float64}) where N
-	#println("ran mult kernel x1 = $x1, x2 = $x2")
 	isone(x1) && (return x2)
 	isone(x2) && (return x1)
 	if x1.Intv.lo >= 0.0
@@ -615,11 +613,9 @@ end
 
 #
 @inline function *(x1::MC{N,T}, x2::MC{N,T}) where {N, T<:Union{NS,MV}}
-	#println("times ns: ")
 	mult_kernel(x1, x2, x1.Intv*x2.Intv)
 end
 @inline function *(x1::MC{N,Diff}, x2::MC{N,Diff}) where N
-	#println("times odd")
 	degen1 = ((x1.Intv.hi - x1.Intv.lo) == 0.0)
 	degen2 = ((x2.Intv.hi - x2.Intv.lo) == 0.0)
 	if ~(degen1 || degen2)
