@@ -146,7 +146,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Calculates the middle of three numbers returning the value and the index.
+Calculates the middle of three numbers returning the value and the index where `x >= y`.
 """
 function mid3(x::Float64, y::Float64, z::Float64)
   (((x >= y) && (y >= z)) || ((z >= y) && (y >= x))) && (return y, 2)
@@ -157,7 +157,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Calculates the middle of three numbers (x,y,z) returning the value where x <= y.
+Calculates the middle of three numbers (x,y,z) returning the value where `x <= y`.
 """
 function mid3v(x::Float64, y::Float64, z::Float64)
     z <= x && (return x)
