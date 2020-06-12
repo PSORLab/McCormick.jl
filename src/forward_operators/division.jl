@@ -79,7 +79,6 @@ end
 end
 
 @inline function div_kernel(x::MC{N,Diff}, y::MC{N,Diff}, z::Interval{Float64}) where {N}
-    (isnan(x) || isnan(y)) && (return nan(MC{N,Diff}))
     degen1 = (x.Intv.hi - x.Intv.lo == 0.0)
     degen2 = (y.Intv.hi - y.Intv.lo == 0.0)
     if x === y

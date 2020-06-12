@@ -134,6 +134,9 @@ Template_List = union(CVList,CCList,CCtoCVList,CVtoCCList)
 OtherList = Symbol[:sin,:cos,:min,:max,:abs,:step, :sign, :inv, :*, :+, :-, :/,
 :promote_rule, :convert, :one, :zero, :real, :dist, :eps, :fma, :^]
 
+
+NaNsqrt(x) = x < 0.0 ? NaN : Base.sqrt(x)
+
 """
 $(TYPEDSIGNATURES)
 

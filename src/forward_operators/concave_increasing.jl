@@ -18,8 +18,6 @@ for opMC in (:log, :log2, :log10, :log1p)
    MCexp = quote
               xLc = z.lo
               xUc = z.hi
-              (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,T}))
-              (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,T}))
               xL = x.Intv.lo
               xU = x.Intv.hi
               midcc, cc_id = mid3(x.cc, x.cv, xU)
@@ -36,8 +34,6 @@ for opMC in (:log, :log2, :log10, :log1p)
     dMCexp = quote
                xLc = z.lo
                xUc = z.hi
-               (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,Diff}))
-               (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,Diff}))
                xL = x.Intv.lo
                xU = x.Intv.hi
                midcc = mid3v(x.cv, x.cc, xU)
@@ -66,8 +62,6 @@ end
      (x.Intv.lo < 1.0 || x.Intv.hi < 1.0) && (return nan(MC{N,T}))
      xLc = z.lo
      xUc = z.hi
-     (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,T}))
-     (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,T}))
      xL = x.Intv.lo
      xU = x.Intv.hi
      midcc, cc_id = mid3(x.cc, x.cv, xU)
@@ -85,8 +79,6 @@ end
      (x.Intv.lo < 1.0 || x.Intv.hi < 1.0) && (return nan(MC{N,Diff}))
      xLc = z.lo
      xUc = z.hi
-     (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,Diff}))
-     (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,Diff}))
      xL = x.Intv.lo
      xU = x.Intv.hi
      midcc = mid3v(x.cv, x.cc, xU)
@@ -111,8 +103,6 @@ end
      (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return nan(MC{N,T}))
      xLc = z.lo
      xUc = z.hi
-     (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,T}))
-     (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,T}))
      xL = x.Intv.lo
      xU = x.Intv.hi
      midcc, cc_id = mid3(x.cc, x.cv, xU)
@@ -130,8 +120,6 @@ end
      (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return nan(MC{N,Diff}))
      xLc = z.lo
      xUc = z.hi
-     (isnan(xLc) || isinf(xLc)) && (return nan(MC{N,Diff}))
-     (isnan(xUc) || isinf(xUc)) && (return nan(MC{N,Diff}))
      xL = x.Intv.lo
      xU = x.Intv.hi
      midcc = mid3v(x.cv, x.cc, xU)

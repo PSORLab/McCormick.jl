@@ -106,7 +106,6 @@ end
     xLc = y.lo
     xUc = y.hi
     eps_min, eps_max = cos_arg(x.Intv.lo, x.Intv.hi)
-    (isnan(eps_min) || isnan(eps_max)) && (return nan(MC{N, Diff}), NaN, NaN, NaN, NaN)
     midcc = mid3v(x.cv, x.cc, eps_max)
     midcv = mid3v(x.cv, x.cc, eps_min)
     cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
@@ -126,7 +125,6 @@ end
     xLc = y.lo
     xUc = y.hi
     eps_min, eps_max = cos_arg(x.Intv.lo, x.Intv.hi)
-    (isnan(eps_min) || isnan(eps_max)) && (return nan(MC{N, T}), NaN, NaN, NaN, NaN)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
     cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
@@ -355,9 +353,6 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     eps_max = eps_max_dict[expri]
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-        if isinf(y) || isempty(y) || isnan(x)
-            return nan(MC{N,T}), NaN, NaN
-        end
         xL = x.Intv.lo
         xU = x.Intv.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
@@ -371,9 +366,6 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
     end
     @eval @inline function ($expri_kernel)(x::MC{N, Diff}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where N
-        if isinf(y) || isempty(y) || isnan(x)
-            return nan(MC{N, Diff}), NaN, NaN
-        end
         xL = x.Intv.lo
         xU = x.Intv.hi
         midcv, cv_id = mid3(x.cv, x.cc, $eps_min)
@@ -398,7 +390,6 @@ end
 @inline cv_cosh(x::Float64, xL::Float64, xU::Float64) = cosh(x), sinh(x)
 @inline cc_cosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(cosh, sinh, x, xL, xU)
 @inline function cosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
-    isnan(x) && nan(MC{N,T})
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL
@@ -413,7 +404,6 @@ end
     return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline function cosh_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
-    isnan(x) && nan(MC{N,Diff})
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL

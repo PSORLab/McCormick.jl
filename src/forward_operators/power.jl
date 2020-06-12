@@ -260,7 +260,6 @@ end
 end
 
 @inline function pow_kernel(x::MC{N,T}, c::Z, y::Interval{Float64}) where {Z<:Integer, N, T<:RelaxTag}
-	isnan(x) && (return nan(MC{N,T}))
 	c == 0 && (return one(MC{N,T}))
 	c == 1 && (return x)
 	if c > 0

@@ -113,8 +113,6 @@ end
 end
 @inline function max_kernel(x::MC{N, Diff}, y::MC{N, Diff}, z::Interval{Float64}) where N
 
-    (isnan(x) || isnan(y)) && (return nan(x))
-
     if (y.Intv.hi <= x.Intv.lo) || (x.Intv.hi <= y.Intv.lo)
         cv, cv_grad = psil_max(x.cv, y.cv, x.Intv, y.Intv, x, y)
     elseif (y.Intv.lo <= x.Intv.lo) & (x.Intv.lo < y.Intv.hi)
