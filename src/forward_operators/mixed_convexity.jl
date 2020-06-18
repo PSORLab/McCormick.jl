@@ -171,30 +171,30 @@ end
 end
 
 @inline atanh_deriv(x::Float64) = 1.0/(1.0 - x^2)
-@inline atanh_env(x::Float64, y::Float64, z::Float64) = (atanh(x) - atanh(y))*(1.0 - x^2) - x + y
+@inline atanh_env(x::Float64, y::Float64, z::Float64) = (NaNMath.atanh(x) - NaNMath.atanh(y))*(1.0 - x^2) - x + y
 @inline function cv_atanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL <= -1.0) && (return NaN, NaN, NaN)
     (xU >= 1.0) && (return NaN, NaN, NaN)
-    (xL >= 0.0) && (return atanh(x), atanh_deriv(x), p)
-    (xU <= 0.0) && (return dline_seg(atanh, atanh_deriv, x, xL, xU)..., p)
+    (xL >= 0.0) && (return NaNMath.atanh(x), atanh_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(NaNMath.atanh, atanh_deriv, x, xL, xU)..., p)
     if p === Inf
         p, flag = secant(xL, 0.0, xL, 0.0, atanh_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, atanh_env, xU, 0.0))
     end
-    (x <= p) && (return dline_seg(atanh, atanh_deriv, x, xL, p)..., p)
-    return atanh(x), atanh_deriv(x), p
+    (x <= p) && (return dline_seg(NaNMath.atanh, atanh_deriv, x, xL, p)..., p)
+    return NaNMath.atanh(x), atanh_deriv(x), p
 end
 @inline function cc_atanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL <= -1.0) && (return NaN, NaN, NaN)
     (xU >= 1.0) && (return NaN, NaN, NaN)
-    (xL >= 0.0) && (return dline_seg(atanh, atanh_deriv, x, xL, xU)..., p)
-    (xU <= 0.0) && (return atanh(x), atanh_deriv(x), p)
+    (xL >= 0.0) && (return dline_seg(NaNMath.atanh, atanh_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return NaNMath.atanh(x), atanh_deriv(x), p)
     if p === Inf
         p, flag = secant(0.0, xU, 0.0, xU, atanh_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, atanh_env, xL, 0.0))
     end
-    (x <= p) && (return atanh(x), atanh_deriv(x), p)
-    return dline_seg(atanh, atanh_deriv, x, p, xU)..., p
+    (x <= p) && (return NaNMath.atanh(x), atanh_deriv(x), p)
+    return dline_seg(NaNMath.atanh, atanh_deriv, x, p, xU)..., p
 end
 
 @inline tanh_deriv(x::Float64, y::Float64, z::Float64) = sech(x)^2
@@ -244,51 +244,57 @@ end
     return atan(x), 1.0/(1.0+x^2), p
 end
 
-@inline asin_deriv(x::Float64, y::Float64, z::Float64) = 1.0/sqrt(1.0 - x^2)
-@inline asin_env(x::Float64, y::Float64, z::Float64) = (asin(x) - asin(y))*sqrt(1.0-x^2) - x + y
+@inline asin_deriv(x::Float64, y::Float64, z::Float64) = 1.0/NaNMath.sqrt(1.0 - x^2)
+@inline function asin_env(x::Float64, y::Float64, z::Float64)
+    return (NaNMath.asin(x) - NaNMath.asin(y))*NaNMath.sqrt(1.0-x^2) - x + y
+end
 @inline function cv_asin(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return asin(x), 1.0/sqrt(1.0-x^2), p)
-    (xU <= 0.0) && (return dline_seg(asin, asin_deriv, x, xL, xU)..., p)
+    (xL >= 0.0) && (return NaNMath.asin(x), 1.0/NaNMath.sqrt(1.0-x^2), p)
+    (xU <= 0.0) && (return dline_seg(NaNMath.asin, asin_deriv, x, xL, xU)..., p)
     if p === Inf
         p, flag = secant(0.0, xU, 0.0, xU, asin_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, asin_env, xL, 0.0))
   end
-  (x <= p) && (return dline_seg(asin, asin_deriv, x, xL, p)..., p)
-  return asin(x), 1.0/sqrt(1.0-x^2, p)
+  (x <= p) && (return dline_seg(NaNMath.asin, asin_deriv, x, xL, p)..., p)
+  return NaNMath.asin(x), 1.0/NaNMath.sqrt(1.0-x^2, p)
 end
 @inline function cc_asin(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return dline_seg(asin, asin_deriv, x, xL, xU)..., p)
-    (xU <= 0.0) && (return asin(x), 1.0/sqrt(1.0-x^2), p)
+    (xL >= 0.0) && (return dline_seg(NaNMath.asin, asin_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return NaNMath.asin(x), 1.0/NaNMath.sqrt(1.0-x^2), p)
     if p === Inf
         p, flag = secant(xL, 0.0, xL, 0.0, asin_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, asin_env, xU, 0.0))
     end
-    (x <= p) && (return asin(x), 1.0/sqrt(1.0-x^2), p)
-    return dline_seg(asin, asin_deriv, x, p, xU)..., p
+    (x <= p) && (return NaNMath.asin(x), 1.0/NaNMath.sqrt(1.0-x^2), p)
+    return dline_seg(NaNMath.asin, asin_deriv, x, p, xU)..., p
 end
 
 @inline tan_deriv(x::Float64, y::Float64, z::Float64) = sec(x)^2
-@inline tan_env(x::Float64, y::Float64, z::Float64) = (x - y) - (tan(x) - tan(y))/(1.0 + tan(x)^2)
-@inline tan_envd(x::Float64, y::Float64, z::Float64)= 2.0*tan(x)/(1.0 + tan(x)^2)*(tan(x) - tan(y))
+@inline function tan_env(x::Float64, y::Float64, z::Float64)
+    return (x - y) - (NaNMath.tan(x) - NaNMath.tan(y))/(1.0 + NaNMath.tan(x)^2)
+end
+@inline tan_envd(x::Float64, y::Float64, z::Float64)
+    return 2.0*NaNMath.tan(x)/(1.0 + NaNMath.tan(x)^2)*(NaNMath.tan(x) - NaNMath.tan(y))
+end
 @inline function cv_tan(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return tan(x), sec(x)^2, p)
-    (xU <= 0.0) && (return dline_seg(tan, tan_deriv, x, xL, xU)..., p)
+    (xL >= 0.0) && (return NaNMath.tan(x), sec(x)^2, p)
+    (xU <= 0.0) && (return dline_seg(NaNMath.tan, tan_deriv, x, xL, xU)..., p)
     if p === Inf
         p, flag = secant(0.0, xU, 0.0, xU, tan_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, tan_env, xL, 0.0))
     end
-    (x <= p) && (return dline_seg(tan, tan_deriv, x, xL, p)..., p)
-    return tan(x), sec(x)^2, p
+    (x <= p) && (return dline_seg(NaNMath.tan, tan_deriv, x, xL, p)..., p)
+    return NaNMath.tan(x), sec(x)^2, p
 end
 @inline function cc_tan(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return dline_seg(tan, tan_deriv, x, xL, xU)..., p)
-    (xU <= 0.0) && (return tan(x), sec(x)^2, p)
+    (xL >= 0.0) && (return dline_seg(NaNMath.tan, tan_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return NaNMath.tan(x), sec(x)^2, p)
     if p === Inf
         p, flag = secant(0.0, xL, xL, 0.0, tan_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, tan_env, xU, 0.0))
     end
-    (x <= p) && (return tan(x), sec(x)^2, p)
-    return dline_seg(tan, tan_deriv, x, p, xU)..., p
+    (x <= p) && (return NaNMath.tan(x), sec(x)^2, p)
+    return dline_seg(NaNMath.tan, tan_deriv, x, p, xU)..., p
 end
 
 @inline acos_deriv(x::Float64, y::Float64, z::Float64) = -1.0/sqrt(1.0-x^2)
