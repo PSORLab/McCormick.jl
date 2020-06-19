@@ -273,7 +273,7 @@ end
 @inline function tan_env(x::Float64, y::Float64, z::Float64)
     return (x - y) - (NaNMath.tan(x) - NaNMath.tan(y))/(1.0 + NaNMath.tan(x)^2)
 end
-@inline tan_envd(x::Float64, y::Float64, z::Float64)
+@inline function tan_envd(x::Float64, y::Float64, z::Float64)
     return 2.0*NaNMath.tan(x)/(1.0 + NaNMath.tan(x)^2)*(NaNMath.tan(x) - NaNMath.tan(y))
 end
 @inline function cv_tan(x::Float64, xL::Float64, xU::Float64, p::Float64)
@@ -297,26 +297,26 @@ end
     return dline_seg(NaNMath.tan, tan_deriv, x, p, xU)..., p
 end
 
-@inline acos_deriv(x::Float64, y::Float64, z::Float64) = -1.0/sqrt(1.0-x^2)
-@inline acos_env(x::Float64, y::Float64, z::Float64) = -(acos(x) - acos(y))*sqrt(1-x^2) - x + y
+@inline acos_deriv(x::Float64, y::Float64, z::Float64) = -1.0/NaNMath.sqrt(1.0-x^2)
+@inline acos_env(x::Float64, y::Float64, z::Float64) = -(NaNMath.acos(x) - NaNMath.acos(y))*NaNMath.sqrt(1-x^2) - x + y
 @inline function cc_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return dline_seg(acos, acos_deriv, x, xL, xU)..., p)
-    (xU <= 0.0) && (return acos(x), -1.0/sqrt(1.0-x^2), p)
+    (xL >= 0.0) && (return dline_seg(NaNMath.acos, acos_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return NaNMath.acos(x), -1.0/NaNMath.sqrt(1.0-x^2), p)
     if p === Inf
         p, flag = secant(0.0, xU, 0.0, xU, acos_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, acos_env, xL, 0.0))
     end
-    (x <= p) && (return dline_seg(acos, acos_deriv, x, xL, p)..., p)
-    return acos(x), -1.0/sqrt(1.0-x^2), p
+    (x <= p) && (return dline_seg(NaNMath.acos, acos_deriv, x, xL, p)..., p)
+    return NaNMath.acos(x), -1.0/NaNMath.sqrt(1.0-x^2), p
 end
 @inline function cv_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return acos(x), -1.0/sqrt(1.0-x^2), p)
-    (xU <= 0.0) && (return dline_seg(acos, acos_deriv, x, xL, xU)..., p)
+    (xL >= 0.0) && (return NaNMath.acos(x), -1.0/NaNMath.sqrt(1.0-x^2), p)
+    (xU <= 0.0) && (return dline_seg(NaNMath.acos, acos_deriv, x, xL, xU)..., p)
     if p === Inf
         p, flag = secant(xL, 0.0, xL, 0.0, acos_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, acos_env, xU, 0.0))
     end
-    (x <= p) && (return acos(x), -1.0/sqrt(1.0-x^2), p)
+    (x <= p) && (return NaNMath.acos(x), -1.0/NaNMath.sqrt(1.0-x^2), p)
     return dline_seg(acos, acos_deriv, x, p, xU)..., p
 end
 

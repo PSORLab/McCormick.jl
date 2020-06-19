@@ -20,7 +20,7 @@ using DocStringExtensions, LinearAlgebra
 using DiffRules: diffrule
 using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
-using RoundingEmulator, NaNMath
+using NaNMath
 
 import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh,
@@ -88,8 +88,6 @@ abstract type RelaxTag end
 struct NS <: RelaxTag end
 struct MV <: RelaxTag end
 struct Diff <: RelaxTag end
-
-struct NSSafe <: RelaxTag end
 
 const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10
