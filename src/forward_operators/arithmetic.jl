@@ -13,13 +13,23 @@
 #############################################################################
 
 # Defines functions required for linear algebra packages
-@inline nan(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN), fill(NaN, SVector{N,Float64}), fill(NaN, SVector{N,Float64}), true)
-@inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN), fill(NaN, SVector{N,Float64}), fill(NaN, SVector{N,Float64}), true)
+@inline nan(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN),
+                                                                fill(NaN, SVector{N,Float64}),
+																fill(NaN, SVector{N,Float64}), true)
+@inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN),
+                                                           fill(NaN, SVector{N,Float64}),
+														   fill(NaN, SVector{N,Float64}), true)
 
-@inline one(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
-@inline one(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
+@inline one(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}),
+                                                                zero(SVector{N,Float64}),
+																zero(SVector{N,Float64}), true)
+@inline one(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}),
+                                                           zero(SVector{N,Float64}),
+														   zero(SVector{N,Float64}), true)
 
-@inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval{Float64}), zero(SVector{N,Float64}), zero(SVector{N,Float64}), true)
+@inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval{Float64}),
+                                                                 zero(SVector{N,Float64}),
+																 zero(SVector{N,Float64}), true)
 @inline zero(x::MC{N,T}) where {N, T <: RelaxTag} = zero(MC{N,T})
 
 @inline real(x::MC) = x
@@ -27,7 +37,8 @@
 @inline eps(x::MC) = max(eps(x.cc), eps(x.cv))
 @inline mid(x::MC) = mid(x.Intv)
 
-@inline function plus_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag}
+# Unsafe addition
+@inline function plus_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
 	MC{N,T}(x.cv + y.cv, x.cc + y.cc, z, x.cv_grad + y.cv_grad, x.cc_grad + y.cc_grad, (x.cnst && y.cnst))
 end
 @inline +(x::MC, y::MC) = plus_kernel(x, y, x.Intv + y.Intv)
@@ -36,18 +47,16 @@ end
 
 @inline minus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag} = MC{N,T}(-x.cc, -x.cv, z, -x.cc_grad, -x.cv_grad, x.cnst)
 @inline -(x::MC) = minus_kernel(x, -x.Intv)
-
-@inline function minus_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag}
-	MC{N,T}(x.cv - y.cc, x.cc - y.cv, z, x.cv_grad - y.cc_grad, x.cc_grad - y.cv_grad, (x.cnst && y.cnst))
-end
 @inline -(x::MC{N,T}, y::MC{N,T}) where {N, T <: RelaxTag} = minus_kernel(x, y, x.Intv - y.Intv)
 
-################## CONVERT THROUGH BINARY DEFINITIONS #########################
-# Addition
-@inline function plus_kernel(x::MC{N,T}, y::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
-	MC{N,T}(x.cv + y, x.cc + y, z, x.cv_grad, x.cc_grad, x.cnst)
+# Unsafe subtraction
+@inline function minus_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
+	MC{N,T}(x.cv - y.cc, x.cc - y.cv, z, x.cv_grad - y.cc_grad, x.cc_grad - y.cv_grad, (x.cnst && y.cnst))
 end
-@inline function plus_kernel(y::Float64, x::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag}
+
+################## CONVERT THROUGH BINARY DEFINITIONS #########################
+# Unsafe scalar addition
+@inline function plus_kernel(x::MC{N,T}, y::Float64, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
 	MC{N,T}(x.cv + y, x.cc + y, z, x.cv_grad, x.cc_grad, x.cnst)
 end
 @inline +(x::MC, y::Float64) = plus_kernel(x, y, x.Intv + y)
@@ -60,11 +69,11 @@ end
 @inline +(x::MC, y::C) where {C <: NumberNotRelax} = x + convert(Float64, y)
 @inline +(y::C, x::MC) where {C <: NumberNotRelax} = x + convert(Float64, y)
 
-# Subtraction
-@inline function minus_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
+# Unsafe scalar subtraction
+@inline function minus_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
 	MC{N,T}(x.cv - c, x.cc - c, z, x.cv_grad, x.cc_grad, x.cnst)
 end
-@inline function minus_kernel(c::Float64, x::MC{N,T}, z::Interval{Float64}) where {N, T <: RelaxTag}
+@inline function minus_kernel(c::Float64, x::MC{N,T}, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
 	MC{N,T}(c - x.cc, c - x.cv, z, -x.cc_grad, -x.cv_grad, x.cnst)
 end
 @inline -(x::MC, c::Float64) = minus_kernel(x, c, x.Intv - c)
@@ -77,8 +86,8 @@ end
 @inline -(x::MC, c::C) where {C <: NumberNotRelax} = x - convert(Float64,c)
 @inline -(c::C, x::MC) where {C <: NumberNotRelax} = convert(Float64,c) - x
 
-# Multiplication
-@inline function mult_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: RelaxTag}
+# Unsafe Scalar Multiplication
+@inline function mult_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: Union{NS, MV, Diff}}
 	if c >= 0.0
 		zMC = MC{N,T}(c*x.cv, c*x.cc, z, c*x.cv_grad, c*x.cc_grad, x.cnst)
 	else
@@ -96,7 +105,7 @@ end
 @inline *(c::C, x::MC) where {C <: NumberNotRelax}  = x*Float64(c)
 @inline *(x::MC, c::C) where {C <: NumberNotRelax}  = x*Float64(c)
 
-# Division
+# Unsafe scalar division
 @inline div_kernel(x::MC, y::Float64, z::Interval{Float64}) = mult_kernel(x, inv(y), z)
 @inline div_kernel(x::Float64, y::MC, z::Interval{Float64}) = mult_kernel(inv(y), x, z)
 @inline div_kernel(x::MC, y::C, z::Interval{Float64}) where {C <: NumberNotRelax}  = mult_kernel(x, inv(y), z)

@@ -20,6 +20,7 @@ using DocStringExtensions, LinearAlgebra
 using DiffRules: diffrule
 using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
+using NaNMath
 
 import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh,
@@ -78,9 +79,12 @@ An `abstract type` the subtypes of which define the manner of relaxation that wi
 be performed for each operator applied to the MC object. Currently, the `struct NS`
 which specifies that standard (Mitsos 2009) are to be used is fully supported. Limited
 support is provided for differentiable McCormick relaxations specified by `struct Diff`
-(Khan 2017) and struct MV `struct MV` (Tsoukalas 2011.)
+(Khan 2017) and struct MV `struct MV` (Tsoukalas 2011.) A rounding-safe implementation of
+the standard McCormick relaxations is specified by the struct `NSSafe` which is work in
+progress.
 """
 abstract type RelaxTag end
+
 struct NS <: RelaxTag end
 struct MV <: RelaxTag end
 struct Diff <: RelaxTag end
