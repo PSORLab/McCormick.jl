@@ -15,7 +15,6 @@ julia:
 
 jobs:
   allow_failures:
-  - julia: 1.5
   - julia: nightly
 
 after_success:
