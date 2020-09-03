@@ -65,3 +65,15 @@ end
 	end
 	return zMC
 end
+
+# Scalar Safe Kernel
+@inline function div_kernel(x::MC{N,T}, c::Float64, z::Interval{Float64}) where {N, T <: Union{NSSafe}}
+	if c >= 0.0
+		cv = div_down(x.cv, c)
+		cc = div_up(x.cc, c)
+	else
+		cc = div_down(x.cv, c)
+		cv = div_up(x.cc, c)
+	end
+	return MC{N,T}(cc, cv, z, c*x.cc_grad, c*x.cv_grad, x.cnst)
+end
