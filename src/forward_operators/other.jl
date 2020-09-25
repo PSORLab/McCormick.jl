@@ -267,3 +267,67 @@ end
 @inline in(a::Int, x::MC) = in(a, x.Intv)
 @inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
 @inline isempty(x::MC) = isempty(x.Intv)
+
+#=
+
+Relaxation given in Najman J, Bongartz D, Mitsos A. "Relaxations of
+thermodynamic property and costing models in process engineering.
+Computers & Chemical Engineering. 2019 Nov 2;130:106571." for
+f(x) = x*exp(a*x)
+=#
+#=
+@inline function cc_xexp(x::Float64, xL::Float64, xU::Float64, a::Float64)
+   xstar = -2.0*a
+   if a > 0.0
+	   xstar
+	   return dline_seg(abs, sign, x, xL, xU)
+   else
+	   return dline_seg(abs, sign, x, xL, xU)
+   end
+end
+@inline cv_xexp(x::Float64,xL::Float64,xU::Float64) = abs(x), sign(x)
+function xexp(a::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
+end
+xexp(x::MC{N,T}) where {N, T <: RelaxTag} = xexp(1.0, x)
+=#
+
+xlog(x::Float64) where T = x*log(x)
+dxlog(x::Float64) where T = log(x) + 1
+cc_xlog(x::Float64, xL::Float64, xU::Float64) = dline_seg(xlog, dxlog, x, xL, xU)
+cv_xlog(x::Float64, xL::Float64, xU::Float64) = xlog(x), dxlog(x)
+function xlog(x::MC{N,T}) where {N, T <: Union{NS,MV}}
+end
+@inline function xlog_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_max = xlog(xU) > xlog(xL) ?  xU : xL
+    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlog(xU) > xlog(xL) ?  xL : xU)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    cc, dcc = cc_xlog(midcc, xL, xU)
+    cv, dcv = cv_xlog(midcv, xL, xU)
+    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline function xlog_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_max = xlog(xU) > xlog(xL) ?  xU : xL
+    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlog(xU) > xlog(xL) ?  xL : xU)
+    midcc = mid3v(x.cv, x.cc, eps_max)
+    midcv = mid3v(x.cv, x.cc, eps_min)
+    cc, dcc = cc_xlog(midcc, xL, xU)
+    cv, dcv = cv_xlog(midcv, xL, xU)
+    gcc1, gdcc1 = cc_xlog(x.cv, xL, xU)
+    gcv1, gdcv1 = cv_xlog(x.cv, xL, xU)
+    gcc2, gdcc2 = cc_xlog(x.cc, xL, xU)
+    gcv2, gdcv2 = cv_xlog(x.cc, xL, xU)
+    cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
+    cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
+    return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline xlog(x::MC) = xlog_kernel(x, xlog(x.Intv))
+
+# Log-mean
