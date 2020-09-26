@@ -329,5 +329,3 @@ end
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline xlog(x::MC) = xlog_kernel(x, xlog(x.Intv))
-
-# Log-mean

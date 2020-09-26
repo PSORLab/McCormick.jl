@@ -20,7 +20,7 @@ using DocStringExtensions, LinearAlgebra
 using DiffRules: diffrule
 using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
-using NaNMath
+using NaNMath, SpecialFunctions
 
 import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh,
@@ -30,6 +30,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              sind, cosd, tand, asind, acosd, atand,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty
 
+import IntervalArithmetic: @round, big53
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,
                            expm1, log, log2, log10, log1p, sqrt, ^,
@@ -42,6 +43,8 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
                            setrounding, diam, isthin
 
+import SpecialFunctions.erf
+
 import Base.MathConstants.golden
 
 # Export forward operators
@@ -51,7 +54,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        abs, step, sign, pow, in, isempty, intersect, length, mid3,
        acos, asin, atan, sinh, cosh, tanh, asinh, atanh, inv, sqr, sech,
        csch, coth, acsch, acoth, asech, rad2deg, deg2rad, diam,
-       sind, cosd, tand, asind, acosd, atand, nan,
+       sind, cosd, tand, asind, acosd, atand, nan, erf,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC
@@ -65,7 +68,7 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kerne
        sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel, acot_kernel, sech_kernel,
        csch_kernel, coth_kernel, acsch_kernel, acoth_kernel, sind_kernel, cosd_kernel,
        tand_kernel, secd_kernel, cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
-       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel erf_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 

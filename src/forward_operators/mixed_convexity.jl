@@ -343,15 +343,51 @@ end
     return asinh(x), 1.0/sqrt(1.0+x^2), p
 end
 
+function erf(x::BigFloat, r::RoundingMode)
+    setrounding(BigFloat, r) do
+        erf(x)
+    end
+end
+erf(a::Interval{Float64}) = convert(Interval{Float64}, erf(big53(a)))
+function erf(a::Interval{T}) where T
+    isempty(a) && return a
+    @round(erf(a.lo), erf(a.hi))
+end
+
+@inline erf_deriv(x::Float64) = (2.0/sqrt(pi))*exp(-x^2)
+@inline function erf_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (erf(x) - erf(y))/erf_deriv(x)
+end
+@inline function cv_erf(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(erf, erf_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return erf(x), erf_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, erf_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, erf_env, xU, 0.0))
+    end
+    (x <= p) && (return erf(x), erf_deriv(x), p)
+    return dline_seg(erf, erf_deriv, x, p, xU)..., p
+end
+@inline function cc_erf(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return erf(x), erf_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(erf, erf_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, erf_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, erf_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(erf, erf_deriv, x, xL, p)..., p)
+    return erf(x), erf_deriv(x), p
+end
+
 # basic method overloading operator (sinh, tanh, atanh, asinh), convexoconcave or concavoconvex
 eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
                                  :atanh => :xL, :tan => :xL, :acos => :xU,
-                                 :asin => :xL, :atan => :xL)
+                                 :asin => :xL, :atan => :xL, :erf => :xL)
 eps_max_dict = Dict{Symbol,Symbol}(:sinh => :xU, :tanh => :xU, :asinh => :xU,
                                  :atanh => :xU, :tan => :xU, :acos => :xL,
-                                 :asin => :xU, :atan => :xU)
+                                 :asin => :xU, :atan => :xU, :erf => :xU)
 
-for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
+for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan, :erf)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")

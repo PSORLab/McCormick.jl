@@ -305,11 +305,3 @@ swish1_deriv(x) = dswish(1.0, x)
 # linear-convex regions or concave
 elu(α, x) = x > 0.0 ? x : α*(exp(x) - 1.0)
 selu(α, λ, x) = λ*elu(α, x)
-
-#=
-gaussian(x) = exp(-x^2)
-gaussian_deriv(x) = -2.0*x*exp(-x^2)
-
-gaussian(b, x) = exp(-b*x^2)
-gaussian_deriv(b, x) =  -2.0*b*x*exp(-b*x^2)
-=#
