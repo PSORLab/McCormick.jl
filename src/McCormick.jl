@@ -68,7 +68,7 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kerne
        sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel, acot_kernel, sech_kernel,
        csch_kernel, coth_kernel, acsch_kernel, acoth_kernel, sind_kernel, cosd_kernel,
        tand_kernel, secd_kernel, cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
-       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel erf_kernel
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, erf_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 
