@@ -14,15 +14,26 @@
 #############################################################################
 
 # RELU DEFINITION
+"""
+relu
+
+The Rectified Linear Unit function (max(x, 0.0)).
+"""
+relu(x) = max(x, 0.0)
 function relu_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     max_kernel(x, 0.0, z)
 end
 function relu(x::MC{N,T}) where {N, T<:Union{NS,MV}}
     relu_kernel(x, max(x.Intv, 0.0))
 end
-relu(x) = max(x, 0.0)
 
 # PARAMETRIC RELU DEFINITION
+"""
+param_relu
+
+The parametric Rectified Linear Unit function (max(x, αx) with α in [0,1]).
+"""
+param_relu(x, α) = x > 0.0 ? x : α*x
 function param_relu(x::Interval{Float64}, α::Float64)
     xL = x.lo
     xU = x.hi
@@ -30,7 +41,6 @@ function param_relu(x::Interval{Float64}, α::Float64)
     (xU < 0.0) && (xU *= α)
     return Interval{Float64}(xL, xU)
 end
-param_relu(x, α) = x > 0.0 ? x : α*x
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
 param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
 function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
@@ -52,9 +62,14 @@ end
 @inline param_relu(x::MC, α::Float64) = param_relu_kernel(x, α, param_relu(x.Intv, α))
 
 # LEAKY RELU DEFINITION
+"""
+leaky_relu
+
+The leaky Rectified Linear Unit function (max(x, 0.01x)).
+"""
+@inline leaky_relu(x) = leaky_relu(x, 0.01)
 @inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01)
 @inline leaky_relu(x::MC) = leaky_relu_kernel(x, param_relu(x.Intv, 0.01))
-@inline leaky_relu(x) = leaky_relu(x, 0.01)
 
 # DEFINE MAXSIG
 @inline maxsig(x) = max(x, 1.0/(1.0 + exp(-x)))
@@ -268,15 +283,54 @@ end
     return softsign(x), softsign_deriv(x), p
 end
 
-gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
+@inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
+@inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
+@inline function gelu(x::Interval{Float64})
+    xLc = gelu(Interval(x.lo))
+    xUc = gelu(Interval(x.hi))
+    return Interval(xLc.hi, xUc.hi)
+end
+@inline function gelu_deriv(x::Float64)
+    0.5*(1.0 + erf(x/sqrt(2)) + x*(sqrt(2/pi)*exp((-x^2)/2.0)))
+end
+@inline function gelu_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (gelu(x) - gelu(y))/gelu_deriv(x)
+end
+@inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return gelu(x), gelu_deriv(x), p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, gelu_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(gelu, gelu_deriv, x, xL, p)..., p)
+    return gelu(x), gelu_deriv(x), p
+end
+@inline function cv_gelu(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return gelu(x), gelu_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, gelu_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, gelu_env, xU, 0.0))
+    end
+    (x <= p) && (return gelu(x), gelu_deriv(x), p)
+    return dline_seg(gelu, gelu_deriv, x, p, xU)..., p
+end
 
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
-for expri in (:sigmoid, :bisigmoid, :softsign) #gelu
+for expri in (:sigmoid, :bisigmoid, :softsign, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
-    eps_min = :xL
-    eps_max = :xU
+    if expri != :gelu
+        eps_min = :xL
+        eps_max = :xU
+    else
+        eps_min = :(-0.751791524693564457457904946779522 > xU ? xU : (
+                    -0.751791524693564457457904946779522 < xL ? xL :
+                    -0.751791524693564457457904946779522))
+        eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
+    end
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
         xL = x.Intv.lo
