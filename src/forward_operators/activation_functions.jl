@@ -139,7 +139,11 @@ softplus(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softplus_kernel(x, softplus(x.
 @inline pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 @inline pentanh(x::Float64) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 function pentanh(x::Interval{Float64})
-    # TODO
+    (x.lo >= 0.0) && return tanh(x)
+    (x.hi <= 0.0) && return tanh(0.25*x)
+    lo_part = tanh(0.25*x)
+    hi_part = tanh(x)
+    Interval(lo_part.lo, hi_part.hi)
 end
 function pentanh_deriv(x::Float64)
     if x > 0.0
@@ -147,13 +151,29 @@ function pentanh_deriv(x::Float64)
     end
     0.25 - 0.25*tanh(0.25*x)^2
 end
-function pentanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    # TODO
-    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+@inline function pentanh_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (pentanh(x) - pentanh(y))/pentanh_deriv(x)
 end
-pentanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = pentanh_kernel(x, pentanh(x.Intv))
-
+@inline function cv_pentanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(pentanh, pentanh_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return pentanh(x), pentanh_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, pentanh_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, pentanh_env, xU, 0.0))
+    end
+    (x <= p) && (return pentanh(x), pentanh_deriv(x), p)
+    return dline_seg(pentanh, pentanh_deriv, x, p, xU)..., p
+end
+@inline function cc_pentanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return pentanh(x), pentanh_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(pentanh, pentanh_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, pentanh_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, pentanh_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(pentanh, pentanh_deriv, x, xL, p)..., p)
+    return pentanh(x), pentanh_deriv(x), p
+end
 
 @inline sigmoid(x) = 1.0/(1.0 + exp(-x))
 @inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
@@ -181,12 +201,6 @@ end
     (x <= p) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, p)..., p)
     return sigmoid(x), sigmoid_deriv(x), p
 end
-function sigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    # TODO
-    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
-end
-sigmoid(x::MC{N,T}) where {N, T<:Union{NS,MV}} = sigmoid_kernel(x, sigmoid(x.Intv))
 
 @inline bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
 @inline bisigmoid(x::Float64) = 1.0 - exp(-x)/(1 + exp(-x))
@@ -214,12 +228,6 @@ end
     (x <= p) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, p)..., p)
     return bisigmoid(x), bisigmoid_deriv(x), p
 end
-function bisigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    # TODO
-    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
-end
-bisigmoid(x::MC{N,T}) where {N, T<:Union{NS,MV}} = bisigmoid_kernel(x, bisigmoid(x.Intv))
 
 @inline softsign(x) = x/(1.0 + abs(x))
 @inline softsign(x::Float64) = x/(1.0 + abs(x))
@@ -248,21 +256,40 @@ end
     (x <= p) && (return dline_seg(softsign, softsign_deriv, x, xL, p)..., p)
     return softsign(x), softsign_deriv(x), p
 end
-function softsign_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    # TODO
-    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+
+gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
+
+# define kernel and operator for sigmoid, bisigmoid, softsign, gelu
+for expri in (:sigmoid, :bisigmoid, :softsign) #gelu
+    expri_cv = Symbol("cv_"*String(expri))
+    expri_cc = Symbol("cc_"*String(expri))
+    expri_kernel = Symbol(String(expri)*"_kernel")
+    eps_min = :xL
+    eps_max = :xU
+    @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
+                            cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
+        xL = x.Intv.lo
+        xU = x.Intv.hi
+        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
+        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
+        cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
+        cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
+        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
+        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
+    end
+    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
+        z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
+        return z
+    end
 end
-softsign(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softsign_kernel(x, softsign(x.Intv))
 
 swish(b, x) = x/(1.0 + exp(-b*x))
 swish_deriv(b, x) = (exp(-b*x)*(b*x + 1.0) + 1.0)/(1.0 + exp(-b*x))^2
 
 swish1(x) = swish(1.0, x)
 swish1_deriv(x) = dswish(1.0, x)
-
-# concavoconvex ? convex...
-gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
 
 # linear-convex regions or concave
 elu(α, x) = x > 0.0 ? x : α*(exp(x) - 1.0)
