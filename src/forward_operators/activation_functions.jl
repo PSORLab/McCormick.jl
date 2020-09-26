@@ -161,11 +161,25 @@ pentanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = pentanh_kernel(x, pentanh(x.Int
 @inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
 end
-@inline function sigmoid_envd(x::Float64, y::Float64, z::Float64)
-end
 @inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return sigmoid(x), sigmoid_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, sigmoid_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, sigmoid_env, xU, 0.0))
+    end
+    (x <= p) && (return sigmoid(x), sigmoid_deriv(x), p)
+    return dline_seg(sigmoid, sigmoid_deriv, x, p, xU)..., p
 end
 @inline function cc_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return sigmoid(x), sigmoid_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, sigmoid_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, sigmoid_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, p)..., p)
+    return sigmoid(x), sigmoid_deriv(x), p
 end
 function sigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     # TODO
@@ -180,11 +194,25 @@ sigmoid(x::MC{N,T}) where {N, T<:Union{NS,MV}} = sigmoid_kernel(x, sigmoid(x.Int
 @inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
 end
-@inline function bisigmoid_envd(x::Float64, y::Float64, z::Float64)
-end
 @inline function cv_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return bisigmoid(x), bisigmoid_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, bisigmoid_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, bisigmoid_env, xU, 0.0))
+    end
+    (x <= p) && (return bisigmoid(x), bisigmoid_deriv(x), p)
+    return dline_seg(bisigmoid, bisigmoid_deriv, x, p, xU)..., p
 end
 @inline function cc_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return bisigmoid(x), bisigmoid_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, bisigmoid_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, bisigmoid_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, p)..., p)
+    return bisigmoid(x), bisigmoid_deriv(x), p
 end
 function bisigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     # TODO
