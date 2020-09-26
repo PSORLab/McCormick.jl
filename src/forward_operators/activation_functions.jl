@@ -86,9 +86,9 @@ maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 @inline maxtanh(x) = max(x, tanh(x))
 @inline maxtanh(x::Float64) = max(x, tanh(x))
 @inline function maxtanh(x::Interval{Float64})
-    xL = x.lo
-    xU = x.hi
-    Interval(max(xL, tanh(xL)), max(xU, tanh(xU)))
+    xLc = maxtanh(Interval(x.lo))
+    xUc = maxtanh(Interval(x.hi))
+    Interval(xLc.lo, xUc.hi)
 end
 @inline function maxtanh_deriv(x::Float64)
     if x > tanh(x)
@@ -135,18 +135,97 @@ function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS
 end
 softplus(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softplus_kernel(x, softplus(x.Intv))
 
-# convexoconcave
-pentanh(x) = x > 0 ? tanh(x) : tanh(0.25*x)
-sigmoid(x) = 1.0/(1.0 + exp(-x))
-bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
-Softsign(x) = x/(1.0 + abs(x))
+# DEFINE PENTANH
+@inline pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)
+@inline pentanh(x::Float64) = x > 0.0 ? tanh(x) : tanh(0.25*x)
+function pentanh(x::Interval{Float64})
+    # TODO
+end
+function pentanh_deriv(x::Float64)
+    if x > 0.0
+        return 1.0 - tanh(x)^2
+    end
+    0.25 - 0.25*tanh(0.25*x)^2
+end
+function pentanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    # TODO
+    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+end
+pentanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = pentanh_kernel(x, pentanh(x.Intv))
 
 
+@inline sigmoid(x) = 1.0/(1.0 + exp(-x))
+@inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
+@inline sigmoid(x::Interval{Float64}) = # TODO
+@inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
+@inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
+end
+@inline function sigmoid_envd(x::Float64, y::Float64, z::Float64)
+end
+@inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+end
+@inline function cc_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+end
+function sigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    # TODO
+    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+end
+sigmoid(x::MC{N,T}) where {N, T<:Union{NS,MV}} = sigmoid_kernel(x, sigmoid(x.Intv))
 
+@inline bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
+@inline bisigmoid(x::Float64) = 1.0 - exp(-x)/(1 + exp(-x))
+@inline bisigmoid(x::Interval{Float64}) = # TODO
+@inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
+@inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
+end
+@inline function bisigmoid_envd(x::Float64, y::Float64, z::Float64)
+end
+@inline function cv_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+end
+@inline function cc_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
+end
+function bisigmoid_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    # TODO
+    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+end
+bisigmoid(x::MC{N,T}) where {N, T<:Union{NS,MV}} = bisigmoid_kernel(x, bisigmoid(x.Intv))
 
-
-
-
+@inline softsign(x) = x/(1.0 + abs(x))
+@inline softsign(x::Float64) = x/(1.0 + abs(x))
+@inline softsign(x::Interval{Float64}) = # TODO
+@inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
+@inline function softsign_env(x::Float64, y::Float64, z::Float64)
+    # TODO
+end
+@inline function cv_softsign(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(softsign, softsign_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return softsign(x), softsign_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, softsign_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, softsign_env, xU, 0.0))
+    end
+    (x <= p) && (return softsign(x), softsign_deriv(x), p)
+    return dline_seg(softsign, softsign_deriv, x, p, xU)..., p
+end
+@inline function cc_softsign(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return softsign(x), softsign_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(softsign, softsign_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, softsign_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, softsign_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(softsign, softsign_deriv, x, xL, p)..., p)
+    return softsign(x), softsign_deriv(x), p
+end
+function softsign_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    # TODO
+    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+end
+softsign(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softsign_kernel(x, softsign(x.Intv))
 
 swish(b, x) = x/(1.0 + exp(-b*x))
 swish_deriv(b, x) = (exp(-b*x)*(b*x + 1.0) + 1.0)/(1.0 + exp(-b*x))^2
@@ -154,41 +233,17 @@ swish_deriv(b, x) = (exp(-b*x)*(b*x + 1.0) + 1.0)/(1.0 + exp(-b*x))^2
 swish1(x) = swish(1.0, x)
 swish1_deriv(x) = dswish(1.0, x)
 
-gaussian(x) = exp(-x^2)
-gaussian_deriv(x) = -2.0*x*exp(-x^2)
-
-gaussian(b, x) = exp(-b*x^2)
-gaussian_deriv(b, x) =  -2.0*b*x*exp(-b*x^2)
-
-bent(x) = (sqrt(x^2 + 1.0) - 1.0)/2.0
-bent_deriv(x) = x/(2.0*sqrt(x^2 + 1.0)) + 1.0
-
-function sqnl(x)
-    (x > 2.0) && return 1.0
-    (2.0 >= x >= 0.0) && return x - (x^2)/4.0
-    (0.0 > x >= -2.0) && return x + (x^2)/4.0
-    return -1.0
-end
-function sqrbf(x)
-    (abs(x) <= 1.0) && return 1.0 - (x^2)/2.0
-    (abs(x) >= 2.0) && return 0.0
-    return ((2.0 - abs(x))^2)/2.0
-end
-
 # concavoconvex ? convex...
 gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
 
 # linear-convex regions or concave
 elu(α, x) = x > 0.0 ? x : α*(exp(x) - 1.0)
-
-# nonconvex
-cosid(x) = cos(x) - x
-minsin(x) = min(x, sin(x))
-arctid(x) = max(tan(x)^2) - x
-
-
 selu(α, λ, x) = λ*elu(α, x)
 
-#multiquad(α, x) = sqrt(α^2 + x^2)
-#tpspline(x) = (x^2)*log(x)
-# ((c/pi)^(1/2))*exp(-cx^2)
+#=
+gaussian(x) = exp(-x^2)
+gaussian_deriv(x) = -2.0*x*exp(-x^2)
+
+gaussian(b, x) = exp(-b*x^2)
+gaussian_deriv(b, x) =  -2.0*b*x*exp(-b*x^2)
+=#
