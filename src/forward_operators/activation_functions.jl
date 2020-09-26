@@ -34,6 +34,7 @@ param_relu(x, α) = x > 0.0 ? x : α*x
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
 param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
 function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    @assert α >= 0.0
     xLc = z.lo
     xUc = z.hi
     xL = x.Intv.lo
@@ -180,6 +181,7 @@ end
 @inline sigmoid(x::Interval{Float64}) = # TODO
 @inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
 end
 @inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
@@ -207,6 +209,7 @@ end
 @inline bisigmoid(x::Interval{Float64}) = # TODO
 @inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (bisigmoid(x) - bisigmoid(y))/bisigmoid_deriv(x)
 end
 @inline function cv_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, xU)..., p)
@@ -234,7 +237,7 @@ end
 @inline softsign(x::Interval{Float64}) = # TODO
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
 @inline function softsign_env(x::Float64, y::Float64, z::Float64)
-    # TODO
+    (x - y) - (softsign(x) - softsign(y))/softsign_deriv(x)
 end
 @inline function cv_softsign(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(softsign, softsign_deriv, x, xL, xU)..., p)
