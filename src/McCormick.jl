@@ -30,7 +30,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              sind, cosd, tand, asind, acosd, atand,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty
 
-import IntervalArithmetic: @round, big53
+using IntervalArithmetic: @round, big53
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,
                            expm1, log, log2, log10, log1p, sqrt, ^,
@@ -57,7 +57,9 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        sind, cosd, tand, asind, acosd, atand, nan, erf,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
-       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC
+       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
+       relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
+       sigmoid, bisigmoid, softsign, gelu
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kernel,
@@ -68,7 +70,10 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kerne
        sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel, acot_kernel, sech_kernel,
        csch_kernel, coth_kernel, acsch_kernel, acoth_kernel, sind_kernel, cosd_kernel,
        tand_kernel, secd_kernel, cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
-       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, erf_kernel
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, erf_kernel,
+       relu_kernel, param_relu_kernel, leaky_relu_kernel, maxsig_kernel,
+       maxtanh_kernel, softplus_kernel, pentanh_kernel, sigmoid_kernel,
+       bisigmoid_kernel, softsign_kernel, gelu_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 
@@ -493,5 +498,8 @@ include("implicit_routines/implicit.jl")
 using Reexport
 @reexport using IntervalArithmetic
 @reexport using StaticArrays
+@reexport using SpecialFunctions
+
+println(" using dev version")
 
 end

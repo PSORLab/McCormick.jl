@@ -57,7 +57,7 @@ function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where 
     concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*param_relu_deriv(midcv, α)
     convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 @inline param_relu(x::MC, α::Float64) = param_relu_kernel(x, α, param_relu(x.Intv, α))
 
@@ -86,15 +86,15 @@ function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,M
     xUc = z.hi
     xL = x.Intv.lo
     xU = x.Intv.hi
-    midcv = mid3v(x.cv, x.cc, xL)
-    midcc = mid3v(x.cv, x.cc, xU)
+    midcv, cv_id = mid3(x.cc, x.cv, xL)
+    midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
     convex = maxsig(midcv)
     concave = dcc*(midcc - xL) + xLc
     concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*maxsig_deriv(midcv, α)
+    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*maxsig_deriv(midcv)
     convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 
@@ -102,8 +102,10 @@ maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 @inline maxtanh(x) = max(x, tanh(x))
 @inline maxtanh(x::Float64) = max(x, tanh(x))
 @inline function maxtanh(x::Interval{Float64})
-    xLc = maxtanh(Interval(x.lo))
-    xUc = maxtanh(Interval(x.hi))
+    xLintv = Interval(x.lo)
+    xUintv = Interval(x.hi)
+    xLc = max(xLintv, tanh(xLintv))
+    xUc = max(xUintv, tanh(xUintv))
     Interval(xLc.lo, xUc.hi)
 end
 @inline function maxtanh_deriv(x::Float64)
@@ -117,15 +119,15 @@ function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,
     xUc = z.hi
     xL = x.Intv.lo
     xU = x.Intv.hi
-    midcv = mid3v(x.cv, x.cc, xL)
-    midcc = mid3v(x.cv, x.cc, xU)
+    midcv, cv_id = mid3(x.cc, x.cv, xL)
+    midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
     convex = maxtanh(midcv)
     concave = dcc*(midcc - xL) + xLc
     concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*maxtanh_deriv(midcv, α)
+    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*maxtanh_deriv(midcv)
     convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 maxtanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxtanh_kernel(x, maxtanh(x.Intv))
 
@@ -139,15 +141,15 @@ function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS
     xUc = z.hi
     xL = x.Intv.lo
     xU = x.Intv.hi
-    midcv = mid3v(x.cv, x.cc, xL)
-    midcc = mid3v(x.cv, x.cc, xU)
+    midcv, cv_id = mid3(x.cc, x.cv, xL)
+    midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
     convex = softplus(midcv)
     concave = dcc*(midcc - xL) + xLc
     concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*softplus_deriv(midcv, α)
+    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*softplus_deriv(midcv)
     convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst
+    return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 softplus(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softplus_kernel(x, softplus(x.Intv))
 
@@ -222,8 +224,10 @@ end
 @inline bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
 @inline bisigmoid(x::Float64) = 1.0 - exp(-x)/(1 + exp(-x))
 @inline function bisigmoid(x::Interval{Float64})
-    xLc = bisigmoid(Interval(x.lo))
-    xUc = bisigmoid(Interval(x.hi))
+    xLintv = Interval(x.lo)
+    xUintv = Interval(x.hi)
+    xLc = 1.0 - exp(-xLintv)/(1 + exp(-xLintv))
+    xUc = 1.0 - exp(-xUintv)/(1 + exp(-xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
 @inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
@@ -254,8 +258,10 @@ end
 @inline softsign(x) = x/(1.0 + abs(x))
 @inline softsign(x::Float64) = x/(1.0 + abs(x))
 @inline function softsign(x::Interval{Float64})
-    xLc = softsign(Interval(x.lo))
-    xUc = softsign(Interval(x.hi))
+    xLintv = Interval(x.lo)
+    xUintv = Interval(x.hi)
+    xLc = xLintv/(1.0 + abs(xLintv))
+    xUc = xUintv/(1.0 + abs(xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
@@ -286,8 +292,10 @@ end
 @inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline function gelu(x::Interval{Float64})
-    xLc = gelu(Interval(x.lo))
-    xUc = gelu(Interval(x.hi))
+    xLintv = Interval(x.lo)
+    xUintv = Interval(x.hi)
+    xLc = xLintv*(1.0 + erf(xLintv/sqrt(2)))/2.0
+    xUc = xUintv*(1.0 + erf(xUintv/sqrt(2)))/2.0
     return Interval(xLc.hi, xUc.hi)
 end
 @inline function gelu_deriv(x::Float64)
@@ -318,7 +326,7 @@ end
 end
 
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
-for expri in (:sigmoid, :bisigmoid, :softsign, :gelu)
+for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
