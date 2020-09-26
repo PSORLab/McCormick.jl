@@ -178,7 +178,7 @@ end
 
 @inline sigmoid(x) = 1.0/(1.0 + exp(-x))
 @inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
-@inline sigmoid(x::Interval{Float64}) = # TODO
+@inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
 @inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
@@ -206,7 +206,11 @@ end
 
 @inline bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
 @inline bisigmoid(x::Float64) = 1.0 - exp(-x)/(1 + exp(-x))
-@inline bisigmoid(x::Interval{Float64}) = # TODO
+@inline function bisigmoid(x::Interval{Float64})
+    xLc = bisigmoid(Interval(x.lo))
+    xUc = bisigmoid(Interval(x.hi))
+    return Interval(xLc.hi, xUc.hi)
+end
 @inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (bisigmoid(x) - bisigmoid(y))/bisigmoid_deriv(x)
@@ -234,7 +238,11 @@ end
 
 @inline softsign(x) = x/(1.0 + abs(x))
 @inline softsign(x::Float64) = x/(1.0 + abs(x))
-@inline softsign(x::Interval{Float64}) = # TODO
+@inline function softsign(x::Interval{Float64})
+    xLc = softsign(Interval(x.lo))
+    xUc = softsign(Interval(x.hi))
+    return Interval(xLc.hi, xUc.hi)
+end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
 @inline function softsign_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (softsign(x) - softsign(y))/softsign_deriv(x)
