@@ -98,6 +98,42 @@ function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,M
 end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 
+# DEFINE ELU
+@inline elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)
+@inline elu(x::Float64, α::Float64) = x > 0 ? x : α*(exp(x) - 1.0)
+function elu(x::Interval{Float64}, α::Float64)
+    xL = x.lo
+    xU = x.hi
+    if xU < 0.0
+        return α*(exp(x) - 1.0)
+    elseif xL > 0.0
+        return x
+    end
+    xLIntv = α*(exp(x) - 1.0)
+    Interval(xLIntv.lo, x.hi)
+end
+@inline elu_deriv(x::Float64, α::Float64) = x > 0 ? 1.0 : α*exp(x)
+function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+    xLc = z.lo
+    xUc = z.hi
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    midcv, cv_id = mid3(x.cc, x.cv, xL)
+    midcc, cc_id = mid3(x.cc, x.cv, xU)
+    dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
+    convex = elu(midcv, α)
+    concave = dcc*(midcc - xL) + xLc
+    concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*elu_deriv(midcv, α)
+    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
+    return MC{N,T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
+end
+elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
+
+# linear-convex regions or concave
+selu_kernel(α, λ, x) = λ*elu_kernel(α, x)
+selu(α, λ, x) = λ*elu(α, x)
+
 # DEFINE MAXTANH
 @inline maxtanh(x) = max(x, tanh(x))
 @inline maxtanh(x::Float64) = max(x, tanh(x))
@@ -289,6 +325,14 @@ end
     return softsign(x), softsign_deriv(x), p
 end
 
+const GELU_MIN = -0.751791524693564457457904946779522
+const GELU_2D_ROOT1 = -sqrt(2)
+const GELU_2D_ROOT2 = sqrt(2)
+
+const SWISH1_MIN = -1.27846454276107379510935873902298015543947748
+const SWISH1_2D_ROOT1 = -2.399357280515467667832739697282283888523
+const SWISH1_2D_ROOT2 = 2.399357280515467667832739697282283888523
+
 @inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline function gelu(x::Interval{Float64})
@@ -299,7 +343,7 @@ end
     return Interval(xLc.hi, xUc.hi)
 end
 @inline function gelu_deriv(x::Float64)
-    0.5*(1.0 + erf(x/sqrt(2)) + x*(sqrt(2/pi)*exp((-x^2)/2.0)))
+    0.5*(1.0 + erf(x/sqrt(2))) + (x/sqrt(2*pi))*exp((-x^2)/2.0)
 end
 @inline function gelu_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (gelu(x) - gelu(y))/gelu_deriv(x)
@@ -325,18 +369,55 @@ end
     return dline_seg(gelu, gelu_deriv, x, p, xU)..., p
 end
 
+@inline swish1(x) = x/(1.0 + exp(-x))
+@inline swish1(x::Float64) = x/(1.0 + exp(-x))
+@inline function swish1(x::Interval{Float64})
+    xLintv = Interval(x.lo)
+    xUintv = Interval(x.hi)
+    xLc = xLintv/(1.0 + exp(-xLintv))
+    xUc = xUintv/(1.0 + exp(-xUintv))
+    return Interval(xLc.hi, xUc.hi)
+end
+@inline function swish1_deriv(x::Float64)
+    exp(x)*(x + exp(x) + 1.0)/(exp(x) + 1.0)^2
+end
+@inline function swish1_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (swish1(x) - swish1(y))/swish1_deriv(x)
+end
+@inline function cc_swish1(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return swish1(x), swish1_deriv(x), p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, swish1_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, swish1_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(swish1, swish1_deriv, x, xL, p)..., p)
+    return swish1(x), swish1_deriv(x), p
+end
+@inline function cv_swish1(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return swish1(x), swish1_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, swish1_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, swish1_env, xU, 0.0))
+    end
+    (x <= p) && (return swish1(x), swish1_deriv(x), p)
+    return dline_seg(swish1, swish1_deriv, x, p, xU)..., p
+end
+
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
 for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
-    if expri != :gelu
+    if !(expri == :gelu || expri == :swish1)
         eps_min = :xL
         eps_max = :xU
+    elseif expri == swish1
+        eps_min = :(SWISH1_MIN > xU ? xU : (SWISH1_MIN < xL ? xL : SWISH1_MIN))
+        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
     else
-        eps_min = :(-0.751791524693564457457904946779522 > xU ? xU : (
-                    -0.751791524693564457457904946779522 < xL ? xL :
-                    -0.751791524693564457457904946779522))
+        eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
         eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
     end
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
@@ -357,13 +438,3 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
         return z
     end
 end
-
-swish(b, x) = x/(1.0 + exp(-b*x))
-swish_deriv(b, x) = (exp(-b*x)*(b*x + 1.0) + 1.0)/(1.0 + exp(-b*x))^2
-
-swish1(x) = swish(1.0, x)
-swish1_deriv(x) = dswish(1.0, x)
-
-# linear-convex regions or concave
-elu(α, x) = x > 0.0 ? x : α*(exp(x) - 1.0)
-selu(α, λ, x) = λ*elu(α, x)
