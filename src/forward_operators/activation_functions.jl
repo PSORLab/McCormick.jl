@@ -49,8 +49,8 @@ function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where 
     xUc = z.hi
     xL = x.Intv.lo
     xU = x.Intv.hi
-    midcv = mid3v(x.cv, x.cc, xL)
-    midcc = mid3v(x.cv, x.cc, xU)
+    midcv, cv_id = mid3(x.cc, x.cv, xL)
+    midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
     convex = param_relu(midcv, α)
     concave = dcc*(midcc - xL) + xLc
@@ -68,7 +68,7 @@ leaky_relu
 The leaky Rectified Linear Unit function (max(x, 0.01x)).
 """
 @inline leaky_relu(x) = leaky_relu(x, 0.01)
-@inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01)
+@inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01, z)
 @inline leaky_relu(x::MC) = leaky_relu_kernel(x, param_relu(x.Intv, 0.01))
 
 # DEFINE MAXSIG
