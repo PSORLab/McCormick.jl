@@ -348,25 +348,51 @@ end
 @inline function gelu_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (gelu(x) - gelu(y))/gelu_deriv(x)
 end
-@inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p)
-    (xU <= 0.0) && (return gelu(x), gelu_deriv(x), p)
-    if p === Inf
-        p, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
-        flag && (p = golden_section(0.0, xU, gelu_env, xL, 0.0))
+@inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+    # Single convexity regions
+    (xL >= GELU_2D_ROOT2) && (return gelu(x), gelu_deriv(x), p1, p2)
+    (xU <= GELU_2D_ROOT1) && (return gelu(x), gelu_deriv(x), p1, p2)
+    if (GELU_2D_ROOT1 <= xL && xU <= GELU_2D_ROOT2)
+        return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2)
     end
-    (x <= p) && (return dline_seg(gelu, gelu_deriv, x, xL, p)..., p)
-    return gelu(x), gelu_deriv(x), p
+
+    # Two convexity regions
+    if (xL <= GELU_2D_ROOT1 && xU <= GELU_2D_ROOT2)
+        if p1 === Inf
+            p1, flag = secant(xL, GELU_2D_ROOT1, xL, GELU_2D_ROOT1, gelu_env, xL, GELU_2D_ROOT1)
+            flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xL, GELU_2D_ROOT1))
+        end
+        (x <= p1) && (return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2)
+        return gelu(x), gelu_deriv(x), p1, p2
+    elseif (GELU_2D_ROOT1 <= xL && GELU_2D_ROOT2 <= xU)
+        if p1 === Inf
+            p, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
+            flag && (p1 = golden_section(0.0, xU, gelu_env, xL, 0.0))
+        end
+        (x <= p1) && (return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2)
+        return gelu(x), gelu_deriv(x), p1, p2
+    end
+
+    # Three convexity regions
+    if p1 === Inf
+        p1, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
+        flag && (p1 = golden_section(0.0, xU, gelu_env, xL, 0.0))
+    end
+    if p2 === Inf
+        p2, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
+        flag && (p2 = golden_section(0.0, xU, gelu_env, xL, 0.0))
+    end
+    return gelu(x), gelu_deriv(x), p1, p2
 end
-@inline function cv_gelu(x::Float64, xL::Float64, xU::Float64, p::Float64)
-    (xL >= 0.0) && (return gelu(x), gelu_deriv(x), p)
-    (xU <= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p)
-    if p === Inf
-        p, flag = secant(xL, 0.0, xL, 0.0, gelu_env, xU, 0.0)
-        flag && (p = golden_section(xL, 0.0, gelu_env, xU, 0.0))
+@inline function cv_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+    (xL >= 0.0) && (return gelu(x), gelu_deriv(x), p1, p2)
+    (xU <= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2)
+    if p1 === Inf
+        p1, flag = secant(xL, 0.0, xL, 0.0, gelu_env, xU, 0.0)
+        flag && (p1 = golden_section(xL, 0.0, gelu_env, xU, 0.0))
     end
-    (x <= p) && (return gelu(x), gelu_deriv(x), p)
-    return dline_seg(gelu, gelu_deriv, x, p, xU)..., p
+    (x <= p1) && (return gelu(x), gelu_deriv(x), p1, p2)
+    return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2
 end
 
 @inline swish1(x) = x/(1.0 + exp(-x))
@@ -410,16 +436,8 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
-    if !(expri == :gelu || expri == :swish1)
-        eps_min = :xL
-        eps_max = :xU
-    elseif expri == swish1
-        eps_min = :(SWISH1_MIN > xU ? xU : (SWISH1_MIN < xL ? xL : SWISH1_MIN))
-        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
-    else
-        eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
-        eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
-    end
+    eps_min = :xL
+    eps_max = :xU
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
         xL = x.Intv.lo
@@ -435,6 +453,38 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
         z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
+        return z
+    end
+end
+
+
+for expri in (:swish1, :gelu)
+    expri_cv = Symbol("cv_"*String(expri))
+    expri_cc = Symbol("cc_"*String(expri))
+    expri_kernel = Symbol(String(expri)*"_kernel")
+    if expri == swish1
+        eps_min = :(SWISH1_MIN > xU ? xU : (SWISH1_MIN < xL ? xL : SWISH1_MIN))
+        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
+    else
+        eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
+        eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
+    end
+    @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
+                            cv_p::Float64, cc_p::Float64, cv_p2::Float64,
+                            cc_p2::Float64) where {N,T<:Union{NS,MV}}
+        xL = x.Intv.lo
+        xU = x.Intv.hi
+        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
+        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
+        cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
+        cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
+        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
+        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
+    end
+    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
+        z, tp1, tp2, tp3, tp4 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf, Inf, Inf)
         return z
     end
 end
