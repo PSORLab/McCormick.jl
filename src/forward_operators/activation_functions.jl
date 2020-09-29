@@ -458,8 +458,20 @@ end
 @inline function swish1_deriv(x::Float64)
     exp(x)*(x + exp(x) + 1.0)/(exp(x) + 1.0)^2
 end
+@inline function swish1_deriv2(x::Float64)
+    frac1 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^3
+    frac2 = exp(-x)/(exp(-x) + 1.0)^2
+    2.0*exp(-x)/(exp(-x) + 1.0)^2 + (frac1 - frac2)*x
+end
 @inline function swish1_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (swish1(x) - swish1(y))/swish1_deriv(x)
+end
+@inline function swish1_envm(x::Float64, y::Float64, z::Float64)
+    swish1_deriv(y)*(x - y) - (swish1(x) - swish1(y))
+end
+
+@inline function swish1_denv(x::Float64, y::Float64, z::Float64)
+    swish1_deriv2(x)*(x - y)
 end
 
 @inline function swish_rt1(x::Float64, y::Float64, z::Float64)
@@ -521,12 +533,29 @@ end
         return swish1(x), swish1_deriv(x), p1, p2
     end
 
-    #if p1 === Inf
-    #    p1, flag = secant(xL, 0.0, xL, 0.0, swish1_env, xU, 0.0)
-    #    flag && (p1 = golden_section(xL, 0.0, swish1_env, xU, 0.0))
-    #end
-    #(x <= p) && (return swish1(x), swish1_deriv(x), p1, p2)
-    #return dline_seg(swish1, swish1_deriv, x, p, xU)..., p1, p2
+    if xL < SWISH1_2D_ROOT1
+        @show "cases222abcd"
+        if p1 === Inf
+            p1, flag = newton(SWISH1_MIN, SWISH1_2D_ROOT1, SWISH1_MIN, swish1_envm, swish_rt1_deriv, xL, 0.0)
+            flag && (p1 = golden_section(SWISH1_2D_ROOT1, SWISH1_MIN, swish1_envm, xL, 0.0))
+        end
+    else
+        p1 = -Inf
+    end
+
+    if xU > SWISH1_2D_ROOT2
+        @show "cases333"
+        if p2 === Inf
+            p2, flag = newton(SWISH1_MIN, SWISH1_2D_ROOT1, SWISH1_MIN, swish1_envm, swish_rt1_deriv, xU, 0.0)
+            flag && (p2 = golden_section(SWISH1_MIN, SWISH1_2D_ROOT2, swish1_envm, xU, 0.0))
+        end
+    else
+        p2 = Inf
+    end
+    @show p1, p2
+
+    (x <= p1) && (return dline_seg(swish1, swish1_deriv, x, xL, p1)..., p1, p2)
+    (x >= p2) && (return dline_seg(swish1, swish1_deriv, x, p2, xU)..., p1, p2)
     return swish1(x), swish1_deriv(x), p1, p2
 end
 
