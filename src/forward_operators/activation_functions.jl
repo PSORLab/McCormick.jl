@@ -362,8 +362,15 @@ function gelu_denv(x::Float64, y::Float64, z::Float64)
     (x - y)*(exp((-x^2)/2))*(0.797885 - 0.398942*x^2)
 end
 
-@inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+@inline function gelu_rt1(x::Float64, y::Float64, z::Float64)
+    gelu_deriv(y)*(x - y) + gelu(y) -gelu(x)
+end
 
+@inline function gelu_rt1_deriv(x::Float64, y::Float64, z::Float64)
+    gelu_deriv(y) - gelu_deriv(x)
+end
+
+@inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
     # Single convexity regions
     if xL >= GELU_2D_ROOT2
         return gelu(x), gelu_deriv(x), p1, p2
@@ -373,48 +380,35 @@ end
         return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
     end
 
-    if p1 === Inf
-        x0, xm = xL, xU
-        p1, flag = newton(x0, xL, GELU_2D_ROOT1, gelu_env, gelu_denv, xm, 0.0)
-        flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xL, xU, 0.0))
-    end
-    @show p1
-    (x <= p1) && (gelu(x), gelu_deriv(x), p1, p2)
-    return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2
-
-    #=
-    # Two convexity regions
-    if (xL <= GELU_2D_ROOT1 && xU <= GELU_2D_ROOT2)
-        if p1 === Inf
-            @show "case 4"
-            x0, xm = xL, xU
-            p1, flag = newton(x0, xL, GELU_2D_ROOT1, gelu_env, gelu_denv, xm, 0.0)
-            @show p1, flag
-            flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xL, xU, 0.0))
+    if xL < GELU_2D_ROOT1
+        p2, flag = newton(0.0, GELU_MIN, 0.0, gelu_rt1, gelu_rt1_deriv, xL, 0.0)
+        flag && (p2 = golden_section(GELU_2D_ROOT1, 0.0, gelu_rt1, xL, 0.0))
+        if p2 > xU
+            if p1 === Inf
+                p1, flag = secant(xL, GELU_2D_ROOT1, xL, GELU_2D_ROOT1, gelu_env, xU, 0.0)
+                flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xU, 0.0))
+            end
+            (x >= p1) && (return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2)
+            return swish1(x), swish1_deriv(x), p1, p2
+        else
+            return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
         end
-        @show p1
-        (x <= p1) && (gelu(x), gelu_deriv(x), p1, p2)
-        return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2
-    elseif (GELU_2D_ROOT1 <= xL && GELU_2D_ROOT2 <= xU)
-        if p1 === Inf
-            p, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
-            flag && (p1 = golden_section(0.0, xU, gelu_env, xL, 0.0))
-        end
-        (x <= p1) && (return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2)
-        return gelu(x), gelu_deriv(x), p1, p2
     end
 
-    # Three convexity regions
-    if p1 === Inf
-        p1, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
-        flag && (p1 = golden_section(0.0, xU, gelu_env, xL, 0.0))
+    if xL > GELU_2D_ROOT1
+        p2, flag = newton(0.5*(GELU_MIN + GELU_2D_ROOT2), GELU_MIN, GELU_2D_ROOT2, gelu_rt1, gelu_rt1_deriv, xU, 0.0)
+        flag && (p2 = golden_section(GELU_MIN, GELU_2D_ROOT2, gelu_rt1, xU, 0.0))
+        if p2 < xL
+            if p1 === Inf
+                p1, flag = secant(GELU_2D_ROOT2, xU, GELU_2D_ROOT2, xU, gelu_env, xL, 0.0)
+                flag && (p1 = golden_section(GELU_2D_ROOT2, xU, gelu_env, xL, 0.0))
+            end
+            (x >= p1) && (return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2)
+            return gelu(x), gelu_deriv(x), p1, p2
+        else
+            return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
+        end
     end
-    if p2 === Inf
-        p2, flag = secant(0.0, xU, 0.0, xU, gelu_env, xL, 0.0)
-        flag && (p2 = golden_section(0.0, xU, gelu_env, xL, 0.0))
-    end
-    =#
-    return gelu(x), gelu_deriv(x), p1, p2
 end
 @inline function cv_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
 
