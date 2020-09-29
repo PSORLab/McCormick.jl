@@ -481,12 +481,27 @@ end
     end
 
     if xL < SWISH1_2D_ROOT1
-        xUstar, flag = newton(0.0, SWISH1_MIN, 0.0, swish_rt1, swish_rt1_deriv, xL, 0.0)
-        flag && (xUstar = golden_section(SWISH1_2D_ROOT1, 0.0, swish_rt1, xL, 0.0))
-        if xUstar > xU
+        p2, flag = newton(0.0, SWISH1_MIN, 0.0, swish_rt1, swish_rt1_deriv, xL, 0.0)
+        flag && (p2 = golden_section(SWISH1_2D_ROOT1, 0.0, swish_rt1, xL, 0.0))
+        if p2 > xU
             if p1 === Inf
                 p1, flag = secant(xL, SWISH1_2D_ROOT1, xL, SWISH1_2D_ROOT1, swish1_env, xU, 0.0)
-                flag && (p1 = golden_section(0.0, xU, swish1_env, xL, 0.0))
+                flag && (p1 = golden_section(xL, SWISH1_2D_ROOT1, swish1_env, xU, 0.0))
+            end
+            (x >= p1) && (return dline_seg(swish1, swish1_deriv, x, p1, xU)..., p1, p2)
+            return swish1(x), swish1_deriv(x), p1, p2
+        else
+            return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+        end
+    end
+
+    if xL > SWISH1_2D_ROOT1
+        p2, flag = newton(0.5*(SWISH1_MIN + SWISH1_2D_ROOT2), SWISH1_MIN, SWISH1_2D_ROOT2, swish_rt1, swish_rt1_deriv, xU, 0.0)
+        flag && (p2 = golden_section(SWISH1_MIN, SWISH1_2D_ROOT2, swish_rt1, xU, 0.0))
+        if p2 < xL
+            if p1 === Inf
+                p1, flag = secant(SWISH1_2D_ROOT2, xU, SWISH1_2D_ROOT2, xU, swish1_env, xL, 0.0)
+                flag && (p1 = golden_section(SWISH1_2D_ROOT2, xU, swish1_env, xL, 0.0))
             end
             (x >= p1) && (return dline_seg(swish1, swish1_deriv, x, p1, xU)..., p1, p2)
             return swish1(x), swish1_deriv(x), p1, p2
