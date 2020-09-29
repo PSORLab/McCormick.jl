@@ -340,7 +340,17 @@ const SWISH1_2D_ROOT2 = 2.399357280515467667832739697282283888523
     xUintv = Interval(x.hi)
     xLc = xLintv*(1.0 + erf(xLintv/sqrt(2)))/2.0
     xUc = xUintv*(1.0 + erf(xUintv/sqrt(2)))/2.0
-    return Interval(xLc.hi, xUc.hi)
+    if x.hi < GELU_MIN
+        xLcv = xUc.lo
+        xUcv = xLc.hi
+    elseif GELU_MIN < x.lo
+        xLcv = xLc.lo
+        xUcv = xUc.hi
+    else
+        xLcv = GELU_MIN
+        xUcv = max(xLc.hi, xUc.hi)
+    end
+    return Interval(xLcv, xUcv)
 end
 @inline function gelu_deriv(x::Float64)
     0.5*(1.0 + erf(x/sqrt(2))) + (x/sqrt(2*pi))*exp((-x^2)/2.0)
@@ -349,18 +359,21 @@ end
     (x - y) - (gelu(x) - gelu(y))/gelu_deriv(x)
 end
 @inline function cc_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+
     # Single convexity regions
-    (xL >= GELU_2D_ROOT2) && (return gelu(x), gelu_deriv(x), p1, p2)
-    (xU <= GELU_2D_ROOT1) && (return gelu(x), gelu_deriv(x), p1, p2)
-    if (GELU_2D_ROOT1 <= xL && xU <= GELU_2D_ROOT2)
-        return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2)
+    if xL >= GELU_2D_ROOT2
+        return gelu(x), gelu_deriv(x), p1, p2
+    elseif xU <= GELU_2D_ROOT1
+        return gelu(x), gelu_deriv(x), p1, p2
+    elseif (GELU_2D_ROOT1 <= xL) && (xU <= GELU_2D_ROOT2)
+        return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
     end
 
     # Two convexity regions
     if (xL <= GELU_2D_ROOT1 && xU <= GELU_2D_ROOT2)
         if p1 === Inf
-            p1, flag = secant(xL, GELU_2D_ROOT1, xL, GELU_2D_ROOT1, gelu_env, xL, GELU_2D_ROOT1)
-            flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xL, GELU_2D_ROOT1))
+            p1, flag = secant(xL, GELU_MIN, xL, GELU_MIN, gelu_env, xL, xU)
+            flag && (p1 = golden_section(xL, GELU_MIN, gelu_env, xL, xU, 0.0))
         end
         (x <= p1) && (return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2)
         return gelu(x), gelu_deriv(x), p1, p2
@@ -385,8 +398,17 @@ end
     return gelu(x), gelu_deriv(x), p1, p2
 end
 @inline function cv_gelu(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
-    (xL >= 0.0) && (return gelu(x), gelu_deriv(x), p1, p2)
-    (xU <= 0.0) && (return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2)
+
+    # Single convexity regions
+    if xL >= GELU_2D_ROOT2
+        return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
+    elseif xU <= GELU_2D_ROOT1
+        blarh = dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
+        return blarh
+    elseif (GELU_2D_ROOT1 <= xL) && (xU <= GELU_2D_ROOT2)
+        return gelu(x), gelu_deriv(x), p1, p2
+    end
+
     if p1 === Inf
         p1, flag = secant(xL, 0.0, xL, 0.0, gelu_env, xU, 0.0)
         flag && (p1 = golden_section(xL, 0.0, gelu_env, xU, 0.0))
@@ -432,7 +454,7 @@ end
 end
 
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
-for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
+for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
@@ -457,7 +479,6 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign, :gelu)
     end
 end
 
-
 for expri in (:swish1, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
@@ -478,6 +499,7 @@ for expri in (:swish1, :gelu)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
         cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
+        @show cv, cc
         cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
