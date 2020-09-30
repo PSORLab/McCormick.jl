@@ -355,11 +355,18 @@ end
 function gelu_deriv(x::Float64)
     0.5*(1.0 + erf(x/sqrt(2))) + (x/sqrt(2*pi))*exp((-x^2)/2.0)
 end
+function gelu_deriv2(x::Float64)
+    (0.797885 - 0.398942*x^2)*exp((-x^2)/2.0)
+end
 function gelu_env(x::Float64, y::Float64, z::Float64)
-    (y - x) - (gelu(y) - gelu(x))/gelu_deriv(y)
+    (y - x)*gelu_deriv(x) + gelu(x) - gelu(y)
 end
 function gelu_denv(x::Float64, y::Float64, z::Float64)
-    (x - y)*(exp((-x^2)/2))*(0.797885 - 0.398942*x^2)
+    (y - x)*gelu_deriv2(x)
+end
+
+@inline function gelu_envm(x::Float64, y::Float64, z::Float64)
+    gelu_deriv(y)*(x - y) - (gelu(x) - gelu(y))
 end
 
 @inline function gelu_rt1(x::Float64, y::Float64, z::Float64)
@@ -422,12 +429,30 @@ end
         return gelu(x), gelu_deriv(x), p1, p2
     end
 
-    if p1 === Inf
-        p1, flag = secant(xL, 0.0, xL, 0.0, gelu_env, xU, 0.0)
-        flag && (p1 = golden_section(xL, 0.0, gelu_env, xU, 0.0))
+    if xL < GELU_2D_ROOT1
+        if p1 === Inf
+            p1, flag = newton(0.5*(GELU_2D_ROOT1 + GELU_MIN), GELU_2D_ROOT1, GELU_MIN, gelu_env, gelu_denv, xL, 0.0)
+            flag && (p1 = golden_section(GELU_2D_ROOT1, GELU_MIN, gelu_env, xL, 0.0))
+        end
+    else
+        p1 = -Inf
     end
-    (x <= p1) && (return gelu(x), gelu_deriv(x), p1, p2)
-    return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2
+
+    if xU > GELU_2D_ROOT2
+        if p2 === Inf
+            p2, flag = newton(0.5*(GELU_MIN + GELU_2D_ROOT2), GELU_MIN, GELU_2D_ROOT2, gelu_env, gelu_denv, xU, 0.0)
+            flag && (p2 = golden_section(GELU_MIN, GELU_2D_ROOT2, gelu_env, xU, 0.0))
+        end
+    else
+        p2 = Inf
+    end
+
+    if x < p1
+        return dline_seg(gelu, gelu_deriv, x, xL, p1)..., p1, p2
+    elseif x > p2
+        return dline_seg(gelu, gelu_deriv, x, p2, xU)..., p1, p2
+    end
+    return gelu(x), gelu_deriv(x), p1, p2
 end
 
 @inline swish1(x) = x/(1.0 + exp(-x))
@@ -599,12 +624,9 @@ for expri in (:swish1, :gelu)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
         cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
-        @show cv, cc
         cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
-        @show cv, cc
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-        @show cv, cc
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
