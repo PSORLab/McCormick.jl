@@ -257,16 +257,16 @@ end
     return sigmoid(x), sigmoid_deriv(x), p
 end
 
-@inline bisigmoid(x) = 1.0 - exp(-x)/(1 + exp(-x))
-@inline bisigmoid(x::Float64) = 1.0 - exp(-x)/(1 + exp(-x))
+@inline bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-x))
+@inline bisigmoid(x::Float64) = (1.0 - exp(-x))/(1.0 + exp(-x))
 @inline function bisigmoid(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
-    xLc = 1.0 - exp(-xLintv)/(1 + exp(-xLintv))
-    xUc = 1.0 - exp(-xUintv)/(1 + exp(-xUintv))
+    xLc = (1.0 - exp(-xLintv))/(1.0 + exp(-xLintv))
+    xUc = (1.0 - exp(-xUintv))/(1.0 + exp(-xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
-@inline bisigmoid_deriv(x::Float64) =  0.5*(1.0 + bisigmoid(x))*(1.0 - bisigmoid(x))
+@inline bisigmoid_deriv(x::Float64) =  0.5*exp(x)/(exp(x) + 1.0)^2
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (bisigmoid(x) - bisigmoid(y))/bisigmoid_deriv(x)
 end
