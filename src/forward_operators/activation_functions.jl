@@ -266,9 +266,9 @@ end
     xUc = (1.0 - exp(-xUintv))/(1.0 + exp(-xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
-@inline bisigmoid_deriv(x::Float64) =  0.5*exp(x)/(exp(x) + 1.0)^2
+@inline bisigmoid_deriv(x::Float64) =  2.0*exp(x)/(exp(x) + 1.0)^2
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
-    (x - y) - (bisigmoid(x) - bisigmoid(y))/bisigmoid_deriv(x)
+    bisigmoid(y) - bisigmoid(x) - bisigmoid_deriv(x)*(y - x)
 end
 @inline function cv_bisigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(bisigmoid, bisigmoid_deriv, x, xL, xU)..., p)
