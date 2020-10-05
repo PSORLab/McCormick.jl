@@ -20,6 +20,8 @@ relu
 The Rectified Linear Unit function (max(x, 0.0)).
 """
 relu(x) = max(x, 0.0)
+relu_deriv(x) = x > 0.0 ? 1.0 : 0.0
+relu_deriv2(x) =  0.0
 function relu_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     max_kernel(x, 0.0, z)
 end
@@ -80,6 +82,12 @@ The leaky Rectified Linear Unit function (max(x, 0.01x)).
         return 1.0
     end
     return exp(x)/(exp(x) + 1.0)^2
+end
+@inline function maxsig_deriv2(x::Float64)
+    if x > 1.0/(exp(-x) + 1.0)
+        return 0.0
+    end
+    return exp(x)*(1.0 - exp(x))/(exp(x) + 1.0)^3
 end
 function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
@@ -150,6 +158,12 @@ end
     end
     return sech(x)^2
 end
+@inline function maxtanh_deriv2(x::Float64)
+    if x > tanh(x)
+        return 0.0
+    end
+    return -2.0*tanh(x)*sech(x)^2
+end
 function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
     xUc = z.hi
@@ -172,6 +186,7 @@ maxtanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxtanh_kernel(x, maxtanh(x.Int
 @inline softplus(x::Float64) = log(1.0 + exp(x))
 @inline softplus(x::Interval{Float64}) = log(1.0 + exp(x))
 @inline softplus_deriv(x::Float64) = exp(x)/(exp(x) + 1.0)
+@inline softplus_deriv2(x::Float64) = exp(x)/(exp(x) + 1.0)^2
 function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
     xUc = z.hi
@@ -204,6 +219,12 @@ function pentanh_deriv(x::Float64)
         return 1.0 - tanh(x)^2
     end
     0.25 - 0.25*tanh(0.25*x)^2
+end
+function pentanh_deriv2(x::Float64)
+    if x > 0.0
+        return -2.0*tanh(x)*sech(2)^2
+    end
+    -0.125*tanh(0.25*x)*sech(0.25*x)^2
 end
 @inline function pentanh_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (pentanh(x) - pentanh(y))/pentanh_deriv(x)
