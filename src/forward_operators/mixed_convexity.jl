@@ -355,6 +355,7 @@ function erf(a::Interval{T}) where T
 end
 
 @inline erf_deriv(x::Float64) = (2.0/sqrt(pi))*exp(-x^2)
+@inline erf_deriv2(x::Float64) = 4.0*x*exp(-x^2)/sqrt(pi)
 @inline function erf_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (erf(x) - erf(y))/erf_deriv(x)
 end

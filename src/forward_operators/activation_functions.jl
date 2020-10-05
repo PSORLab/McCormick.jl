@@ -44,7 +44,15 @@ function param_relu(x::Interval{Float64}, α::Float64)
     return Interval{Float64}(xL, xU)
 end
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
-param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
+function param_relu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+    if x > 0.0
+        g[1] = 1.0
+        g[2] = 0.0
+    end
+    g[1] = α
+    g[2] = x
+    nothing
+end
 function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     @assert α >= 0.0
     xLc = z.lo
@@ -72,6 +80,8 @@ The leaky Rectified Linear Unit function (max(x, 0.01x)).
 @inline leaky_relu(x) = leaky_relu(x, 0.01)
 @inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01, z)
 @inline leaky_relu(x::MC) = leaky_relu_kernel(x, param_relu(x.Intv, 0.01))
+@inline leaky_relu_deriv(x) = x > 0.0 ? 1.0 : 0.01
+@inline leaky_relu_deriv2(x) = 0.0
 
 # DEFINE MAXSIG
 @inline maxsig(x) = max(x, 1.0/(1.0 + exp(-x)))
@@ -120,7 +130,12 @@ function elu(x::Interval{Float64}, α::Float64)
     xLIntv = α*(exp(x) - 1.0)
     Interval(xLIntv.lo, x.hi)
 end
-@inline elu_deriv(x::Float64, α::Float64) = x > 0 ? 1.0 : α*exp(x)
+@inline elu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α*exp(x)
+function elu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+    g[1] = elu_deriv(x, α)
+    g[2] = x > 0.0 ? 0.0 : exp(x)
+    nothing
+end
 function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
     xUc = z.hi
@@ -139,8 +154,14 @@ end
 elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
 
 # linear-convex regions or concave
-selu_kernel(α, λ, x) = λ*elu_kernel(α, x)
-selu(α, λ, x) = λ*elu(α, x)
+selu_kernel(x, α, λ) = λ*elu_kernel(x, α, x.Intv)
+selu(x, α, λ) = λ*elu(x, α)
+function selu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+    g[1] = λ*elu_deriv(x, α)
+    g[2] = λ*(x > 0.0 ? 0.0 : exp(x))
+    g[3] = elu(x, α)
+    nothing
+end
 
 # DEFINE MAXTANH
 @inline maxtanh(x) = max(x, tanh(x))
@@ -254,6 +275,7 @@ end
 @inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
 @inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
+@inline sigmoid_deriv2(x::Float64) = 2.0*exp(-2.0*x)/sigmoid(x)^3 - exp(-x)/sigmoid(x)^2
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
 end
@@ -287,7 +309,13 @@ end
     xUc = (1.0 - exp(-xUintv))/(1.0 + exp(-xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
-@inline bisigmoid_deriv(x::Float64) =  2.0*exp(x)/(exp(x) + 1.0)^2
+@inline bisigmoid_deriv(x::Float64) = 2.0*exp(x)/(exp(x) + 1.0)^2
+@inline function bisigmoid_deriv2(x::Float64)
+    term1 = exp(-x)/(exp(-x) + 1.0)
+    term2 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^2
+    term3 = (1.0 - exp(-x))*(term2 - term1)/(exp(-x) + 1.0)
+    return term3 - term1 + term2
+end
 @inline function bisigmoid_env(x::Float64, y::Float64, z::Float64)
     bisigmoid(y) - bisigmoid(x) - bisigmoid_deriv(x)*(y - x)
 end
@@ -322,6 +350,14 @@ end
     return Interval(xLc.hi, xUc.hi)
 end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
+@inline function softsign_deriv2(x::Float64)
+    if x >= 0.0
+        xp1 = 1.0 + x
+        return 2.0*(x*xp1^(-3) - xp1^(-2))
+    end
+    xm1 = 1.0 - x
+    return 2.0*(x*xm1^(-3) + xm1^(-2))
+end
 @inline function softsign_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (softsign(x) - softsign(y))/softsign_deriv(x)
 end

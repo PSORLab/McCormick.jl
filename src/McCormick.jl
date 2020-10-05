@@ -501,6 +501,4 @@ using Reexport
 @reexport using StaticArrays
 @reexport using SpecialFunctions
 
-println(" using dev version")
-
 end
