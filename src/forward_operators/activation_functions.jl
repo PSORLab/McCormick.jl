@@ -17,7 +17,7 @@
 """
 relu
 
-The Rectified Linear Unit function (max(x, 0.0)).
+The Rectified Linear Unit (ReLU) activation function `relu(x) = max(x, 0.0)`.
 """
 relu(x) = max(x, 0.0)
 relu_deriv(x) = x > 0.0 ? 1.0 : 0.0
@@ -33,7 +33,7 @@ end
 """
 param_relu
 
-The parametric Rectified Linear Unit function (max(x, αx) with α in [0,1]).
+The parametric Rectified Linear Unit activation function `param_relu(x, α) = (max(x, αx)` with α in [0,1].
 """
 param_relu(x, α) = x > 0.0 ? x : α*x
 function param_relu(x::Interval{Float64}, α::Float64)
@@ -77,7 +77,7 @@ end
 """
 leaky_relu
 
-The leaky Rectified Linear Unit function (max(x, 0.01x)).
+The leaky Rectified Linear Unit activation function `leaky_relu(x) = max(x, 0.01x)`.
 """
 @inline leaky_relu(x) = leaky_relu(x, 0.01)
 @inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01, z)
@@ -86,6 +86,11 @@ The leaky Rectified Linear Unit function (max(x, 0.01x)).
 @inline leaky_relu_deriv2(x) = 0.0
 
 # DEFINE MAXSIG
+"""
+maxsig
+
+The `maxsig` activation function  `maxsig(x) = max(x, 1.0/(1.0 + exp(-x)))`.
+"""
 @inline maxsig(x) = max(x, 1.0/(1.0 + exp(-x)))
 @inline maxsig(x::Float64) = max(x, 1.0/(1.0 + exp(-x)))
 @inline maxsig(x::Interval{Float64}) = max(x, 1.0/(1.0 + exp(-x)))
@@ -119,6 +124,11 @@ end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 
 # DEFINE ELU
+"""
+elu
+
+The Exponential Linear Unit (ELU) activation function  `elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)`.
+"""
 @inline elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)
 @inline elu(x::Float64, α::Float64) = x > 0 ? x : α*(exp(x) - 1.0)
 function elu(x::Interval{Float64}, α::Float64)
@@ -155,9 +165,14 @@ function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:
 end
 elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
 
-# linear-convex regions or concave
-selu_kernel(x, α, λ) = λ*elu_kernel(x, α, x.Intv)
+
+"""
+selu
+
+The Scaled Exponential Linear Unit (SELU) activation function  `selu(x, α, λ) = λ*elu(x, α)`.
+"""
 selu(x, α, λ) = λ*elu(x, α)
+selu_kernel(x, α, λ) = λ*elu_kernel(x, α, x.Intv)
 function selu_grad(g::Vector{Float64}, x::Float64, α::Float64)
     g[1] = λ*elu_deriv(x, α)
     g[2] = λ*(x > 0.0 ? 0.0 : exp(x))
@@ -165,7 +180,11 @@ function selu_grad(g::Vector{Float64}, x::Float64, α::Float64)
     nothing
 end
 
-# DEFINE MAXTANH
+"""
+maxtanh
+
+The `maxtanh` activation function  `maxtanh(x) = max(x, tanh(x))`.
+"""
 @inline maxtanh(x) = max(x, tanh(x))
 @inline maxtanh(x::Float64) = max(x, tanh(x))
 @inline function maxtanh(x::Interval{Float64})
@@ -204,7 +223,11 @@ function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,
 end
 maxtanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxtanh_kernel(x, maxtanh(x.Intv))
 
-# DEFINE SOFTPLUS
+"""
+softplus
+
+The `softplus` activation function  `softplus(x) = log(1.0 + exp(x))`.
+"""
 @inline softplus(x) = log(1.0 + exp(x))
 @inline softplus(x::Float64) = log(1.0 + exp(x))
 @inline softplus(x::Interval{Float64}) = log(1.0 + exp(x))
@@ -227,7 +250,11 @@ function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS
 end
 softplus(x::MC{N,T}) where {N, T<:Union{NS,MV}} = softplus_kernel(x, softplus(x.Intv))
 
-# DEFINE PENTANH
+"""
+pentanh
+
+The `pentanh` activation function `pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)`.
+"""
 @inline pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 @inline pentanh(x::Float64) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 function pentanh(x::Interval{Float64})
@@ -273,6 +300,11 @@ end
     return pentanh(x), pentanh_deriv(x), p
 end
 
+"""
+sigmoid
+
+The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
+"""
 @inline sigmoid(x) = 1.0/(1.0 + exp(-x))
 @inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
@@ -302,6 +334,11 @@ end
     return sigmoid(x), sigmoid_deriv(x), p
 end
 
+"""
+bisigmoid
+
+The `bisigmoid` activation function `bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-x))`.
+"""
 @inline bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-x))
 @inline bisigmoid(x::Float64) = (1.0 - exp(-x))/(1.0 + exp(-x))
 @inline function bisigmoid(x::Interval{Float64})
@@ -342,6 +379,11 @@ end
     return bisigmoid(x), bisigmoid_deriv(x), p
 end
 
+"""
+softsign
+
+The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
+"""
 @inline softsign(x) = x/(1.0 + abs(x))
 @inline softsign(x::Float64) = x/(1.0 + abs(x))
 @inline function softsign(x::Interval{Float64})
@@ -392,6 +434,11 @@ const SWISH1_MIN = -1.27846454276107379510935873902298015543947748
 const SWISH1_2D_ROOT1 = -2.399357280515467667832739697282283888523
 const SWISH1_2D_ROOT2 = 2.399357280515467667832739697282283888523
 
+"""
+gelu
+
+The Gaussian Error Linear Unit `gelu` activation function `gelu(x) = x/(1.0 + abs(x))`.
+"""
 @inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline function gelu(x::Interval{Float64})
@@ -513,6 +560,11 @@ end
     return gelu(x), gelu_deriv(x), p1, p2
 end
 
+"""
+swish1
+
+The Swish-1 activation function `swish1(x) = x/(1.0 + exp(-x))`.
+"""
 @inline swish1(x) = x/(1.0 + exp(-x))
 @inline swish1(x::Float64) = x/(1.0 + exp(-x))
 @inline function swish1(x::Interval{Float64})
