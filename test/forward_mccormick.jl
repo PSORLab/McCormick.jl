@@ -1318,3 +1318,164 @@ end
    @test_nowarn acos(x)
 
 end
+
+@testset "Activation Functions" begin
+
+   x1 = MC{1,NS}(0.1, Interval(-1.5, 1.5), 1)
+   x2 = MC{1,NS}(-0.5, Interval(-1.5, 1.5), 1)
+   x3 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   y1 = relu(x1)
+   y2 = relu(x2)
+   y3 = relu(x3)
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.8000000000000002, atol=1E-8)
+   @test y2.cv == 0.0
+   @test y2.cc == 0.5
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = leaky_relu(x1)
+   y2 = leaky_relu(x2)
+   y3 = leaky_relu(x3)
+
+   @test y1.cv == 0.1
+   @test y1.cc == 0.793
+   @test y2.cv == -0.005
+   @test y2.cc == 0.49
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = param_relu(x1, 0.01)
+   y2 = param_relu(x2, 0.01)
+   y3 = param_relu(x3, 0.01)
+
+   @test y1.cv == 0.1
+   @test y1.cc == 0.793
+   @test y2.cv == -0.005
+   @test y2.cc == 0.49
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = maxsig(x1)
+   y2 = maxsig(x2)
+   y3 = maxsig(x3)
+
+   @test isapprox(y1.cv, 0.52497918747894, atol=1E-8)
+   @test isapprox(y1.cc, 0.885131911109633, atol=1E-8)
+   @test isapprox(y2.cv, 0.3775406687981454, atol=1E-8)
+   @test isapprox(y2.cc, 0.6216170158709042, atol=1E-8)
+   @test y3.cv == 0.7
+   @test isapprox(y3.cc, 0.7979674649614835, atol=1E-8)
+
+   y1 = elu(x1, 0.01)
+   y2 = elu(x2, 0.01)
+   y3 = elu(x3, 0.01)
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.7963746074140261, atol=1E-8)
+   @test isapprox(y2.cv, -0.003934693402873666, atol=1E-8)
+   @test isapprox(y2.cc, 0.4948208677343229, atol=1E-8)
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = selu(x1, 0.01, 0.5)
+   y2 = selu(x2, 0.01, 0.5)
+   y3 = selu(x3, 0.01, 0.5)
+
+   @test y1.cv == 0.05
+   @test isapprox(y1.cc, 0.39818730370701305, atol=1E-8)
+   @test isapprox(y2.cv, -0.001967346701436833, atol=1E-8)
+   @test isapprox(y2.cc, 0.24741043386716144, atol=1E-8)
+   @test y3.cv == 0.35
+   @test y3.cc == 0.35
+
+   y1 = maxtanh(x1)
+   y2 = maxtanh(x2)
+   y3 = maxtanh(x3)
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.3775974816323957, atol=1E-8)
+   @test isapprox(y2.cv, -0.46211715726000974, atol=1E-8)
+   @test isapprox(y2.cc, -0.10343216909657771, atol=1E-8)
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = softplus(x1)
+   y2 = softplus(x2)
+   y3 = softplus(x3)
+
+   @test isapprox(y1.cv, 0.744396660073571, atol=1E-8)
+   @test isapprox(y1.cc, 1.0014132779827525, atol=1E-8)
+   @test isapprox(y2.cv, 0.4740769841801067, atol=1E-8)
+   @test isapprox(y2.cc, 0.7014132779827524, atol=1E-8)
+   @test isapprox(y3.cv, 1.103186048885458, atol=1E-8)
+   @test isapprox(y3.cc, 1.1195442429406357, atol=1E-8)
+
+   y1 = pentanh(x1)
+   y2 = pentanh(x2)
+   y3 = pentanh(x3)
+
+   @test isapprox(y1.cv, 0.060343216909657764, atol=1E-8)
+   @test isapprox(y1.cc, 0.35880541402007554, atol=1E-8)
+   @test isapprox(y2.cv, -0.1243530017715962, atol=1E-8)
+   @test isapprox(y2.cc, 0.08986935938100252, atol=1E-8)
+   @test isapprox(y3.cv, 0.550723376536981, atol=1E-8)
+   @test isapprox(y3.cc, 0.6043677771171636, atol=1E-8)
+
+   y1 = sigmoid(x1)
+   y2 = sigmoid(x2)
+   y3 = sigmoid(x3)
+
+   @test isapprox(y1.cv, 0.5084495314200309, atol=1E-8)
+   @test isapprox(y1.cc, 0.5357111749761996, atol=1E-8)
+   @test isapprox(y2.cv, 0.37596741223133967, atol=1E-8)
+   @test isapprox(y2.cc, 0.4032290557875084, atol=1E-8)
+   @test isapprox(y3.cv, 0.6614823602002124, atol=1E-8)
+   @test isapprox(y3.cc, 0.6681877721681662, atol=1E-8)
+
+   y1 = bisigmoid(x1)
+   y2 = bisigmoid(x2)
+   y3 = bisigmoid(x3)
+
+   @test isapprox(y1.cv, 0.01689906284006173, atol=1E-8)
+   @test isapprox(y1.cc, 0.07142234995239904, atol=1E-8)
+   @test isapprox(y2.cv, -0.2480651755373207, atol=1E-8)
+   @test isapprox(y2.cc, -0.19354188842498335, atol=1E-8)
+   @test isapprox(y3.cv, 0.3229647204004248, atol=1E-8)
+   @test isapprox(y3.cc, 0.3363755443363322, atol=1E-8)
+
+   y1 = softsign(x1)
+   y2 = softsign(x2)
+   y3 = softsign(x3)
+
+   @test isapprox(y1.cv, -0.05362319120141322, atol=1E-8)
+   @test isapprox(y1.cc, 0.14699793280161522, atol=1E-8)
+   @test isapprox(y2.cv, -0.3333333333333333, atol=1E-8)
+   @test isapprox(y2.cc, -0.1331262919989905, atol=1E-8)
+   @test isapprox(y3.cv, 0.3866666666666666, atol=1E-8)
+   @test isapprox(y3.cc, 0.4117647058823529, atol=1E-8)
+
+   y1 = gelu(x1)
+   y2 = gelu(x2)
+   y3 = gelu(x3)
+
+   @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
+   @test isapprox(y1.cc, 0.6997891980967129, atol=1E-8)
+   @test isapprox(y2.cv, -0.15426876936299344, atol=1E-8)
+   @test isapprox(y2.cc, 0.3997891980967129, atol=1E-8)
+   @test isapprox(y3.cv, 0.5306254434438489, atol=1E-8)
+   @test isapprox(y3.cc, 0.5565428241289478, atol=1E-8)
+
+   y1 = swish1(x1)
+   y2 = swish1(x2)
+   y3 = swish1(x3)
+
+   @test isapprox(y1.cv, 0.052497918747894, atol=1E-8)
+   @test isapprox(y1.cc, 0.5263617142904655, atol=1E-8)
+   @test isapprox(y2.cv, -0.1887703343990727, atol=1E-8)
+   @test isapprox(y2.cc, 0.22636171429046548, atol=1E-8)
+   @test isapprox(y3.cv, 0.46773144051771626, atol=1E-8)
+   @test isapprox(y3.cc, 0.49425607533883487, atol=1E-8)
+end

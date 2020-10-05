@@ -44,6 +44,8 @@ function param_relu(x::Interval{Float64}, α::Float64)
     return Interval{Float64}(xL, xU)
 end
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
+param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
+
 function param_relu_grad(g::Vector{Float64}, x::Float64, α::Float64)
     if x > 0.0
         g[1] = 1.0

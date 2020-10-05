@@ -13,6 +13,7 @@
 # version of standard McCormick arithmetic.
 #############################################################################
 
+#=
 # Need to add this to Project.toml... requires Julia 1.3+
 using CRLibm
 using RoundingEmulator
@@ -65,3 +66,4 @@ end
 	end
 	return zMC
 end
+=#
