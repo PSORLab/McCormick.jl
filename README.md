@@ -15,7 +15,7 @@ and `Diff` for differentiable relaxations ([Khan2016](https://link.springer.com/
 
 ## **Supported Operators**
 
-In addition, to supporting the implicit relaxation routines of [Stuber 2015](https://www.tandfonline.com/doi/abs/10.1080/10556788.2014.924514?journalCode=goms20). This package
+In addition, to supporting the implicit relaxation routines of ([Stuber 2015](https://www.tandfonline.com/doi/abs/10.1080/10556788.2014.924514?journalCode=goms20)). This package
 supports the computation of convex/concave relaxations (and asssociated subgradients) for
 expressions containing the following operations:
 
@@ -32,9 +32,11 @@ expressions containing the following operations:
                           `softsign`, `softplus`, `maxtanh`, `pentanh`, `gelu`,
                           `elu`, `selu`, `swish1`
 
-**Bound Specifications**: `positive`, `negative`, `lower_bnd`, `upper_bnd`, `bnd`
+**Bound Specification Functions**: `positive`, `negative`, `lower_bnd`, `upper_bnd`, `bnd`
 
-Differentiable relaxations (`Diff <: RelaxTag`) are supported for the functions given in [Khan2016](https://link.springer.com/article/10.1007/s10898-016-0440-6), [Khan2018](https://link.springer.com/article/10.1007/s10898-017-0601-2), [Khan2019](https://www.tandfonline.com/doi/abs/10.1080/02331934.2018.1534108)). However, differentiable relaxations for other nonsmooth terms listed above have yet to be developed and as such have been omitted.
+**Other Functions**: `one`, `zero`, `intersect`, `real`, `dist`, `eps`
+
+Differentiable relaxations (`Diff <: RelaxTag`) are supported for the functions given in [Khan2016](https://link.springer.com/article/10.1007/s10898-016-0440-6), [Khan2018](https://link.springer.com/article/10.1007/s10898-017-0601-2), [Khan2019](https://www.tandfonline.com/doi/abs/10.1080/02331934.2018.1534108). However, differentiable relaxations for other nonsmooth terms listed above have yet to be developed and as such have been omitted.
 
 ## **Bounding a function via McCormick operators**
 In order to bound a function using a McCormick relaxation. You first construct
