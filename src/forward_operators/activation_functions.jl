@@ -679,7 +679,6 @@ end
     else
         p2 = Inf
     end
-    @show p1, p2
 
     if x < p1
         return dline_seg(swish1, swish1_deriv, x, xL, p1)..., p1, p2

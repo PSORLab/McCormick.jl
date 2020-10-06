@@ -1375,6 +1375,7 @@ end
    @test y3.cc == 0.7
 
    @test param_relu(0.5, 0.01) == 0.5
+   @test param_relu(1, 1) == 1
    @test McCormick.param_relu_deriv(0.5, 0.01) == 1.0
 
    gout = zeros(2)
@@ -1397,9 +1398,11 @@ end
    @test y3.cv == 0.7
    @test isapprox(y3.cc, 0.7979674649614835, atol=1E-8)
 
+
+   @test maxsig(1) == 1
    @test isapprox(maxsig(0.5), 0.6224593312018546, atol =1E-8)
    @test isapprox(McCormick.maxsig_deriv(0.5), 0.2350037122015945, atol =1E-8)
-   @test isapprox(McCormick.maxsig_deriv2(0.5), -0.05755679485232074, atol =1E-8)
+   @test isapprox(McCormick.maxsig_deriv2(5.5), 0.0, atol =1E-8)
    @test isapprox(McCormick.maxsig_deriv2(-3.5), 0.026784980676662237, atol =1E-8)
 
    y1 = elu(x1, 0.01)
@@ -1407,6 +1410,8 @@ end
    y3 = elu(x3, 0.01)
 
    @test elu(0.5, 0.01) == 0.5
+   @test elu(5, 1) == 5
+   @test isapprox((elu(Interval(-5.0,-3.0), 0.5)).lo, -0.4966310265004573, atol=1E-8)
 
    gout = zeros(2)
    McCormick.elu_grad(gout, 1.0, 0.5)
@@ -1445,7 +1450,9 @@ end
    y3 = maxtanh(x3)
 
    @test maxtanh(0.75) == 0.75
+   @test maxtanh(2) == 2
    @test McCormick.maxtanh_deriv2(0.75) == 0.0
+   @test isapprox(McCormick.maxtanh_deriv2(-5.75), 8.103746506240892e-5, atol=1E-8)
 
    @test y1.cv == 0.1
    @test isapprox(y1.cc, 0.3775974816323957, atol=1E-8)
@@ -1458,6 +1465,7 @@ end
    y2 = softplus(x2)
    y3 = softplus(x3)
 
+   @test isapprox(softplus(7), 7.000911466453774, atol=1E-8)
    @test isapprox(softplus(0.75), 1.1368710061148999, atol=1E-8)
    @test isapprox(McCormick.softplus_deriv2(0.75), 0.217894993761814, atol=1E-8)
 
@@ -1472,6 +1480,7 @@ end
    y2 = pentanh(x2)
    y3 = pentanh(x3)
 
+   @test isapprox(pentanh(7), 0.9999983369439447, atol=1E-8)
    @test isapprox(pentanh(0.75), 0.6351489523872873, atol=1E-8)
    @test isapprox(McCormick.pentanh_deriv2(0.75), -0.08974759478157028, atol=1E-8)
    @test isapprox(McCormick.pentanh_deriv2(-0.75), 0.022370912744158675, atol=1E-8)
@@ -1487,6 +1496,7 @@ end
    y2 = sigmoid(x2)
    y3 = sigmoid(x3)
 
+   @test isapprox(sigmoid(7), 0.9990889488055994, atol=1E-8)
    @test isapprox(sigmoid(0.75), 0.679178699175393, atol=1E-8)
    @test isapprox(McCormick.sigmoid_deriv2(0.75), 0.4003874719875089, atol=1E-8)
 
@@ -1501,6 +1511,7 @@ end
    y2 = bisigmoid(x2)
    y3 = bisigmoid(x3)
 
+   @test isapprox(bisigmoid(7), 0.9981778976111988, atol=1E-8)
    @test isapprox(bisigmoid(0.75), 0.35835739835078595, atol=1E-8)
    @test isapprox(McCormick.bisigmoid_deriv2(0.75), -0.1561685661562888, atol=1E-8)
 
@@ -1515,6 +1526,7 @@ end
    y2 = softsign(x2)
    y3 = softsign(x3)
 
+   @test softsign(7) == 0.875
    @test isapprox(softsign(0.75), 0.42857142857142855, atol=1E-8)
    @test isapprox(McCormick.softsign_deriv2(0.75), -0.3731778425655977, atol=1E-8)
    @test isapprox(McCormick.softsign_deriv2(-0.75), 0.3731778425655977, atol=1E-8)
@@ -1530,9 +1542,13 @@ end
    x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
    x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
 
-   x7 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
-   x8 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
-   x9 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
+   x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+   x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+   x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+   x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+   x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+   x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
 
    y1 = gelu(x1)
    y2 = gelu(x2)
@@ -1546,6 +1562,11 @@ end
    y8 = gelu(x8)
    y9 = gelu(x9)
 
+   y10 = gelu(x10)
+   y11 = gelu(x11)
+   y12 = gelu(x12)
+
+   @test isapprox(gelu(7), 6.999999999991041, atol=1E-8)
    @test isapprox(gelu(-0.75), -0.16997051428265114, atol=1E-8)
 
    @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
@@ -1562,12 +1583,19 @@ end
    @test isapprox(y6.cv, 0.5306254434438489, atol=1E-8)
    @test isapprox(y6.cc, 0.5565428241289478, atol=1E-8)
 
-   @test isapprox(y7.cv, 0.053982783727702904, atol=1E-8)
-   @test isapprox(y7.cc, 0.14573123063700655, atol=1E-8)
-   @test isapprox(y8.cv, 0.053982783727702904, atol=1E-8)
-   @test isapprox(y8.cc, 0.14573123063700655, atol=1E-8)
-   @test isapprox(y9.cv, 0.053982783727702904, atol=1E-8)
-   @test isapprox(y9.cc, 0.14573123063700655, atol=1E-8)
+   @test isapprox(y7.cv, 3.073809840032428, atol=1E-8)
+   @test isapprox(y7.cc, 3.299185798223376, atol=1E-8)
+   @test isapprox(y8.cv, 0.9505770065222403, atol=1E-8)
+   @test isapprox(y8.cc, 1.697372160948963, atol=1E-8)
+   @test isapprox(y9.cv, 0.18537342665668577, atol=1E-8)
+   @test isapprox(y9.cc, 1.4368229984446212, atol=1E-8)
+
+   @test isapprox(y10.cv, -0.14923266704102095, atol=1E-8)
+   @test isapprox(y10.cc, -0.02584062996129348, atol=1E-8)
+   @test isapprox(y11.cv, 0.7343458871879165, atol=1E-8)
+   @test isapprox(y11.cc, 0.8328461064510111, atol=1E-8)
+   @test isapprox(y12.cv, 0.18537342665668577, atol=1E-8)
+   @test isapprox(y12.cc, 0.5343290419885047, atol=1E-8)
 
    y1 = swish1(x1)
    y2 = swish1(x2)
@@ -1581,6 +1609,11 @@ end
    y8 = swish1(x8)
    y9 = swish1(x9)
 
+   y10 = swish1(x10)
+   y11 = swish1(x11)
+   y12 = swish1(x12)
+
+   @test isapprox(swish1(7), 6.993622641639196, atol=1E-8)
    @test isapprox(swish1(-0.75), -0.24061597561845527, atol=1E-8)
 
    @test isapprox(y1.cv, 0.052497918747894, atol=1E-8)
@@ -1597,12 +1630,19 @@ end
    @test isapprox(y6.cv, 0.46773144051771626, atol=1E-8)
    @test isapprox(y6.cc, 0.49425607533883487, atol=1E-8)
 
-   @test isapprox(y7.cv, 0.052497918747894, atol=1E-8)
-   @test isapprox(y7.cc, 0.11122966560092729, atol=1E-8)
-   @test isapprox(y8.cv, 0.052497918747894, atol=1E-8)
-   @test isapprox(y8.cc, 0.11122966560092729, atol=1E-8)
-   @test isapprox(y9.cv, 0.052497918747894, atol=1E-8)
-   @test isapprox(y9.cc, 0.11122966560092729, atol=1E-8)
+   @test isapprox(y7.cv, 2.961190227697252, atol=1E-8)
+   @test isapprox(y7.cc, 3.1974071923702523, atol=1E-8)
+   @test isapprox(y8.cv, 0.8252861161546294, atol=1E-8)
+   @test isapprox(y8.cc, 1.5174068718163187, atol=1E-8)
+   @test isapprox(y9.cv, 0.1723327550434977, atol=1E-8)
+   @test isapprox(y9.cc, 1.2820250620927323, atol=1E-8)
+
+   @test isapprox(y10.cv, -0.2747138838453706, atol=1E-8)
+   @test isapprox(y10.cc, -0.17841452204467384, atol=1E-8)
+   @test isapprox(y11.cv, 0.6398545523625035, atol=1E-8)
+   @test isapprox(y11.cc, 0.7123064812859411, atol=1E-8)
+   @test isapprox(y12.cv, 0.1723327550434977, atol=1E-8)
+   @test isapprox(y12.cc, 0.4170112431680709, atol=1E-8)
 end
 
 @testset "Test bound enforcing functions" begin
@@ -1629,4 +1669,19 @@ end
    @test y5.cv == -1.0
    @test y5.cc == 1.0
    @test bnd(1.0, -1.0, 1.0) == 1.0
+
+   gout = zeros(2)
+   McCormick.d_lower_bnd_grad(gout, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+
+   McCormick.d_upper_bnd_grad(gout, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+
+   gout = zeros(3)
+   McCormick.d_bnd_grad(gout, 0.0, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+   @test gout[3] == 0.0
 end
