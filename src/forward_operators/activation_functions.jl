@@ -80,7 +80,7 @@ leaky_relu
 
 The leaky Rectified Linear Unit activation function `leaky_relu(x) = max(x, 0.01x)`.
 """
-@inline leaky_relu(x) = leaky_relu(x, 0.01)
+@inline leaky_relu(x) = param_relu(x, 0.01)
 @inline leaky_relu_kernel(x::MC, z::Interval{Float64}) = param_relu_kernel(x, 0.01, z)
 @inline leaky_relu(x::MC) = leaky_relu_kernel(x, param_relu(x.Intv, 0.01))
 @inline leaky_relu_deriv(x) = x > 0.0 ? 1.0 : 0.01
@@ -174,7 +174,7 @@ The Scaled Exponential Linear Unit (SELU) activation function  `selu(x, α, λ) 
 """
 selu(x, α, λ) = λ*elu(x, α)
 selu_kernel(x, α, λ) = λ*elu_kernel(x, α, x.Intv)
-function selu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+function selu_grad(g::Vector{Float64}, x::Float64, α::Float64, λ::Float64)
     g[1] = λ*elu_deriv(x, α)
     g[2] = λ*(x > 0.0 ? 0.0 : exp(x))
     g[3] = elu(x, α)

@@ -249,7 +249,7 @@ end
 	isempty(x) && (return empty(x))
 	isnan(x) && (return nan(x))
 
-	intv = intersect(x.Intv, c)
+	intv = intersect(x.Intv, Interval{Float64}(c))
 	isempty(intv) && (return empty(x))
 
 	cv = max(c, x.cv)
@@ -258,7 +258,7 @@ end
 	cv_grad = (cv == c) ? zero(SVector{N,Float64}) : x.cv_grad
 	cc_grad = (cc == c) ? zero(SVector{N,Float64}) : x.cc_grad
 	if cv <= c <= cc
-		return MC{N, T}(c, c, intv(x.Intv, c), cv_grad, cc_grad, true)
+		return MC{N, T}(c, c, intv, cv_grad, cc_grad, true)
 	end
 	correct_intersect(x, cv, cc, intv, cv_grad, cc_grad, cnst1 && cnst2)
 end
