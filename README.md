@@ -45,7 +45,7 @@ In the example below, convex/concave relaxations of the function `f(x) = sin(2x)
 are calculated at `x = 1` on the interval `[-2,3]`.
 
 ```julia
-using EAGO
+using McCormick
 
 # create MC object for x = 2.0 on [1.0,3.0] for relaxing
 # a function f(x) on the interval Intv
@@ -74,7 +74,6 @@ relaxations, interval bounds, and affine bounds constructed using the subgradien
 at the middle of X.
 
 ![Figure_1](Figure_1.png)
-
 
 This can readily be extended to multivariate functions as shown below
 
