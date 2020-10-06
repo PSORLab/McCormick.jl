@@ -173,7 +173,6 @@ selu
 The Scaled Exponential Linear Unit (SELU) activation function  `selu(x, α, λ) = λ*elu(x, α)`.
 """
 selu(x, α, λ) = λ*elu(x, α)
-selu_kernel(x, α, λ) = λ*elu_kernel(x, α, x.Intv)
 function selu_grad(g::Vector{Float64}, x::Float64, α::Float64, λ::Float64)
     g[1] = λ*elu_deriv(x, α)
     g[2] = λ*(x > 0.0 ? 0.0 : exp(x))

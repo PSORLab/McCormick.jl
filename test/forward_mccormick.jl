@@ -260,6 +260,17 @@ end
    yref_tanh_d1_z2 = MC{2,Diff}(0.5558207301372651, 0.9640275800758169, Interval{Float64}(-0.761595, 0.995055), @SVector[0.439234, 0.0], @SVector[0.0706508, 0.0], false)
    yref_tanh_ns = MC{2,NS}(-0.9640275800758169, -0.5558207301372651, Interval{Float64}(-0.995055, 0.761595), @SVector[0.0706508, 0.0], @SVector[0.439234, 0.0], false)
 
+   yerfp = erf(x_tanh_p)
+   yerfn = erf(x_tanh_n)
+   yerfz1 = erf(x_tanh_z1)
+
+   @test isapprox(yerfp.cv, 0.999983432127251, atol=1E-8)
+   @test isapprox(yerfp.cc, 0.9999999845827421, atol=1E-8)
+   @test isapprox(yerfn.cv, -0.9999999845827421, atol=1E-8)
+   @test isapprox(yerfn.cc, -0.999983432127251, atol=1E-8)
+   @test isapprox(yerfz1.cv, -0.9953222650189527, atol=1E-8)
+   @test isapprox(yerfz1.cc, -0.5389968439595039, atol=1E-8)
+
    @test check_vs_ref1(tanh, x_tanh_p, yref_tanh_d1_p, mctol)
    @test check_vs_ref1(tanh, x_tanh_n, yref_tanh_d1_n, mctol)
    @test check_vs_ref1(tanh, x_tanh_z1, yref_tanh_d1_z1, mctol)
@@ -1643,6 +1654,8 @@ end
    @test isapprox(y11.cc, 0.7123064812859411, atol=1E-8)
    @test isapprox(y12.cv, 0.1723327550434977, atol=1E-8)
    @test isapprox(y12.cc, 0.4170112431680709, atol=1E-8)
+
+   @test isapprox(McCormick.swish1_env(1.0, 2.0, 3.0), -0.1028650654542731, atol=1E-8)
 end
 
 @testset "Test bound enforcing functions" begin
