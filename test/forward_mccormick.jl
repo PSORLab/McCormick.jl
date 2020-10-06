@@ -1457,9 +1457,25 @@ end
    @test isapprox(y3.cv, 0.3866666666666666, atol=1E-8)
    @test isapprox(y3.cc, 0.4117647058823529, atol=1E-8)
 
+   x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+   x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+   x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   x7 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
+   x8 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
+   x9 = MC{1,NS}(0.1, Interval(-0.5, 0.5), 1)
+
    y1 = gelu(x1)
    y2 = gelu(x2)
    y3 = gelu(x3)
+
+   y4 = gelu(x4)
+   y5 = gelu(x5)
+   y6 = gelu(x6)
+
+   y7 = gelu(x7)
+   y8 = gelu(x8)
+   y9 = gelu(x9)
 
    @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
    @test isapprox(y1.cc, 0.6997891980967129, atol=1E-8)
@@ -1468,9 +1484,31 @@ end
    @test isapprox(y3.cv, 0.5306254434438489, atol=1E-8)
    @test isapprox(y3.cc, 0.5565428241289478, atol=1E-8)
 
+   @test isapprox(y4.cv, -5.222141651051171e-8, atol=1E-8)
+   @test isapprox(y4.cc, -2.610399119085116e-10, atol=1E-8)
+   @test isapprox(y5.cv, 6.4999999477785835, atol=1E-8)
+   @test isapprox(y5.cc, 6.49999999973896, atol=1E-8)
+   @test isapprox(y6.cv, 0.5306254434438489, atol=1E-8)
+   @test isapprox(y6.cc, 0.5565428241289478, atol=1E-8)
+
+   @test isapprox(y7.cv, 0.053982783727702904, atol=1E-8)
+   @test isapprox(y7.cc, 0.14573123063700655, atol=1E-8)
+   @test isapprox(y8.cv, 0.053982783727702904, atol=1E-8)
+   @test isapprox(y8.cc, 0.14573123063700655, atol=1E-8)
+   @test isapprox(y9.cv, 0.053982783727702904, atol=1E-8)
+   @test isapprox(y9.cc, 0.14573123063700655, atol=1E-8)
+
    y1 = swish1(x1)
    y2 = swish1(x2)
    y3 = swish1(x3)
+
+   y4 = swish1(x4)
+   y5 = swish1(x5)
+   y6 = swish1(x6)
+
+   y7 = swish1(x7)
+   y8 = swish1(x8)
+   y9 = swish1(x9)
 
    @test isapprox(y1.cv, 0.052497918747894, atol=1E-8)
    @test isapprox(y1.cc, 0.5263617142904655, atol=1E-8)
@@ -1478,4 +1516,39 @@ end
    @test isapprox(y2.cc, 0.22636171429046548, atol=1E-8)
    @test isapprox(y3.cv, 0.46773144051771626, atol=1E-8)
    @test isapprox(y3.cc, 0.49425607533883487, atol=1E-8)
+
+   @test isapprox(y4.cv, -0.013265798607177848, atol=1E-8)
+   @test isapprox(y4.cc, -0.009757684668790446, atol=1E-8)
+   @test isapprox(y5.cv, 6.486734201392823, atol=1E-8)
+   @test isapprox(y5.cc, 6.490242315331209, atol=1E-8)
+   @test isapprox(y6.cv, 0.46773144051771626, atol=1E-8)
+   @test isapprox(y6.cc, 0.49425607533883487, atol=1E-8)
+
+   @test isapprox(y7.cv, 0.052497918747894, atol=1E-8)
+   @test isapprox(y7.cc, 0.11122966560092729, atol=1E-8)
+   @test isapprox(y8.cv, 0.052497918747894, atol=1E-8)
+   @test isapprox(y8.cc, 0.11122966560092729, atol=1E-8)
+   @test isapprox(y9.cv, 0.052497918747894, atol=1E-8)
+   @test isapprox(y9.cc, 0.11122966560092729, atol=1E-8)
+end
+
+@testset "Test bound enforcing functions" begin
+
+   x = MC{2,NS}(-1.5, 1.5, Interval(-5.5, 7.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   y1 = positive(x)
+   @test y1.cv == McCormick.MC_DOMAIN_TOL
+
+   y2 = negative(x)
+   @test y2.cc == -McCormick.MC_DOMAIN_TOL
+
+   y3 = lower_bnd(x, -1.0)
+   @test y3.cv == -1.0
+
+   y4 = upper_bnd(x, 1.0)
+   @test y4.cc == 1.0
+
+   y5 = bnd(x, -1.0, 1.0)
+   @test y5.cv == -1.0
+   @test y5.cc == 1.0
 end

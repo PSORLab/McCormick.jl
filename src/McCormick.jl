@@ -59,7 +59,8 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        secd, cscd, cotd, asecd, acscd, acotd,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
        relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
-       sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1
+       sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
+       positive, negative, lower_bnd, upper_bnd, bnd
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kernel,
@@ -74,7 +75,8 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kerne
        relu_kernel, param_relu_kernel, leaky_relu_kernel, maxsig_kernel,
        maxtanh_kernel, softplus_kernel, pentanh_kernel, sigmoid_kernel,
        bisigmoid_kernel, softsign_kernel, gelu_kernel, elu_kernel, selu_kernel,
-       swish1_kernel
+       swish1_kernel, positive_kernel, negative_kernel, lower_bnd_kernel,
+       upper_bnd_kernel, bnd_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 
