@@ -20,11 +20,11 @@ supports the computation of convex/concave relaxations (and asssociated subgradi
 expressions containing the following operations:
 
 **Common algebraic expressions**: `inv`, `log`, `log2`, `log10`, `exp`, `exp2`, `exp10`,
-`sqrt`, `+`, `-`, `^`, `min`, `max`, `/`, `*`, `abs`, `step`, `sign`,
+`sqrt`, `+`, `-`, `^`, `min`, `max`, `/`, `*`, `abs`, `step`, `sign`, `deg2rad`, `rad2deg`
 
-**Trignometric Functions**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`,
+**Trignometric Functions**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sec`, `csc`, `cot`, `asec`, `acsc`, `acot`, `sind`, `cosd`, `tand`, `asind`, `acosd`, `atand`, `secd`, `cscd`, `cotd`, `asecd`, `acscd`, `acotd`
 
-**Hyperbolic Functions**: `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`
+**Hyperbolic Functions**: `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `sech`, `csch`, `coth`, `acsch`, `acoth`
 
 **Special Functions**: `erf`
 
