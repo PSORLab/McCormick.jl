@@ -10,7 +10,8 @@
 #############################################################################
 # src/forward_operators/concave_increasing.jl
 # Contains definitions of commonly used activation functions:
-# relu, parametric relu, leaky relu, XXX.
+# relu, parametric relu, leaky relu, maxsig, elu, selu, gelu, sigmoid,
+# bisigmoid, swish1, maxtanh, pentanh, softsign, softplus.
 #############################################################################
 
 # RELU DEFINITION
