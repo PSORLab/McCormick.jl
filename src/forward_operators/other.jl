@@ -268,8 +268,10 @@ end
 @inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
 @inline isempty(x::MC) = isempty(x.Intv)
 
-#=
 
+# arrh(x,k)
+
+#=
 Relaxation given in Najman J, Bongartz D, Mitsos A. "Relaxations of
 thermodynamic property and costing models in process engineering.
 Computers & Chemical Engineering. 2019 Nov 2;130:106571." for
@@ -289,13 +291,27 @@ end
 function xexp(a::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
 end
 xexp(x::MC{N,T}) where {N, T <: RelaxTag} = xexp(1.0, x)
+=#
 
 xlogx(x::Float64) where T = x*log(x)
 xlogx_deriv(x::Float64) where T = log(x) + 1.0
 xlogx_deriv2(x::Float64) where T = 1.0/x
 cc_xlogx(x::Float64, xL::Float64, xU::Float64) = dline_seg(xlogx, xlogx_deriv, x, xL, xU)
-cv_xlogx(x::Float64, xL::Float64, xU::Float64) = xlogx(x), dxlog(x)
-function xlogx(x::MC{N,T}) where {N, T <: Union{NS,MV}}
+cv_xlogx(x::Float64, xL::Float64, xU::Float64) = xlogx(x), xlogx_deriv(x)
+function xlogx(x::Interval{Float64})
+	min_pnt = one(Interval{Float64})/exp(one(Interval{Float64}))
+	xlogx_xL = Interval(x.lo)*log(Interval(x.lo))
+	xlogx_xU = Interval(x.hi)*log(Interval(x.hi))
+	xlogx_min_bool = isdisjoint(min_pnt, x)
+	if isdisjoint(min_pnt, x)
+		min_val = min(xlogx_xL.lo, xlogx_xU.hi)
+	else
+		min_val = -min_pnt.hi
+	end
+	Interval{Float64}(min_val, max(xlogx_xL.lo, xlogx_xU.hi))
+end
+function xlogx(x::MC{N,T}) where {N, T <: RelaxTag}
+	xlogx_kernel(x, xlogx(x.Intv))
 end
 @inline function xlogx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
     xL = x.Intv.lo
@@ -328,14 +344,11 @@ end
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
-=#
 
-# xexpax(x,a)
-# arrh(x,k)
 # log_mean(x,y)
 # invlog_mean(x,y)
 # expxy(x,y)
-# monod(x)
+# monod(x, y)
 # sum_div()
 # geometric_mean
 # harmonic_mean

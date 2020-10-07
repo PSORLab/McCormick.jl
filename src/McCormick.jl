@@ -28,7 +28,8 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
-             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty
+             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
+             <, <=, !=, ==
 
 using IntervalArithmetic: @round, big53
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
@@ -43,7 +44,7 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
                            setrounding, diam, isthin
 
-import SpecialFunctions.erf
+import SpecialFunctions: erf, erfc, erfinv, erfcinv
 
 import Base.MathConstants.golden
 
@@ -60,7 +61,8 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
        relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
-       positive, negative, lower_bnd, upper_bnd, bnd
+       positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
+       <, <=, !=, ==
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kernel,
@@ -76,7 +78,7 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kerne
        maxtanh_kernel, softplus_kernel, pentanh_kernel, sigmoid_kernel,
        bisigmoid_kernel, softsign_kernel, gelu_kernel, elu_kernel, selu_kernel,
        swish1_kernel, positive_kernel, negative_kernel, lower_bnd_kernel,
-       upper_bnd_kernel, bnd_kernel
+       upper_bnd_kernel, bnd_kernel, xlogx_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 

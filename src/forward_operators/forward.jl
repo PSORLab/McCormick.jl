@@ -1,3 +1,4 @@
+include("interval_special_functions.jl")
 include("arithmetic.jl")
 include("convex_increasing.jl")
 include("concave_increasing.jl")
