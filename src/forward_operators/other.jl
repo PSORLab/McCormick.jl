@@ -293,6 +293,11 @@ end
 xexp(x::MC{N,T}) where {N, T <: RelaxTag} = xexp(1.0, x)
 =#
 
+"""
+xlogx
+
+The function `xlogx` is defined as `xlogx(x) = x*log(x)`.
+"""
 xlogx(x::Float64) where T = x*log(x)
 xlogx_deriv(x::Float64) where T = log(x) + 1.0
 xlogx_deriv2(x::Float64) where T = 1.0/x

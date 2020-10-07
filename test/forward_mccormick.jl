@@ -538,6 +538,13 @@ end
    y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
    #@test y.cv == 0.02549714244205218
    #@test y.cc == 0.17002351564507798
+
+   yD = xlogx(xD)
+   yNS = xlogx(xNS)
+   @test isapprox(yD.cv, 1.3862943611198906, atol=1E-8)
+   @test isapprox(yD.cc, 1.8483924814931874, atol=1E-8)
+   @test isapprox(yNS.cv, 1.3862943611198906, atol=1E-8)
+   @test isapprox(yNS.cc, 1.8483924814931874, atol=1E-8)
 end
 
 @testset "Test Arithmetic w/Constant" begin
