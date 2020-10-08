@@ -8,18 +8,18 @@
 # A McCormick operator library in Julia
 # See https://github.com/PSORLab/McCormick.jl
 #############################################################################
-# src/forward_operators/other.jl
-# Defines isempty, empty, isnan, step, sign, abs, intersect, in.
+# src/forward_operators/comparison.jl
+# Defines :<, :<=, :!=, :==.
 #############################################################################
 
 for f in (:<, :<=, :!=, :==)
-    @eval ($f)(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
+    @eval function ($f)(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
         ($f)(x.cv,y.cv) && ($f)(x.cc,y.cc) && ($f)(x.Intv, y.Intv)
     end
-    @eval ($f)(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
+    @eval function ($f)(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
         ($f)(x.cv, c) && ($f)(x.cc, c) && ($f)(x.Intv, c)
     end
-    @eval ($f)(c::Float64, y::MC{N,T}) where {N, T<:RelaxTag}
+    @eval function ($f)(c::Float64, y::MC{N,T}) where {N, T<:RelaxTag}
         ($f)(c, y.cv) && ($f)(c, y.cc) && ($f)(c, y.Intv)
     end
 end
