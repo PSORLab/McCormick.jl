@@ -270,31 +270,6 @@ end
 @inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
 @inline isempty(x::MC) = isempty(x.Intv)
 
-
-# arrh(x,k)
-
-#=
-Relaxation given in Najman J, Bongartz D, Mitsos A. "Relaxations of
-thermodynamic property and costing models in process engineering.
-Computers & Chemical Engineering. 2019 Nov 2;130:106571." for
-f(x) = x*exp(a*x)
-=#
-#=
-@inline function cc_xexp(x::Float64, xL::Float64, xU::Float64, a::Float64)
-   xstar = -2.0*a
-   if a > 0.0
-	   xstar
-	   return dline_seg(abs, sign, x, xL, xU)
-   else
-	   return dline_seg(abs, sign, x, xL, xU)
-   end
-end
-@inline cv_xexp(x::Float64,xL::Float64,xU::Float64) = abs(x), sign(x)
-function xexp(a::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
-end
-xexp(x::MC{N,T}) where {N, T <: RelaxTag} = xexp(1.0, x)
-=#
-
 """
 xlogx
 
@@ -351,13 +326,3 @@ end
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
-
-# log_mean(x,y)
-# invlog_mean(x,y)
-# expxy(x,y)
-# monod(x, y)
-# sum_div()
-# geometric_mean
-# harmonic_mean
-# power_mean
-# aff_relu

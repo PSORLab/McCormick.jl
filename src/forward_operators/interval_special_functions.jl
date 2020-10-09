@@ -57,8 +57,8 @@ function _erfinv(a::T) where T
     domain = Interval{T}(-1, 1)
     a ∉ domain && return DomainError("$a is not in [-1, 1]")
     f = x -> erf(x) - a
-    fp = x->2/sqrt(pi_interval(T)) * exp(-x^2)
-    rts = roots(f, Interval{T}(-Inf, Inf), 1e-20, deriv=fp)
+    fp = x->2/sqrt(Interval(pi)) * exp(-x^2)
+    rts = roots(f, fp, Interval{T}(-Inf, Inf))
     @assert length(rts) == 1 # && rts[1].status == :unique
 
     rts[1].interval
@@ -76,8 +76,8 @@ function _erfcinv(a::T) where T
     domain = Interval{T}(0, 2)
     a ∉ domain && return DomainError("$a is not in [0, 2]")
     f = x -> erfc(x) - a
-    fp = x -> -2/sqrt(pi_interval(T)) * exp(-x^2)
-    rts = roots(f, Interval{T}(-Inf, Inf), 1e-20, deriv=fp)
+    fp = x -> -2/sqrt(Interval(pi)) * exp(-x^2)
+    rts = roots(f, fp, Interval{T}(-Inf, Inf))
     @assert length(rts) == 1 # && rts[1].status == :unique
 
     rts[1].interval

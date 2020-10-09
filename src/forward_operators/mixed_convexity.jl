@@ -369,6 +369,32 @@ end
     return erf(x), erf_deriv(x), p
 end
 
+@inline erfinv_deriv(x::Float64) = (sqrt(pi)/2.0)*exp(erfinv(x)^2)
+@inline erfinv_deriv2(x::Float64) = (sqrt(pi)/2.0)*exp(2.0*erfinv(x)^2)*erfinv(x)
+@inline function erfinv_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (erfinv(x) - erfinv(y))/erfinv_deriv(x)
+end
+@inline function cv_erfinv(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return erfinv(x), erfinv_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(erfinv, erfinv_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, erfinv_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, erfinv_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(erfinv, erfinv_deriv, x, xL, p)..., p)
+    return erfinv(x), erfinv_deriv(x), p
+end
+@inline function cc_erfinv(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(erfinv, erfinv_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return erfinv(x), erf_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, erfinv_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, erfinv_env, xU, 0.0))
+    end
+    (x >= p) && (return dline_seg(erfinv, erfinv_deriv, x, xL, p)..., p)
+    return erfinv(x), erfinv_deriv(x), p
+end
+
 @inline cbrt_deriv(x::Float64) = 1.0/(3.0*cbrt(x)^2)
 @inline cbrt_deriv2(x::Float64) = -2.0/(9.0*cbrt(x)^5)
 @inline function cbrt_env(x::Float64, y::Float64, z::Float64)
@@ -399,14 +425,14 @@ end
 eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
                                  :atanh => :xL, :tan => :xL, :acos => :xU,
                                  :asin => :xL, :atan => :xL, :erf => :xL,
-                                 :cbrt => :xL)
+                                 :cbrt => :xL, :erfinv => :xL)
 eps_max_dict = Dict{Symbol,Symbol}(:sinh => :xU, :tanh => :xU, :asinh => :xU,
                                  :atanh => :xU, :tan => :xU, :acos => :xL,
                                  :asin => :xU, :atan => :xU, :erf => :xU,
-                                 :cbrt => :xU)
+                                 :cbrt => :xU, :erfinv => :xU)
 
 for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan, :erf,
-              :cbrt)
+              :cbrt, :erfinv)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
