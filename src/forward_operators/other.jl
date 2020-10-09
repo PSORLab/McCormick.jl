@@ -127,6 +127,8 @@ end
 end
 @inline abs(x::MC) = abs_kernel(x, abs(x.Intv))
 
+@inline abs2_kernel(x::MC, z::Interval{Float64}) = sqr_kernel(x, z)
+@inline abs2(x::MC) = abs2_kernel(x, pow(x.Intv,2))
 
 @inline function correct_intersect(x::MC{N,T}, cv::Float64, cc::Float64, Intv::Interval{Float64}, cv_grad::SVector{N,Float64},
 	                               cc_grad::SVector{N,Float64}, cnst::Bool) where {N, T <: RelaxTag}

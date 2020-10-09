@@ -138,6 +138,23 @@ end
 @inline min(x::MC{N,T}, y::Interval{Float64}) where {N, T<:RelaxTag} = min(x, MC{N,T}(y))
 @inline min(y::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = min(MC{N,T}(y), x)
 
+# Add fma function
+@inline fma(x::MC, y::Float64, z::Float64) = x*y + z
+@inline fma(x::MC, y::MC, z::Float64) = x*y + z
+@inline fma(x::MC, y::Float64, z::MC) = x*y + z
+@inline fma(x::MC, y::MC, z::MC) = x*y + z
+@inline fma(x::Float64, y::MC, z::Float64) = x*y + z
+@inline fma(x::Float64, y::MC, z::MC) = x*y + z
+@inline fma(x::Float64, y::Float64, z::MC) = x*y + z
+
+@inline fma(x::MC, y::Float64, z::Float64, q::Interval{Float64}) = x*y + z
+@inline fma(x::MC, y::MC, z::Float64, q::Interval{Float64}) = x*y + z
+@inline fma(x::MC, y::Float64, z::MC, q::Interval{Float64}) = x*y + z
+@inline fma(x::MC, y::MC, z::MC, q::Interval{Float64}) = x*y + z
+@inline fma(x::Float64, y::MC, z::Float64, q::Interval{Float64}) = x*y + z
+@inline fma(x::Float64, y::MC, z::MC, q::Interval{Float64}) = x*y + z
+@inline fma(x::Float64, y::Float64, z::MC, q::Interval{Float64}) = x*y + z
+
 # Promote and Convert
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:NumberNotRelax, N, T <: RelaxTag} = MC{N,T}
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Real, N, T <: RelaxTag} = MC{N,T}
