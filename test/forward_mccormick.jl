@@ -169,6 +169,10 @@ end
    @test check_vs_ref1(sin, x_sin_z, yref_sin_ns_z, mctol)
    @test check_vs_ref1(sin, x_sin_d1_z, yref_sin_d1_z, mctol)
 
+   ysinpi = sinpi(x_sin_z)
+   @test isapprox(ysinpi.cv, -1.0, atol=1E-8)
+   @test isapprox(ysinpi.cc, 0.682459570501031, atol=1E-8)
+
    #####  Cosine #####
    x_cos_p = MC{2,Diff}(4.0, 4.0, Interval{Float64}(3.0,7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_cos_n = MC{2,Diff}(-4.0, -4.0, Interval{Float64}(-7.0,-3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -184,6 +188,10 @@ end
    @test check_vs_ref1(cos, x_cos_n, yref_cos_d1_n, mctol)
    @test check_vs_ref1(cos, x_cos_z, yref_cos_d1_z, mctol)
    @test check_vs_ref1(cos, x_cos_z_ns, yref_cos_ns_z, mctol)
+
+   ycospi = cospi(x_sin_z)
+   @test isapprox(ycospi.cv, -1.0, atol=1E-8)
+   @test isapprox(ycospi.cc, 1.0, atol=1E-8)
 
    ##### Tangent #####
    x_tan_p = MC{2,NS}(0.6, 0.6, Interval{Float64}(0.5,1.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -326,6 +334,25 @@ end
    @test check_vs_ref1(tanh, x_tanh_z1, yref_tanh_d1_z1, mctol)
    @test check_vs_ref1(tanh, x_tanh_z2, yref_tanh_d1_z2, mctol)
    @test check_vs_ref1(tanh, x_tanh_z1_ns, yref_tanh_ns, mctol)
+
+   x_cbrt_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_z1 = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_z2 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   ycbrtp = cbrt(x_cbrt_p)
+   ycbrtn = cbrt(x_cbrt_n)
+   ycbrtz1 = cbrt(x_cbrt_z1)
+   ycbrtz2 = cbrt(x_cbrt_z2)
+
+   @test isapprox(ycbrtp.cv, 0.6544358737564154, atol=1E-8)
+   @test isapprox(ycbrtp.cc, 0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtn.cv, -0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtn.cc, -0.6544358737564154, atol=1E-8)
+   @test isapprox(ycbrtz1.cv, -0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtz1.cc, -0.3703935787925799, atol=1E-8)
+   @test isapprox(ycbrtz2.cv, 0.37039357879257984, atol=1E-8)
+   @test isapprox(ycbrtz2.cc, 0.6694329500821695, atol=1E-8)
 
    ##### Inverse Hyperbolic Sine #####
    x_asinh_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
