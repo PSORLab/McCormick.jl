@@ -100,6 +100,9 @@ Iv = fMC.Intv            # retrieve interval bounds of f(x) on Intv
 
 ![Figure_3](Figure_3.png)
 
+## Unit Testing Note
+While McCormick.jl generally supports Julia 1.1+, some functions may return an error for Julia versions less than 1.3. In particular, `cbrt` will result in a StackOverlfow when called. McCormick is unit tested using Julia versions 1.3 and beyond.
+
 ### References
 - **Khan KA, Watson HAJ, Barton PI (2017).** Differentiable McCormick relaxations. *Journal of Global Optimization*, 67(4):687-729.
 - **Khan KA, Wilhelm ME, Stuber MD, Cao H, Watson HAJ, Barton PI (2018).** Corrections to: Differentiable McCormick relaxations. *Journal of Global Optimization*, 70(3):705-706.
