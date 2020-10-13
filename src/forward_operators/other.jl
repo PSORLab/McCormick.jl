@@ -275,9 +275,9 @@ xlogx
 
 The function `xlogx` is defined as `xlogx(x) = x*log(x)`.
 """
-xlogx(x::Float64) where T = x*log(x)
-xlogx_deriv(x::Float64) where T = log(x) + 1.0
-xlogx_deriv2(x::Float64) where T = 1.0/x
+xlogx(x::Float64) = x*log(x)
+xlogx_deriv(x::Float64) = log(x) + 1.0
+xlogx_deriv2(x::Float64) = 1.0/x
 cc_xlogx(x::Float64, xL::Float64, xU::Float64) = dline_seg(xlogx, xlogx_deriv, x, xL, xU)
 cv_xlogx(x::Float64, xL::Float64, xU::Float64) = xlogx(x), xlogx_deriv(x)
 function xlogx(x::Interval{Float64})
@@ -291,9 +291,6 @@ function xlogx(x::Interval{Float64})
 		min_val = -min_pnt.hi
 	end
 	Interval{Float64}(min_val, max(xlogx_xL.lo, xlogx_xU.hi))
-end
-function xlogx(x::MC{N,T}) where {N, T <: RelaxTag}
-	xlogx_kernel(x, xlogx(x.Intv))
 end
 @inline function xlogx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
     xL = x.Intv.lo
@@ -325,4 +322,101 @@ end
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+function xlogx(x::MC{N,T}) where {N, T <: RelaxTag}
+	xlogx_kernel(x, xlogx(x.Intv))
+end
+
+"""
+arh
+
+The arrhenius function `arh` is defined as `arh(x) = exp(-k/x)`.
+"""
+arh(x::Float64, k::MC) = arh(x, k, x.Intv)
+arh(x::Float64, k::MC, z::Interval{Float64}) = exp(-k/x)
+arh(x::Float64, k::Float64) = exp(-k/x)
+arh_deriv(x::Float64, k::Float64) = k*exp(-k/x)/x^2
+arh_grad(x::Float64, k::Float64) = (k*exp(-k/x)/x^2, -exp(-k/x)/x)
+@inline function arh_env(x::Float64, y::Float64, k::Float64)
+	@show x, y, k
+    (x^2)*(exp((-k/y) + (k/x)) - 1.0) - k*(y + x)
+end
+@inline function arh_envm(x::Float64, y::Float64, k::Float64)
+	@show x, y, k
+    (x^2)*(exp((-k/y) + (k/x)) - 1.0) + k*(y + x)
+end
+function cv_arh(x::Float64, xL::Float64, xU::Float64, k::Float64, p::Float64)
+	if k > 0.0
+	    (xL >= k/2.0) && (return dline_seg(arh, arh_deriv, x, xL, xU, k)..., p)
+	    (xU <= k/2.0) && (return arh(x, k), arh_deriv(x, k), p)
+	    if p === Inf
+	        p, flag = secant(0.0, k/2.0, 0.0, k/2.0, arh_env, xU, k)
+	        flag && (p = golden_section(0.0, k/2.0, arh_env, xU, k))
+	    end
+	    (x <= p) && (return arh(x, k), arh_deriv(x, k), p)
+	    return dline_seg(arh, arh_deriv, x, p, xU, k)..., p
+	end
+	return arh(x, k), arh_deriv(x, k), 0.0
+end
+function cc_arh(x::Float64, xL::Float64, xU::Float64, k::Float64, p::Float64)
+	if k > 0.0
+		(xL >= k/2.0) && (return arh(x,k), arh_deriv(x,k), p)
+		(xU <= k/2.0) && (return dline_seg(arh, arh_deriv, x, xL, xU, k)..., p)
+		if p === Inf
+			p, flag = secant(k/2.0, xU, k/2.0, xU, arh_envm, xL, k)
+			flag && (p = golden_section(k/2.0, xU, arh_envm, xL, k))
+		end
+		(x >= p) && (return arh(x,k), arh_deriv(x,k), p)
+		return dline_seg(arh, arh_deriv, x, xL, p, k)..., p
+	end
+	return arh(x,k), arh_deriv(x,k), 0.0
+end
+function arh_kernel(x::MC{N,T}, k::Float64, z::Interval{Float64},
+	                cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
+	(k == 0.0) && return one(MC{N,T})
+	in(0.0, x) && throw(DomainError(0.0))
+	xL = x.Intv.lo
+    xU = x.Intv.hi
+	eps_min = xL
+	eps_max = xU
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv, cv_p = cv_arh(midcv, xL, xU, k, cv_p)
+    cc, dcc, cc_p = cc_arh(midcc, xL, xU, k, cc_p)
+    cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
+    cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N, T}(cv, cc, z, cv_grad, cc_grad, x.cnst), cv_p, cc_p
+end
+function arh_kernel(x::MC{N,Diff}, k::Float64, z::Interval{Float64},
+	                cv_p::Float64, cc_p::Float64) where N
+	(k == 0.0) && return one(MC{N,Diff})
+	in(0.0, x) && throw(DomainError(0.0))
+	xL = x.Intv.lo
+	xU = x.Intv.hi
+	eps_min = xL
+	eps_max = xU
+	midcv, cv_id = mid3(x.cv, x.cc, eps_min)
+	midcc, cc_id = mid3(x.cv, x.cc, eps_max)
+	cv, dcv, cv_p = cv_arh(midcv, xL, xU, k, cv_p)
+	cc, dcc, cc_p = cc_arh(midcc, xL, xU, k, cc_p)
+	gcv1, gdcv1, cv_p = cv_arh(x.cv, xL, xU, k, cv_p)
+	gcc1, gdcc1, cc_p = cc_arh(x.cv, xL, xU, k, cc_p)
+	gcv2, gdcv2, cv_p = cv_arh(x.cc, xL, xU, k, cv_p)
+	gcc2, gdcc2, cc_p = cc_arh(x.cc, xL, xU, k, cc_p)
+	cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
+	cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
+	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst), cv_p, cc_p
+end
+function arh_kernel(x::Float64, k::MC{N,T}, z::Interval{Float64},
+	                cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
+	exp(-k/x), 0.0, 0.0
+end
+function arh_kernel(x::Float64, k::MC{N,Diff}, z::Interval{Float64},
+	                cv_p::Float64, cc_p::Float64) where N
+	exp(-k/x), 0.0, 0.0
+end
+function arh(x::MC{N,T}, k::Float64) where {N, T <: RelaxTag}
+	yMC, tp1, tp2 = arh_kernel(x, k, exp(-k/x.Intv), Inf, Inf)
+	return yMC
 end

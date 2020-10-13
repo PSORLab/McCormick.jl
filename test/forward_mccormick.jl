@@ -354,6 +354,30 @@ end
    @test isapprox(ycbrtz2.cv, 0.37039357879257984, atol=1E-8)
    @test isapprox(ycbrtz2.cc, 0.6694329500821695, atol=1E-8)
 
+   x_arh_p1 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p2 = MC{2,Diff}(4.1, 4.1, Interval{Float64}(3.5, 4.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p3 = MC{2,Diff}(0.6, 0.6, Interval{Float64}(0.5, 3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p4 = MC{2,NS}(2.6, 2.6, Interval{Float64}(0.5, 3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+
+   arhp1 = arh(x_arh_p1, 2.0)
+   arhp2 = arh(x_arh_p2, 2.0)
+   arhp3 = arh(x_arh_p3, 2.0)
+   arhp4 = arh(x_arh_p4, 2.0)
+   arhn = arh(x_arh_n, 2.0)
+
+   @test isapprox(arhp1.cv, 0.0012726338013398079, atol=1E-8)
+   @test isapprox(arhp1.cc, 0.006135479582753048, atol=1E-8)
+   @test isapprox(arhp2.cv, 0.6130841525286383, atol=1E-8)
+   @test isapprox(arhp2.cc, 0.6139726608994069, atol=1E-8)
+   @test isapprox(arhp3.cv, 0.03850739431865814, atol=1E-8)
+   @test isapprox(arhp3.cc, 0.03986037228553247, atol=1E-8)
+   @test isapprox(arhp4.cv, 0.43426549824693633, atol=1E-8)
+   @test isapprox(arhp4.cc, 0.46336936923117533, atol=1E-8)
+   @test isapprox(arhn.cv, 785.7719942274175, atol=1E-8)
+   @test isapprox(arhn.cc, 14702.509913215526, atol=1E-8)
+
    ##### Inverse Hyperbolic Sine #####
    x_asinh_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_asinh_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.7,-0.1), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -622,6 +646,10 @@ end
    @test isapprox(yD.cc, 1.8483924814931874, atol=1E-8)
    @test isapprox(yNS.cv, 1.3862943611198906, atol=1E-8)
    @test isapprox(yNS.cc, 1.8483924814931874, atol=1E-8)
+
+   fma1 = fma(mc6, mc6, mc6)
+   @test isapprox(fma1.cv, 7.683615424642269, atol = 1E-8)
+   @test isapprox(fma1.cc, 307.1925114113242, atol = 1E-8)
 end
 
 @testset "Test Arithmetic w/Constant" begin
@@ -629,6 +657,30 @@ end
    mctol = 1E-4
 
    x0 = MC{2,NS}(4.5, 4.5, Interval{Float64}(2.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   fma1 = fma(x0, 2.0, x0)
+   @test isapprox(fma1.cv, 13.5, atol = 1E-8)
+   @test isapprox(fma1.cc, 13.5, atol = 1E-8)
+
+   fma2 = fma(x0, x0, 2.0)
+   @test isapprox(fma2.cv, 16.0, atol = 1E-8)
+   @test isapprox(fma2.cc, 31.0, atol = 1E-8)
+
+   fma3 = fma(2.0, x0, x0)
+   @test isapprox(fma3.cv, 13.5, atol = 1E-8)
+   @test isapprox(fma3.cc, 13.5, atol = 1E-8)
+
+   fma4 = fma(x0, 2.0, 3.0)
+   @test isapprox(fma4.cv, 12.0, atol = 1E-8)
+   @test isapprox(fma4.cc, 12.0, atol = 1E-8)
+
+   fma5 = fma(2.0, x0, 3.0)
+   @test isapprox(fma5.cv, 12.0, atol = 1E-8)
+   @test isapprox(fma5.cc, 12.0, atol = 1E-8)
+
+   fma6 = fma(2.0, 3.0, x0)
+   @test isapprox(fma6.cv, 10.5, atol = 1E-8)
+   @test isapprox(fma6.cc, 10.5, atol = 1E-8)
 
    x0a = McCormick.div_kernel(x0, 2.0, x0.Intv/2.0)
    x0b = McCormick.div_kernel(2.0, x0, 2.0/x0.Intv)
