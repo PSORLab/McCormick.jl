@@ -441,52 +441,53 @@ function xexpax(x::Interval{Float64}, a::Float64)
 	if a > 0.0
 		yL = (xL <= zpnt <= xU) ? xexpax(zpnt, a) : ((fxL <= fxU) ? fxL : fxU)
 		yU = (fxL >= fxU) ? fxL : fxU
+	else
+		yL = (fxL <= fxU) ? fxL : fxU
+		yU = (xL <= zpnt <= xU) ? xexpax(zpnt, a) : ((fxL >= fxU) ? fxL : fxU)
 	end
-	yL = (fxL <= fxU) ? fxL : fxU
-	yU = (xL <= zpnt <= xU) ? xexpax(zpnt, a) : ((fxL >= fxU) ? fxL : fxU)
 	Interval(yL, yU)
 end
 xexpax_deriv(x::Float64, a::Float64) = exp(a*x)*(a*x + 1.0)
 xexpax_grad(x::Float64, a::Float64) = (exp(a*x)*(a*x + 1.0), exp(a*x)*x^2)
 @inline function xexpax_env(x::Float64, y::Float64, a::Float64)
-    (x - y) - (xexpax(x, a) - xexpax(y, a))/xexpax_deriv(x, a)
+    (y - x)*xexpax_deriv(x, a) - (xexpax(y, a) - xexpax(x, a))
 end
 @inline function xexpax_envm(x::Float64, y::Float64, a::Float64)
     (x - y) - (xexpax(x, a) - xexpax(y, a))/xexpax_deriv(x, a)
 end
 function cv_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
 	if a > 0.0
-	    (xL >= a/2.0) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	    (xU <= a/2.0) && (return xexpax(x, a), xexpax_deriv(x, a), p)
+	    (xU <= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
+	    (xL >= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
 	    if p === Inf
-	        p, flag = secant(0.0, a/2.0, 0.0, a/2.0, xexpax_env, xU, a)
-	        flag && (p = golden_section(0.0, a/2.0, xexpax_env, xU, a))
+	        p, flag = secant(-2.0/a, xU, -2.0/a, xU, xexpax_env, xL, a)
+	        flag && (p = golden_section(-2.0/a, xU, xexpax_env, xL, a))
 	    end
-	    (x <= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	    return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
+	    (x <= p) && (return dline_seg(xexpax, xexpax_deriv, x, p, xL, a)..., p)
+	    return xexpax(x, a), xexpax_deriv(x, a), p
 	end
-	(xL >= a/2.0) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	(xU <= a/2.0) && (return xexpax(x, a), xexpax_deriv(x, a), p)
+	(xL >= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
+	(xU <= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
 	if p === Inf
-		p, flag = secant(0.0, a/2.0, 0.0, a/2.0, xexpax_env, xU, a)
-		flag && (p = golden_section(0.0, a/2.0, xexpax_env, xU, a))
+		p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_env, xU, a)
+		flag && (p = golden_section(xL, a/2.0, xexpax_env, xU, a))
 	end
 	(x <= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
 	return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
 end
 function cc_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
 	if a > 0.0
-		(xL >= a/2.0) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-		(xU <= a/2.0) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
+		(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
+		(xU <= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
 		if p === Inf
-			p, flag = secant(a/2.0, xU, a/2.0, xU, xexpax_envm, xL, a)
-			flag && (p = golden_section(a/2.0, xU, xexpax_envm, xL, a))
+			p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_envm, xU, a)
+			flag && (p = golden_section(xL, -2.0/a, xexpax_envm, xU, a))
 		end
 		(x >= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
 		return dline_seg(xexpax, xexpax_deriv, x, xL, p, a)..., p
 	end
-	(xL >= a/2.0) && (return xexpax(x,a), xexpax_deriv(x,a), p)
-	(xU <= a/2.0) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
+	(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
+	(xU <= -2.0/a) && (return xexpax(x,a), xexpax_deriv(x,a), p)
 	if p === Inf
 		p, flag = secant(a/2.0, xU, a/2.0, xU, xexpax_envm, xL, a)
 		flag && (p = golden_section(a/2.0, xU, xexpax_envm, xL, a))
@@ -505,11 +506,18 @@ end
 function xexpax_kernel(x::MC{N,T}, a::Float64, z::Interval{Float64},
 	                   cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
 	(a == 0.0) && return one(MC{N,T})
-	in(0.0, x) && throw(DomainError(0.0))
 	xL = x.Intv.lo
     xU = x.Intv.hi
-	eps_min = xL
-	eps_max = xU
+	zpnt = -1.0/a
+	fxL = xexpax(xL, a)
+	fxU = xexpax(xU, a)
+	if a > 0.0
+		eps_min = (xL <= zpnt <= xU) ? zpnt : ((fxL <= fxU) ? xL : xU)
+		eps_max = (fxL >= fxU) ? xL : xU
+	else
+		eps_min = (fxL <= fxU) ? xL : xU
+		eps_max = (xL <= zpnt <= xU) ? zpnt : ((fxL >= fxU) ? xL : xU)
+	end
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
     cv, dcv, cv_p = cv_xexpax(midcv, xL, xU, a, cv_p)
@@ -522,11 +530,18 @@ end
 function xexpax_kernel(x::MC{N,Diff}, a::Float64, z::Interval{Float64},
 	                   cv_p::Float64, cc_p::Float64) where N
 	(a == 0.0) && return one(MC{N,Diff})
-	in(0.0, x) && throw(DomainError(0.0))
 	xL = x.Intv.lo
 	xU = x.Intv.hi
-	eps_min = xL
-	eps_max = xU
+	zpnt = -1.0/a
+	fxL = xexpax(xL, a)
+	fxU = xexpax(xU, a)
+	if a > 0.0
+		eps_min = (xL <= zpnt <= xU) ? zpnt : ((fxL <= fxU) ? xL : xU)
+		eps_max = (fxL >= fxU) ? xL : xU
+	else
+		eps_min = (fxL <= fxU) ? xL : xU
+		eps_max = (xL <= zpnt <= xU) ? zpnt : ((fxL >= fxU) ? xL : xU)
+	end
 	midcv, cv_id = mid3(x.cv, x.cc, eps_min)
 	midcc, cc_id = mid3(x.cv, x.cc, eps_max)
 	cv, dcv, cv_p = cv_xexpax(midcv, xL, xU, a, cv_p)
@@ -541,6 +556,7 @@ function xexpax_kernel(x::MC{N,Diff}, a::Float64, z::Interval{Float64},
 end
 xexpax(x::Float64, a::MC) = x*exp(a*x)
 function xexpax(x::MC{N,T}, a::Float64) where {N, T <: RelaxTag}
-	yMC, tp1, tp2 = xexpax_kernel(x, a, xexpax(x.Intv, a), Inf, Inf)
+	intv_xexpax = xexpax(x.Intv, a)
+	yMC, tp1, tp2 = xexpax_kernel(x, a, intv_xexpax, Inf, Inf)
 	return yMC
 end
