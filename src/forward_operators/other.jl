@@ -466,17 +466,13 @@ function cv_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
 	    (x <= p) && (return dline_seg(xexpax, xexpax_deriv, x, p, xL, a)..., p)
 	    return xexpax(x, a), xexpax_deriv(x, a), p
 	end
-	@show "arc 1 cv"
 	(xL >= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	@show "arc 2 cv"
 	(xU <= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
 	if p === Inf
 		p, flag = secant(-2.0/a, xU, -2.0/a, xU, xexpax_env, xL, a)
 		flag && (p = golden_section(-2.0/a, xU, xexpax_env, xL, a))
 	end
-	@show "arc 3 cv"
 	(x >= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	@show "arc 4 cv"
 	return dline_seg(xexpax, xexpax_deriv, x, xL, p, a)..., p
 end
 function cc_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
@@ -490,17 +486,13 @@ function cc_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
 		(x >= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
 		return dline_seg(xexpax, xexpax_deriv, x, xL, p, a)..., p
 	end
-	@show "arc 1 cc"
 	(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	@show "arc 2 cc"
 	(xU <= -2.0/a) && (return xexpax(x,a), xexpax_deriv(x,a), p)
 	if p === Inf
-		p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_env, xU, a)
-		flag && (p = golden_section(xL, a/2.0, xexpax_env, xU, a))
+		p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_envm, xU, a)
+		flag && (p = golden_section(xL, a/2.0, xexpax_envm, xU, a))
 	end
-	@show "arc 3 cc = $p"
-	(x <= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
-	@show "arc 3 cc"
+	(x <= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
 	return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
 end
 function xexpax_kernel(x::Float64, a::MC{N,T}, z::Interval{Float64},
