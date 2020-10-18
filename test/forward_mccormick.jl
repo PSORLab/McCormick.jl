@@ -451,7 +451,8 @@ end
    @test csch(xextras) == inv(sinh(xextras))
    @test coth(xextras) == inv(tanh(xextras))
    @test acsch(xextras) == log(sqrt(1.0+inv(sqr(xextras)))+inv(xextras))
-   @test acoth(xextras) == 0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras)))
+   @test isapprox(acoth(xextras).cv, (0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras)))).cv, atol = 1E-8)
+   @test isnan(acoth(xextras).cc) && isnan(0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras))))
    @test sind(xextras) == sin(deg2rad(xextras))
    @test cosd(xextras) == cos(deg2rad(xextras))
    @test tand(xextras) == tan(deg2rad(xextras))
@@ -1262,7 +1263,7 @@ end
 
    @test zero(x) == zero(MC{2,NS})
    @test one(x) == one(MC{2,NS})
-   @test nan(x) == nan(MC{2,NS})
+   @test isnan(nan(x).cv) && isnan(nan(x).cc)
    @test real(x) == x
    @test dist(x, x0) == max(abs(x.cc - x0.cc), abs(x.cv - x0.cv))
    @test eps(x) == max(eps(x.cc), eps(x.cv))
@@ -1796,6 +1797,122 @@ end
    @test isapprox(y12.cc, 0.4170112431680709, atol=1E-8)
 
    @test isapprox(McCormick.swish1_env(1.0, 2.0, 3.0), -0.1028650654542731, atol=1E-8)
+
+   x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+   x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+   x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+   x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+   x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+   x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+   x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+   x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
+
+   y1 = xexpax(x1,-0.5)
+   y2 = xexpax(x2,-0.5)
+   y3 = xexpax(x3,-0.5)
+
+   y4 = xexpax(x4,-0.5)
+   y5 = xexpax(x5,-0.5)
+   y6 = xexpax(x6,-0.5)
+
+   y7 = xexpax(x7,-0.5)
+   y8 = xexpax(x8,-0.5)
+   y9 = xexpax(x9,-0.5)
+
+   y10 = xexpax(x10,-0.5)
+   y11 = xexpax(x11,-0.5)
+   y12 = xexpax(x12,-0.5)
+
+   @test isapprox(y1.cv, -1.1040067694360605, atol=1E-8)
+   @test isapprox(y1.cc, 0.09512294245007141, atol=1E-8)
+
+   @test isapprox(y2.cv, -1.8808167402421674, atol=1E-8)
+   @test isapprox(y2.cc, -0.6420127083438707, atol=1E-8)
+
+   @test isapprox(y3.cv, 0.4532302790508663, atol=1E-8)
+   @test isapprox(y3.cc, 0.4932816628030994, atol=1E-8)
+
+   @test isapprox(y4.cv, -202.4712951817529, atol=1E-8)
+   @test isapprox(y4.cc, -167.6372094617549, atol=1E-8)
+
+   @test isapprox(y5.cv, 0.2520323509061931, atol=1E-8)
+   @test isapprox(y5.cc, 0.26399316527848, atol=1E-8)
+
+   @test isapprox(y6.cv, 0.4532302790508663, atol=1E-8)
+   @test isapprox(y6.cc, 0.4932816628030994, atol=1E-8)
+
+   @test isapprox(y7.cv, -0.5774665218146768, atol=1E-8)
+   @test isapprox(y7.cc, 0.6579687188629034, atol=1E-8)
+
+   @test isapprox(y8.cv, -1.1979504320041896, atol=1E-8)
+   @test isapprox(y8.cc, 0.6346447914185354, atol=1E-8)
+
+   @test isapprox(y9.cv, -2.9087497195203285, atol=1E-8)
+   @test isapprox(y9.cc, 0.25821239292751735, atol=1E-8)
+
+   @test isapprox(y10.cv, -2.2464444171405744, atol=1E-8)
+   @test isapprox(y10.cc, -1.906578319654135, atol=1E-8)
+
+   @test isapprox(y11.cv, 0.44221273357310886, atol=1E-8)
+   @test isapprox(y11.cc, 0.5738653364595959, atol=1E-8)
+
+   @test isapprox(y12.cv, -0.21282585587845876, atol=1E-8)
+   @test isapprox(y12.cc, 0.25821239292751735, atol=1E-8)
+
+   y1 = xexpax(x1,0.5)
+   y2 = xexpax(x2,0.5)
+   y3 = xexpax(x3,0.5)
+
+   y4 = xexpax(x4,0.5)
+   y5 = xexpax(x5,0.5)
+   y6 = xexpax(x6,0.5)
+
+   y7 = xexpax(x7,0.5)
+   y8 = xexpax(x8,0.5)
+   y9 = xexpax(x9,0.5)
+
+   y10 = xexpax(x10,0.5)
+   y11 = xexpax(x11,0.5)
+   y12 = xexpax(x12,0.5)
+
+   @test isapprox(y1.cv, 0.10512710963760241, atol=1E-8)
+   @test isapprox(y1.cc, 1.3629434263714295, atol=1E-8)
+
+   @test isapprox(y2.cv, -0.38940039153570244, atol=1E-8)
+   @test isapprox(y2.cc, 0.5861334555653227, atol=1E-8)
+
+   @test isapprox(y3.cv, 0.9933472840152799, atol=1E-8)
+   @test isapprox(y3.cc, 1.148710171658899, atol=1E-8)
+
+   @test isapprox(y4.cv, -0.26399316527848, atol=1E-8)
+   @test isapprox(y4.cc, -0.2520323509061931, atol=1E-8)
+
+   @test isapprox(y5.cv, 167.6372094617549, atol=1E-8)
+   @test isapprox(y5.cc, 202.4712951817529, atol=1E-8)
+
+   @test isapprox(y6.cv, 0.9933472840152799, atol=1E-8)
+   @test isapprox(y6.cc, 1.148710171658899, atol=1E-8)
+
+   @test isapprox(y7.cv, 14.605557566031301, atol=1E-8)
+   @test isapprox(y7.cc, 18.955434042128815, atol=1E-8)
+
+   @test isapprox(y8.cv, 1.906578319654135, atol=1E-8)
+   @test isapprox(y8.cc, 5.782243441122052, atol=1E-8)
+
+   @test isapprox(y9.cv, 0.3485502728184849, atol=1E-8)
+   @test isapprox(y9.cc, 7.994567839699798, atol=1E-8)
+
+   @test isapprox(y10.cv, -0.6346447914185354, atol=1E-8)
+   @test isapprox(y10.cc, -0.43490084921182987, atol=1E-8)
+
+   @test isapprox(y11.cv, 1.4114809669411519, atol=1E-8)
+   @test isapprox(y11.cc, 1.6494378610770144, atol=1E-8)
+
+   @test isapprox(y12.cv, 0.3485502728184849, atol=1E-8)
+   @test isapprox(y12.cc, 1.0490320707911238, atol=1E-8)
 end
 
 @testset "Test bound enforcing functions" begin
@@ -1837,4 +1954,22 @@ end
    @test gout[1] == 1.0
    @test gout[2] == 0.0
    @test gout[3] == 0.0
+end
+
+@testset "Comparisons" begin
+
+   x = MC{2,NS}(4.0, 4.0, Interval{Float64}(3.0,7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   y = MC{2,NS}(-4.0, -4.0, Interval{Float64}(-7.0,-3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   z = MC{2,NS}(1.0, 4.0, Interval{Float64}(0.0,5.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   @test x >= y
+   @test !(x <= z)
+   @test y <= z
+   @test x == x
+   @test !(x == z)
+   @test !(x != x)
+   @test x != z
+   @test x > y
+   @test !(x < z)
+   @test y < z
 end

@@ -29,7 +29,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
-             <, <=, !=, ==, fma, cbrt, sinpi, cospi
+             <, <=, ==, fma, cbrt, sinpi, cospi
 
 using IntervalArithmetic: @round, big53
 using IntervalRootFinding
@@ -63,7 +63,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
-       <, <=, !=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax
+       <, <=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
