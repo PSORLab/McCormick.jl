@@ -480,11 +480,11 @@ function cc_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
 		(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
 		(xU <= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
 		if p === Inf
-			p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_envm, xU, a)
-			flag && (p = golden_section(xL, -2.0/a, xexpax_envm, xU, a))
+			p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_env, xU, a)
+			flag && (p = golden_section(xL, -2.0/a, xexpax_env, xU, a))
 		end
-		(x >= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
-		return dline_seg(xexpax, xexpax_deriv, x, xL, p, a)..., p
+		(x <= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
+		return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
 	end
 	(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
 	(xU <= -2.0/a) && (return xexpax(x,a), xexpax_deriv(x,a), p)

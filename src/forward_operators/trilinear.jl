@@ -99,7 +99,7 @@ function is_tri_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
 end
 
 """
-Case 1, Meyer-Floudas 2004
+Case 3.1 + Case 4.1 of Meyer-Floudas 2004
 """
 function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
