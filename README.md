@@ -20,9 +20,9 @@ supports the computation of convex/concave relaxations (and asssociated subgradi
 expressions containing the following operations:
 
 **Common algebraic expressions**: `inv`, `log`, `log2`, `log10`, `exp`, `exp2`, `exp10`,
-`sqrt`, `+`, `-`, `^`, `min`, `max`, `/`, `*`, `abs`, `step`, `sign`, `deg2rad`, `rad2deg`, `abs2`
+`sqrt`, `+`, `-`, `^`, `min`, `max`, `/`, `*`, `abs`, `step`, `sign`, `deg2rad`, `rad2deg`, `abs2`, `cbrt`, `fma`
 
-**Trignometric Functions**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sec`, `csc`, `cot`, `asec`, `acsc`, `acot`, `sind`, `cosd`, `tand`, `asind`, `acosd`, `atand`, `secd`, `cscd`, `cotd`, `asecd`, `acscd`, `acotd`
+**Trignometric Functions**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sec`, `csc`, `cot`, `asec`, `acsc`, `acot`, `sind`, `cosd`, `tand`, `asind`, `acosd`, `atand`, `secd`, `cscd`, `cotd`, `asecd`, `acscd`, `acotd`, `sinpi`, `cospi`
 
 **Hyperbolic Functions**: `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`, `sech`, `csch`, `coth`, `acsch`, `acoth`
 
@@ -32,9 +32,11 @@ expressions containing the following operations:
                           `softsign`, `softplus`, `maxtanh`, `pentanh`, `gelu`,
                           `elu`, `selu`, `swish1`
 
+**Common Algebraic Expressions**: `xlogx`, `arh`, `xexpax`
+
 **Bound Specification Functions**: `positive`, `negative`, `lower_bnd`, `upper_bnd`, `bnd`
 
-**Other Functions**: `one`, `zero`, `intersect`, `real`, `dist`, `eps`
+**Other Functions**: `one`, `zero`, `intersect`, `real`, `dist`, `eps`, `<`, `<=`, `==`
 
 Differentiable relaxations (`Diff <: RelaxTag`) are supported for the functions given in [Khan2016](https://link.springer.com/article/10.1007/s10898-016-0440-6), [Khan2018](https://link.springer.com/article/10.1007/s10898-017-0601-2), [Khan2019](https://www.tandfonline.com/doi/abs/10.1080/02331934.2018.1534108). However, differentiable relaxations for other nonsmooth terms listed above have yet to be developed and as such have been omitted.
 
