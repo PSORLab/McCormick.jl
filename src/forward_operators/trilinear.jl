@@ -101,7 +101,7 @@ end
 """
 Case 3.1 + Case 4.1 of Meyer-Floudas 2004
 """
-function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
     delZ = zU - zL
@@ -147,4 +147,26 @@ function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxT
     cc6 = cc_ax6*x.cc + cc_ay6*y.cc + cc_az6*ifelse(cc_az6 > 0.0, z.cc, z.cv) + cc_b6
 
     @unpack_trilinear_end()
+end
+
+x_mul_y2(x, y) = x*y^2
+
+function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
+	is_tri_case_1(x1, x2, x3) && trilinear_case_1(x1, x2, x3, z)
+	x1*x2*x3
+end
+
+@inline function *(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
+	if x1 == x2
+		if x1 == x3
+			z = x1.Intv^3
+		else
+			z = x_mul_y2(x3.Intv, x1.Intv)
+		end
+	elseif x2 == x3
+		z = x_mul_y2(x1.Intv, x2.Intv)
+	else
+		z = x1.Intv*x2.Intv*x3.Intv
+	end
+	mult_kernel(x1, x2, x3, z)
 end
