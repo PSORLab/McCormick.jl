@@ -286,21 +286,19 @@ Case 3.5 + Case 4.5 of Meyer-Floudas 2004
 function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    #delZ = zU - zL
-    #θcv = xyzLUU - xyzUUL - xyzLLU + xyzULU
     #θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
 
     # define cv and coefficients
-    #cv_b1 = -2.0*xyzUUU
-    #cv_b2 = -(xyzLUL + xyzLUU)
-    #cv_b3 = -(xyzLUL + xyzLLL)
-    #cv_b4 = -(xyzULU + xyzULL)
-    #cv_b5 = -(xyzULL + xyzLLL)
-    #cv_b6 = -θcv*zL/delZ - xyzLUU - xyzULU + xyzUUL
+    cv_b1 = -(xyzLUL + xyzLLL)
+    cv_b2 = -(xyzLUL + xyzLUU)
+    cv_b3 = -(xyzULU + xyzULL)
+    cv_b4 = -(xyzULU + xyzUUU)
+    cv_b5 = -(xyzULL + xyzLLL)
+    cv_b6 = -(xyzUUU + xyzLUU)
 
-    #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzUL, yzUL, yzLU, yzLL, yzLU
-    #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzLU, xzLL, xzUL, xzUL, xzLU
-    #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyLU, xyLL, xyUL, xyLL, θcv/delZ
+    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzUL, yzLU, yzLU, yzLL, yzUU
+    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUL, xzUU, xzUL, xzLU
+    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLL, xyLU, xyUL, xyUU, xyLL, xyUU
 
     # define cc and coefficients
     #cc_b1 = -2.0*xyzUUL
@@ -314,12 +312,12 @@ function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     #cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzUU, xzLL
     #cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLL, xyLU, xyLL, -θcc/delZ
 
-    #cv1 = cv_ax1*x.cv + cv_ay1*y.cv + cv_az1*z.cv + cv_b1
-    #cv2 = -cv_ax2*x.cc + cv_ay2*y.cv + cv_az2*z.cc + cv_b2
-    #cv3 = -cv_ax3*x.cc - cv_ay3*y.cc + cv_az3*z.cc + cv_b3
-    #cv4 = cv_ax4*x.cv - cv_ay4*y.cc + cv_az4*z.cv + cv_b4
-    #cv5 = -cv_ax5*x.cc - cv_ay5*y.cc + cv_az5*z.cc + cv_b5
-    #cv6 = cv_ax6*x.cv + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+    cv1 = -cv_ax1*x.cc - cv_ay1*y.cc + cv_az1*z.cv + cv_b1
+    cv2 = -cv_ax2*x.cc - cv_ay2*y.cc + cv_az2*z.cv + cv_b2
+    cv3 = -cv_ax3*x.cc - cv_ay3*y.cc + cv_az3*z.cv + cv_b3
+    cv4 = -cv_ax4*x.cc - cv_ay4*y.cc + cv_az4*z.cv + cv_b4
+    cv5 = -cv_ax5*x.cc - cv_ay5*y.cc + cv_az5*z.cv + cv_b5
+    cv6 = -cv_ax6*x.cc - cv_ay6*y.cc + cv_az6*z.cv + cv_b6
 
     #cc1 = -cc_ax1*x.cv - cc_ay1*y.cv + cc_az1*z.cc + cc_b1
     #cc2 = -cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
