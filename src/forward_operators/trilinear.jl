@@ -103,11 +103,20 @@ end
 function is_tri_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     (lo(x) >= 0.0) && (lo(y) <= 0.0) && (lo(z) <= 0.0) && (hi(y) >= 0.0) && (hi(z) >= 0.0)
 end
+function is_tri_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+    (lo(x) <= 0.0) && (lo(y) <= 0.0) && (lo(z) <= 0.0) && (hi(x) >= 0.0) && (hi(y) >= 0.0) && (hi(z) >= 0.0)
+end
 function is_tri_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     (lo(x) >= 0.0) && (lo(y) >= 0.0) && (hi(z) <= 0.0)
 end
 function is_tri_case_6(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     (lo(x) >= 0.0) && (lo(y) <= 0.0) && (hi(z) <= 0.0) && (hi(y) >= 0.0)
+end
+function is_tri_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+    (lo(x) >= 0.0) && (lo(y) <= 0.0) && (hi(z) <= 0.0) && (hi(x) >= 0.0) && (hi(y) >= 0.0)
+end
+function is_tri_case_8(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+    (lo(x) >= 0.0) && (hi(y) <= 0.0) && (hi(z) <= 0.0)
 end
 function is_tri_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     (lo(x) <= 0.0) && (hi(x) >= 0.0) && (hi(y) <= 0.0) && (hi(z) <= 0.0)
@@ -293,16 +302,59 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     #θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
 
     # define cv and coefficients
-    #cv_b1 = -2.0*xyzUUU
-    #cv_b2 = -2.0*xyzULL
-    #cv_b3 = -(xyzLUL + xyzLUU)
-    #cv_b4 = -(xyzLUL + xyzLLL)
-    #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
-    #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+    if  (xyzUUL + xyzULU + xyzLUU <= xyzLLL + 2*xyzUUU) &&
+        (xyzLLL + xyzUUL + xyzULU <= xyzLUU + 2*xyzULL) &&
+        (xyzLLL + xyzUUL + xyzLUU <= xyzULU + 2*xyzLUL) &&
+        (xyzLLL + xyzULU + xyzLUU <= xyzUUL + 2*xyzLLU)
 
-    #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
-    #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
-    #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv4 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+
+        #cv_b1 = -2.0*xyzUUU
+        #cv_b2 = -2.0*xyzULL
+        #cv_b3 = -(xyzLUL + xyzLUU)
+        #cv_b4 = -(xyzLUL + xyzLLL)
+        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
+        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+
+        #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
+        #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
+        #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+
+    elseif xyzUUL + xyzULU + xyzLUU >= xyzLLL + 2*xyzUUU
+
+        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+
+        #cv_b1 = -2.0*xyzUUU
+        #cv_b2 = -2.0*xyzULL
+        #cv_b3 = -(xyzLUL + xyzLUU)
+        #cv_b4 = -(xyzLUL + xyzLLL)
+        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
+        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+
+        #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
+        #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
+        #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+    else
+        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+
+        #cv_b1 = -2.0*xyzUUU
+        #cv_b2 = -2.0*xyzULL
+        #cv_b3 = -(xyzLUL + xyzLUU)
+        #cv_b4 = -(xyzLUL + xyzLLL)
+        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
+        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+
+        #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
+        #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
+        #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+    end
 
     # define cc and coefficients
     #cc_b1 = -2.0*xyzUUL
