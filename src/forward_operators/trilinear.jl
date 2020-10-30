@@ -498,7 +498,7 @@ function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     @unpack_trilinear_bnd()
 
     delX = xU - xL
-    delZ = yU - yL
+    delY = yU - yL
     #θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
 
     # define cv and coefficients
@@ -514,16 +514,16 @@ function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cv_b5 = -θcv1*xL/delX - xyzLLU - xyzLUU + xyzLLL
         cv_b6 = -θcv2*YL/delY - xyzUUL - xyzLUU + xyzLLL
 
-        #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
-        #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
-        #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLL, yzUU, yzLU, θcv1/delX, yzUU
+        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzUL, xzLU, xzUU, xzUU, θcv1/delY
+        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyUL, xyLL, xyLL, xyUU, xyUU
 
-        #cv1 = cv_ax1*x.cv + cv_ay1*y.cv + cv_az1*z.cv + cv_b1
-        #cv2 = cv_ax2*x.cv - cv_ay2*y.cc - cv_az2*z.cc + cv_b2
-        #cv3 = -cv_ax3*x.cc + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
-        #cv4 = -cv_ax4*x.cc - cv_ay4*y.cc - cv_az4*z.cc + cv_b4
-        #cv5 = -cv_ax5*x.cc + cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) - cv_az5*z.cc + cv_b5
-        #cv6 = -cv_ax6*x.cc + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+        cv1 = -cv_ax1*x.cc + cv_ay1*y.cv - cv_az1*z.cc + cv_b1
+        cv2 = cv_ax2*x.cv - cv_ay2*y.cc - cv_az2*z.cc + cv_b2
+        cv3 = -cv_ax3*x.cc + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
+        cv4 = cv_ax4*x.cv - cv_ay4*y.cc + cv_az4*z.cv + cv_b4
+        cv5 = cv_ax5*ifelse(cv_ax5 >= 0.0, x.cv, -x.cc) - cv_ay5*y.cc + cv_az5*z.cv + cv_b5
+        cv6 = -cv_ax6*x.cc + cv_ay6*ifelse(cv_ay6 >= 0.0, y.cv, -y.cc) + cv_az6*z.cv + cv_b6
 
     else
 
