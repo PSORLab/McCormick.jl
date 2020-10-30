@@ -295,11 +295,9 @@ Case 3.4 + Case 4.4 of Meyer-Floudas 2004
 function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    #delY = yU - yL
-    #delZ = zU - zL
-    #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-    #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-    #θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
 
     # define cv and coefficients
     if  (xyzUUL + xyzULU + xyzLUU <= xyzLLL + 2*xyzUUU) &&
@@ -307,17 +305,18 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         (xyzLLL + xyzUUL + xyzLUU <= xyzULU + 2*xyzLUL) &&
         (xyzLLL + xyzULU + xyzLUU <= xyzUUL + 2*xyzLLU)
 
-        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv4 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
+        θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
+        θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
+        θcv4 = xyzLLL - θcv1*xL - θcv2*yL - θcv3*zL
 
+        # TODO: CHECK OTHER PAPER
         #cv_b1 = -2.0*xyzUUU
         #cv_b2 = -2.0*xyzULL
-        #cv_b3 = -(xyzLUL + xyzLUU)
-        #cv_b4 = -(xyzLUL + xyzLLL)
-        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
-        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+        #cv_b3 = -2.0*xyzUUU
+        #cv_b4 = -2.0*xyzUUU
+        #cv_b5 = -2.0*xyzUUU
+        #cv_b6 = θcv4
 
         #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
         #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
@@ -325,9 +324,9 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
     elseif xyzUUL + xyzULU + xyzLUU >= xyzLLL + 2*xyzUUU
 
-        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+        θcv1 = xyzUUL - xyzLLL - xyzUUU + xyzULU
+        θcv2 = xyzULU - xyzLLL - xyzUUU + xyzLUU
+        θcv3 = xyzUUL - xyzLLL - xyzUUU + xyzLUU
 
         #cv_b1 = -2.0*xyzUUU
         #cv_b2 = -2.0*xyzULL
@@ -340,9 +339,10 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
         #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
     else
-        #θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-        #θcv3 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+
+        θcv1 = xyzLLL - xyzLUU - xyzULL + xyzULU
+        θcv2 = xyzUUL - xyzLUU - xyzULL + xyzULU
+        θcv3 = xyzLLL - xyzLUU - xyzULL + xyzUUL
 
         #cv_b1 = -2.0*xyzUUU
         #cv_b2 = -2.0*xyzULL
