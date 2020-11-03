@@ -559,7 +559,6 @@ function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
     delX = xU - xL
     delY = yU - yL
-    #θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
 
     # define cv and coefficients
     if xyzLLL + xyzUUU < xyzUUL + xyzLLU
@@ -610,24 +609,27 @@ function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
     end
 
+    θcc1 = xyzLUL - xyzULL - xyzLUU + xyzLLU
+    θcc2 = xyzUUU - xyzULL - xyzLUU + xyzLUL
+
     # define cc and coefficients
-    #cc_b1 = -2.0*xyzUUL
-    #cc_b2 = -(xyzULU + xyzULL)
-    #cc_b3 = -(xyzLUU + xyzLLU)
-    #cc_b4 = -(xyzLUU + xyzLUL)
-    #cc_b5 = -(xyzULU + xyzLLU)
-    #cc_b6 = θcc*zU/delZ - xyzULL - xyzLUL + xyzUUU
+    cc_b1 = -2.0*xyzLLL
+    cc_b2 = -2.0*xyzUUL
+    cc_b3 = -(xyzLLU + xyzULU)
+    cc_b4 = -(xyzUUU + xyzULU)
+    cc_b5 = θcc1*xU/delX - xyzLUL - xyzLLU + xyzULL
+    cc_b6 = -θcc2*yL/delY - xyzUUU - xyzLUL + xyzULL
 
-    #cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLL, yzUU, yzUU, yzLU, yzLL
-    #cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzUU, xzLL
-    #cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLL, xyLU, xyLL, -θcc/delZ
+    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, yzUU, -θcc1/delX, yzUU
+    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzLU, xzUU, xzLU, θcc2/delY
+    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyUL, xyLU, xyLU
 
-    #cc1 = -cc_ax1*x.cv - cc_ay1*y.cv + cc_az1*z.cc + cc_b1
-    #cc2 = -cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
-    #cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
-    #cc4 = cc_ax4*x.cc - cc_ay4*y.cv + cc_az4*z.cc + cc_b4
-    #cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cv + cc_b5
-    #cc6 = -cc_ax6*x.cv - cc_ay6*y.cv + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
+    cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
+    cc2 = -cc_ax2*x.cv - cc_ay2*y.cv + cc_az2*z.cc + cc_b2
+    cc3 = cc_ax3*x.cc + cc_ay3*y.cc - cc_az3*z.cv + cc_b3
+    cc4 = -cc_ax4*x.cv - cc_ay4*y.cv - cc_az4*z.cv + cc_b4
+    cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) + cc_ay5*y.cc - cc_az5*z.cv + cc_b5
+    cc6 = -cc_ax6*x.cv + cc_ay6*ifelse(cc_ay6 > 0.0, y.cc, -y.cv) - cc_az6*z.cv + cc_b6
 
     @unpack_trilinear_end()
 end
