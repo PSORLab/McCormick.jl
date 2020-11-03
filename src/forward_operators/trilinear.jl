@@ -357,12 +357,12 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         θcv2 = xyzULU - xyzLLL - xyzUUU + xyzLUU
         θcv3 = xyzUUL - xyzLLL - xyzUUU + xyzLUU
 
-        #cv_b1 = -2.0*xyzUUU
-        #cv_b2 = -2.0*xyzULL
-        #cv_b3 = -(xyzLUL + xyzLUU)
-        #cv_b4 = -(xyzLUL + xyzLLL)
-        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
-        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+        cv_b1 = -2.0*xyzLUL
+        cv_b2 = -2.0*xyzLLU
+        cv_b3 = -2.0*xyzULL
+        cv_b4 = -θcv1*xL/delX - xyzUUL - xyzULU + xyzLLL
+        cv_b5 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzLLL
+        cv_b6 = -θcv3*yL/delY - xyzUUL - xyzLUU + xyzLLL
 
         #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
         #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
@@ -373,12 +373,12 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         θcv2 = xyzUUL - xyzLUU - xyzULL + xyzULU
         θcv3 = xyzLLL - xyzLUU - xyzULL + xyzUUL
 
-        #cv_b1 = -2.0*xyzUUU
-        #cv_b2 = -2.0*xyzULL
-        #cv_b3 = -(xyzLUL + xyzLUU)
-        #cv_b4 = -(xyzLUL + xyzLLL)
-        #cv_b5 = θcv1*yU/delY - xyzLLL - xyzULU + xyzUUL
-        #cv_b6 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzUUL
+        cv_b1 = -2.0*xyzLUL
+        cv_b2 = -2.0*xyzLLU
+        cv_b3 = -2.0*xyzUUU
+        cv_b4 = θcv1*yU/delY - xyzLLL - xyzULU + xyzLUU
+        cv_b5 = -θcv2*xL/delX - xyzUUL - xyzULU + xyzLUU
+        cv_b6 = θcv3*zU/delZ - xyzLLL - xyzUUL + xyzLUU
 
         #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
         #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
