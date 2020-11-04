@@ -371,16 +371,17 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cv_b5 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzLLL
         cv_b6 = -θcv3*yL/delY - xyzUUL - xyzLUU + xyzLLL
 
-        #cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzLL, yzUL, yzUL, yzLU, yzLU
-        #cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzUL, xzLU, xzLL, -θcv1/delY, xzLU
-        #cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyUL, xyLU, xyLL, xyLL, θcv2/delZ
+        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzLL, θcv1/delX, yzUU, yzUU
+        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUL, xzUU, xzUU, θcv3/delY
+        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUL, xyUU, θcv2/delZ, xyUU
 
-        #cv1 = cv_ax1*x.cv + cv_ay1*y.cv + cv_az1*z.cv + cv_b1
-        #cv2 = cv_ax2*x.cv - cv_ay2*y.cc - cv_az2*z.cc + cv_b2
-        #cv3 = -cv_ax3*x.cc + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
-        #cv4 = -cv_ax4*x.cc - cv_ay4*y.cc - cv_az4*z.cc + cv_b4
-        #cv5 = -cv_ax5*x.cc + cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) - cv_az5*z.cc + cv_b5
-        #cv6 = -cv_ax6*x.cc + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+        cv1 = -cv_ax1*x.cc + cv_ay1*y.cv - cv_az1*z.cc + cv_b1
+        cv2 = -cv_ax2*x.cc - cv_ay2*y.cc + cv_az2*z.cv + cv_b2
+        cv3 = cv_ax3*x.cv - cv_ay3*y.cc - cv_az3*z.cc + cv_b3
+        cv4 = cv_ax4*ifelse(cv_ax4 > 0.0, x.cv, -x.cc) + cv_ay4*y.cv + cv_az4*z.cv + cv_b4
+        cv5 = cv_ax5*x.cv + cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) + cv_az5*z.cv + cv_b5
+        cv6 = cv_ax6*x.cv + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+
     else
 
         θcv1 = xyzLLL - xyzLUU - xyzULL + xyzULU
