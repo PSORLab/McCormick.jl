@@ -411,10 +411,10 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
        (xyzULL + xyzLLU + xyzUUU) >= (xyzLUL + 2*xyzULU) &&
        (xyzULL + xyzLUL + xyzUUU) >= (xyzLLU + 2*xyzUUL)
 
-       θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
-       θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
-       θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
-       θcv4 = xyzLLL - θcv1*xL - θcv2*yL - θcv3*zL
+       θcc1 = 0.5*(xyzULL + xyzUUU - xyzLLU - xyzLUL)/delX
+       θcc2 = 0.5*(xyzLUL + xyzUUU - xyzLLU - xyzULL)/delY
+       θcc3 = 0.5*(xyzLLU + xyzUUU - xyzLUL - xyzULL)/delZ
+       θcc4 = xyzUUU - θcc1*xU - θcc2*yU - θcc3*zU
 
        #cc_b1 = -2.0*xyzUUL
        #cc_b2 = -(xyzULU + xyzULL)
@@ -436,51 +436,51 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
    elseif (xyzULL + xyzLUL + xyzLLU) <= (xyzUUU + 2*xyzLLL)
 
-       θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
-       θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
-       θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
+       θcc1 = xyzULL - xyzUUU - xyzLLL + xyzLUL
+       θcc2 = xyzLLU - xyzUUU - xyzLLL + xyzLUL
+       θcc3 = xyzLLU - xyzUUU - xyzLLL + xyzULL
 
-       #cc_b1 = -2.0*xyzUUL
-       #cc_b2 = -(xyzULU + xyzULL)
-       #cc_b3 = -(xyzLUU + xyzLLU)
-       #cc_b4 = -(xyzLUU + xyzLUL)
-       #cc_b5 = -(xyzULU + xyzLLU)
-       #cc_b6 = θcc*zU/delZ - xyzULL - xyzLUL + xyzUUU
+       cc_b1 = -2.0*xyzUUL
+       cc_b2 = -2.0*xyzULU
+       cc_b3 = -2.0*xyzLUU
+       cc_b4 = θcc1*zU/delZ - xyzULL - xyzLUL + xyzUUU
+       cc_b5 = θcc2*xU/delX - xyzLLU - xyzLUL + xyzUUU
+       cc_b6 = θcc3*yU/delY - xyzLLU - xyzULL + xyzUUU
 
-       #cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLL, yzUU, yzUU, yzLU, yzLL
-       #cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzUU, xzLL
-       #cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLL, xyLU, xyLL, -θcc/delZ
+       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLU, yzUU, yzLL, -θcc2/delX, yzLL
+       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzLL, -θcc3/delY
+       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLU, -θcc1/delZ, xyLL, xyLL
 
-       #cc1 = -cc_ax1*x.cv - cc_ay1*y.cv + cc_az1*z.cc + cc_b1
-       #cc2 = -cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
-       #cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
-       #cc4 = cc_ax4*x.cc - cc_ay4*y.cv + cc_az4*z.cc + cc_b4
-       #cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cv + cc_b5
-       #cc6 = -cc_ax6*x.cv - cc_ay6*y.cv + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
+       cc1 = -cc_ax1*x.cv - cc_ay1*y.cv + cc_az1*z.cc + cc_b1
+       cc2 = -cc_ax2*x.cv + cc_ay2*y.cc - cc_az2*z.cv + cc_b2
+       cc3 = cc_ax3*x.cc - cc_ay3*y.cv - cc_az3*z.cv + cc_b3
+       cc4 = cc_ax4*x.cc + cc_ay4*y.cc + cc_az4*ifelse(cc_az4 > 0.0, z.cc, -z.cv) + cc_b4
+       cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) + cc_ay5*y.cc + cc_az5*z.cc + cc_b5
+       cc6 = cc_ax6*x.cc + cc_ay6*ifelse(cc_ay6 > 0.0, y.cc, -y.cv) + cc_az6*z.cc + cc_b6
 
     else
 
-       θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
-       θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
-       θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
+        θcc1 = xyzLUU - xyzULL - xyzLUU + xyzLUL
+        θcc2 = xyzUUU - xyzULL - xyzLUU + xyzLUL
+        θcc3 = xyzLLU - xyzULL - xyzLUU + xyzUUU
 
-       #cc_b1 = -2.0*xyzUUL
-       #cc_b2 = -(xyzULU + xyzULL)
-       #cc_b3 = -(xyzLUU + xyzLLU)
-       #cc_b4 = -(xyzLUU + xyzLUL)
-       #cc_b5 = -(xyzULU + xyzLLU)
-       #cc_b6 = θcc*zU/delZ - xyzULL - xyzLUL + xyzUUU
+        cc_b1 = -2.0*xyzLLL
+        cc_b2 = -2.0*xyzUUL
+        cc_b3 = -2.0*xyzULU
+        cc_b4 = θcc1*xU/delX - xyzLLU - xyzLUL + xyzULL
+        cc_b5 = -θcc2*yL/delY - xyzUUU - xyzLUL + xyzULL
+        cc_b6 = -θcc3*zL/delZ - xyzLLU - xyzUUU + xyzULL
 
        #cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLL, yzUU, yzUU, yzLU, yzLL
        #cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzUU, xzLL
        #cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLL, xyLU, xyLL, -θcc/delZ
 
-       #cc1 = -cc_ax1*x.cv - cc_ay1*y.cv + cc_az1*z.cc + cc_b1
-       #cc2 = -cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
-       #cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
-       #cc4 = cc_ax4*x.cc - cc_ay4*y.cv + cc_az4*z.cc + cc_b4
-       #cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cv + cc_b5
-       #cc6 = -cc_ax6*x.cv - cc_ay6*y.cv + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
+       #cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
+       #cc2 = cc_ax2*x.cc + cc_ay2*y.cc + cc_az2*z.cc + cc_b2
+       #cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cc + cc_b3
+       #cc4 = cc_ax4*x.cc + cc_ay4*y.cc + cc_az4*z.cc + cc_b4
+       #cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cc + cc_b5
+       #cc6 = cc_ax6*x.cc + cc_ay6*y.cc + cc_az6*z.cc + cc_b6
 
     end
 
