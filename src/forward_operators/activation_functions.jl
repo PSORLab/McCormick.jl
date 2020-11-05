@@ -47,7 +47,7 @@ end
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
 param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
 
-function param_relu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+function param_relu_grad(g, x::Float64, α::Float64)
     if x > 0.0
         g[1] = 1.0
         g[2] = 0.0
@@ -144,7 +144,7 @@ function elu(x::Interval{Float64}, α::Float64)
     Interval(xLIntv.lo, x.hi)
 end
 @inline elu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α*exp(x)
-function elu_grad(g::Vector{Float64}, x::Float64, α::Float64)
+function elu_grad(g, x::Float64, α::Float64)
     g[1] = elu_deriv(x, α)
     g[2] = x > 0.0 ? 0.0 : exp(x)
     nothing
@@ -173,7 +173,7 @@ selu
 The Scaled Exponential Linear Unit (SELU) activation function  `selu(x, α, λ) = λ*elu(x, α)`.
 """
 selu(x, α, λ) = λ*elu(x, α)
-function selu_grad(g::Vector{Float64}, x::Float64, α::Float64, λ::Float64)
+function selu_grad(g, x::Float64, α::Float64, λ::Float64)
     g[1] = λ*elu_deriv(x, α)
     g[2] = λ*(x > 0.0 ? 0.0 : exp(x))
     g[3] = elu(x, α)

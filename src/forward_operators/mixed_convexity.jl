@@ -457,13 +457,22 @@ eps_max_dict = Dict{Symbol,Symbol}(:sinh => :xU, :tanh => :xU, :asinh => :xU,
                                  :asin => :xU, :atan => :xU, :erf => :xU,
                                  :cbrt => :xU, :erfinv => :xU, :erfc => :xL)
 
-for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan, :erf,
-              :cbrt, :erfinv, :erfc)
-    expri_cv = Symbol("cv_"*String(expri))
-    expri_cc = Symbol("cc_"*String(expri))
-    expri_kernel = Symbol(String(expri)*"_kernel")
-    eps_min = eps_min_dict[expri]
-    eps_max = eps_max_dict[expri]
+for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
+              (:(SpecialFunctions.erf), :erf), :cbrt,
+              (:(SpecialFunctions.erfinv), :erfinv),
+              (:(SpecialFunctions.erfc), :erfc))
+    if expri isa Symbol
+        expri_name = expri
+        expri_sym = expri
+    else
+        expri_name = expri[1]
+        expri_sym = expri[2]
+    end
+    expri_kernel = Symbol(String(expri_sym)*"_kernel")
+    expri_cv = Symbol("cv_"*String(expri_sym))
+    expri_cc = Symbol("cc_"*String(expri_sym))
+    eps_min = eps_min_dict[expri_sym]
+    eps_max = eps_max_dict[expri_sym]
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
         xL = x.Intv.lo
@@ -493,8 +502,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan, :erf,
         cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
         return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
-    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
-        z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
+    @eval @inline function ($expri_name)(x::MC{N,T}) where {N, T<:RelaxTag}
+        z, tp1, tp2 = ($expri_kernel)(x, ($expri_name)(x.Intv), Inf, Inf)
         return z
     end
 end
@@ -580,9 +589,14 @@ end
 
 for expri in (:sec, :csc, :cot, :asec, :acsc, :acot, :sech, :csch, :coth,
               :acsch, :acoth, :sind, :cosd, :tand, :secd, :cscd, :cotd,
-              :asind, :acosd, :atand, :asecd, :acscd, :acotd, :sinpi, :cospi,
-              :erfcinv)
+              :asind, :acosd, :atand, :asecd, :acscd, :acotd, :sinpi, :cospi)
 
      expri_kernel = Symbol(String(expri)*"_kernel")
      @eval @inline ($expri)(x::MC, y::Interval{Float64}) = ($expri)(x)
  end
+ @eval @inline erfcinv_kernel(x::MC, y::Interval{Float64}) = erfcinv(x)
+
+erf(x) = SpecialFunctions.erf(x)
+erfc(x) = SpecialFunctions.erfc(x)
+erfinv(x) = SpecialFunctions.erfinv(x)
+erfcinv(x) = SpecialFunctions.erfcinv(x)

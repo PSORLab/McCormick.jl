@@ -119,17 +119,17 @@ function bnd(x::MC{N,T}, lb::Float64, ub::Float64) where {N, T<:Union{NS,MV}}
 end
 
 
-function d_lower_bnd_grad(g::Vector{T}, x::T, y::T) where T<:Number
+function d_lower_bnd_grad(g, x::T, y::T) where T<:Number
     g[1] = one(T)
     g[2] = zero(T)
     return
 end
-function d_upper_bnd_grad(g::Vector{T}, x::T, y::T) where T<:Number
+function d_upper_bnd_grad(g, x::T, y::T) where T<:Number
     g[1] = one(T)
     g[2] = zero(T)
     return
 end
-function d_bnd_grad(g::Vector{T}, x::T, y::T, z::T) where T<:Number
+function d_bnd_grad(g, x::T, y::T, z::T) where T<:Number
     g[1] = one(T)
     g[2] = zero(T)
     g[3] = zero(T)

@@ -337,7 +337,11 @@ arh(x::Float64, k::MC) = arh_kernel(x, k, x.Intv)
 arh_kernel(x::Float64, k::MC, z::Interval{Float64}) = exp(-k/x)
 arh(x::Float64, k::Float64) = exp(-k/x)
 arh_deriv(x::Float64, k::Float64) = k*exp(-k/x)/x^2
-arh_grad(x::Float64, k::Float64) = (k*exp(-k/x)/x^2, -exp(-k/x)/x)
+function arh_grad(g, x::Float64, k::Float64)
+	g[1] = k*exp(-k/x)/x^2
+	g[2] = -exp(-k/x)/x
+	nothing
+end
 @inline function arh_env(x::Float64, y::Float64, k::Float64)
     (x^2)*(exp((-k/y) + (k/x)) - 1.0) - k*(y + x)
 end
@@ -448,7 +452,11 @@ function xexpax(x::Interval{Float64}, a::Float64)
 	Interval(yL, yU)
 end
 xexpax_deriv(x::Float64, a::Float64) = exp(a*x)*(a*x + 1.0)
-xexpax_grad(x::Float64, a::Float64) = (exp(a*x)*(a*x + 1.0), exp(a*x)*x^2)
+function xexpax_grad(g, x::Float64, a::Float64)
+	g[1] = exp(a*x)*(a*x + 1.0)
+	g[2] = exp(a*x)*x^2
+	nothing
+end
 @inline function xexpax_env(x::Float64, y::Float64, a::Float64)
     (y - x)*xexpax_deriv(x, a) - (xexpax(y, a) - xexpax(x, a))
 end
