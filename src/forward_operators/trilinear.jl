@@ -57,7 +57,7 @@ function coeff6(i::Int64, a::Float64, b::Float64, c::Float64, d::Float64, e::Flo
     (i === 3) && (return c)
     (i === 4) && (return d)
     (i === 5) && (return e)
-    (return f
+    return f
 end
 
 macro unpack_trilinear_bnd()
@@ -72,7 +72,7 @@ macro unpack_trilinear_bnd()
             yzLL = yL*zL;       yzLU = yL*zU;
             yzUL = yU*zL;       yzUU = yU*zU
             xyzLLL = xyLL*zL;   xyzLLU = xyLL*zU
-            xyzLUL = xyLU*zL;   xzyULL = xyUL*zL
+            xyzLUL = xyLU*zL;   xyzULL = xyUL*zL
             xyzLUU = xyLU*zU;   xyzULU = xyUL*zU
             xyzUUL = xyUU*zL;   xyzUUU = xyUU*zU
         end)
@@ -86,12 +86,12 @@ macro unpack_trilinear_end()
                   coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)*z.cv_grad
 
         cc, ccind = min6(cc1, cc2, cc3, cc4, cc5, cc6)
-        cc_grad = coeff6(cvind, $(cc_ax[1]), $(cc_ax[2]), $(cc_ax[3]), $(cc_ax[4]), $(cc_ax[5]), $(cc_ax[6]))*x.cc_grad +
-                  coeff6(cvind, $(cc_ay[1]), $(cc_ay[2]), $(cc_ay[3]), $(cc_ay[4]), $(cc_ay[5]), $(cc_ay[6]))*y.cc_grad +
-                  coeff6(cvind, $(cc_az[1]), $(cc_az[2]), $(cc_az[3]), $(cc_az[4]), $(cc_az[5]), $(cc_az[6]))*z.cc_grad
+        cc_grad = coeff6(cvind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)*x.cc_grad +
+                  coeff6(cvind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)*y.cc_grad +
+                  coeff6(cvind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)*z.cc_grad
 
-        MC{N,T}(cv, cc, z, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
-    end
+        MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
+    end)
 end
 
 function is_tri_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
@@ -130,47 +130,49 @@ Case 3.1 + Case 4.1 of Meyer-Floudas 2004
 function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    delZ = zU - zL
-    θcv = xyzLUU - xyzUUL - xyzLLU + xyzULU
-    θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
+    @show "RAN 1"
+
+    delX = xU - xL
+    θcv1 = xyzUUL - xyzLUU - xyzULL + xyzULU
+    θcv2 = xyzLLU - xyzULL - xyzLUU + xyzLUL
 
     # define cv and coefficients
-    cv_b1 = -2.0*xyzUUU
-    cv_b2 = -(xyzLUL + xyzLUU)
-    cv_b3 = -(xyzLUL + xyzLLL)
-    cv_b4 = -(xyzULU + xyzULL)
-    cv_b5 = -(xyzULL + xyzLLL)
-    cv_b6 = -θcv*zL/delZ - xyzLUU - xyzULL + xyzUUL
+    cv_b1 = -2.0*xyzLLL
+    cv_b2 = -2.0*xyzUUU
+    cv_b3 = -(xyzLLU + xyzULU)
+    cv_b4 = -(xyzUUL + xyzLUL)
+    cv_b5 = -θcv1*xL/delX - xyzUUL - xyzULU + xyzLUU
+    cv_b6 = θcv2*xU/delX - xyzLLU - xyzLUL + xyzULL
 
-    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUU, yzUL, yzUL, yzLU, yzLL, yzLU
-    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUU, xzLU, xzLL, xzUL, xzLL, xzLU
-    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyLU, xyLL, xyUL, xyLL, θcv/delZ
-
-    # define cc and coefficients
-    cc_b1 = -2.0*xyzUUL
-    cc_b2 = -(xyzULU + xyzULL)
-    cc_b3 = -(xyzLUU + xyzLLU)
-    cc_b4 = -(xyzLUU + xyzLUL)
-    cc_b5 = -(xyzULU + xyzLLU)
-    cc_b6 = θcc*zU/delZ - xyzULL - xyzLUL + xyzUUU
-
-    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLL, yzUU, yzUU, yzLU, yzLU
-    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzUU, xzLU
-    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLL, xyLU, xyLL, θcc/delZ
+    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzLL, yzUU, yzLU, yzUL, θcv1/delX, -θcv2/delX
+    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzUU, xzLU, xzUL, xzUL, xzLU
+    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLL, xyUU, xyUL, xyLU, xyUL, xyLU
 
     cv1 = cv_ax1*x.cv + cv_ay1*y.cv + cv_az1*z.cv + cv_b1
-    cv2 = cv_ax2*x.cv + cv_ay2*y.cv + cv_az2*z.cc + cv_b2
-    cv3 = cv_ax3*x.cv + cv_ay3*y.cc + cv_az3*z.cc + cv_b3
-    cv4 = cv_ax4*x.cv + cv_ay4*y.cc + cv_az4*z.cv + cv_b4
-    cv5 = cv_ax5*x.cv + cv_ay5*y.cc + cv_az5*z.cc + cv_b5
-    cv6 = cv_ax6*x.cv + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+    cv2 = cv_ax2*x.cv + cv_ay2*y.cv + cv_az2*z.cv + cv_b2
+    cv3 = cv_ax3*x.cv + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
+    cv4 = cv_ax4*x.cv + cv_ay4*y.cv + cv_az4*z.cv + cv_b4
+    cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) + cv_ay5*y.cv + cv_az5*z.cv + cv_b5
+    cv6 = cv_ax6*ifelse(cv_ax6 > 0.0, x.cv, -x.cc) + cv_ay6*y.cv + cv_az6*z.cv + cv_b6
+
+    # define cc and coefficients
+    cc_b1 = -(xyzUUL + xyzULL)
+    cc_b2 = -(xyzUUL + xyzLUL)
+    cc_b3 = -(xyzULU + xyzULL)
+    cc_b4 = -(xyzLUU + xyzLUL)
+    cc_b5 = -(xyzULU + xyzLLU)
+    cc_b6 = -(xyzLUU + xyzLLU)
+
+    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLL, yzUU, yzLU, yzUU
+    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzLL, xzUU, xzLL, xzUU, xzLU
+    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUU, xyUL, xyLU, xyLL, xyLL
 
     cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
-    cc2 = cc_ax2*x.cc + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
-    cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
+    cc2 = cc_ax2*x.cc + cc_ay2*y.cc + cc_az2*z.cc + cc_b2
+    cc3 = cc_ax3*x.cc + cc_ay3*y.cc + cc_az3*z.cc + cc_b3
     cc4 = cc_ax4*x.cc + cc_ay4*y.cc + cc_az4*z.cc + cc_b4
-    cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cv + cc_b5
-    cc6 = cc_ax6*x.cc + cc_ay6*y.cc + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
+    cc5 = cc_ax5*x.cc + cc_ay5*y.cc + cc_az5*z.cc + cc_b5
+    cc6 = cc_ax6*x.cc + cc_ay6*y.cc + cc_az6*z.cc + cc_b6
 
     @unpack_trilinear_end()
 end
@@ -182,6 +184,8 @@ Case 3.2 + Case 4.2 of Meyer-Floudas 2004
 """
 function trilinear_case_2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
+
+    @show "RAN 2"
 
     delZ = zU - zL
     θcv = xyzLUU - xyzUUL - xyzLLU + xyzULU
@@ -235,6 +239,8 @@ Case 3.3 + Case 4.3 of Meyer-Floudas 2004
 """
 function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
+
+    @show "RAN 3"
 
     delY = yU - yL
     delZ = zU - zL
@@ -320,6 +326,8 @@ Case 3.4 + Case 4.4 of Meyer-Floudas 2004
 function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 4"
+
     delX = xU - xL
     delY = yU - yL
     delZ = zU - zL
@@ -340,11 +348,11 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cv_b3 = -2.0*xyzUUU
         cv_b4 = -2.0*xyzULL
         cv_b5 = θcv4
-        #cv_b6 = TODO? eq 6 not in paper
+        cv_b6 = Inf #TODO? eq 6 not in paper
 
-        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5 = yzUL, yzLU, yzUU, yzLL, θcv1  # TODO? eq 6 not in paper
-        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5 = xzLL, xzLU, xzUU, xzUL, θcv2  # TODO? eq 6 not in paper
-        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5 = xyLU, xyLL, xyUU, xyUL, θcv3  # TODO? eq 6 not in paper
+        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv1, Inf  # TODO? eq 6 not in paper
+        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, xzUL, θcv2, Inf  # TODO? eq 6 not in paper
+        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUU, xyUL, θcv3, Inf  # TODO? eq 6 not in paper
 
         cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
         cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
@@ -420,11 +428,11 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
        cc_b3 = -2.0*xyzULU
        cc_b4 = -2.0*xyzLUU
        cc_b5 = θcc4
-       #cc_b6 = TODO? eq 6 not in paper
+       cc_b6 = Inf #TODO? eq 6 not in paper
 
-       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5 = yzLL, yzUL, yzLU, yzUU, θcc1
-       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5 = xzLL, xzUL, xzUU, xzLU, θcc2
-       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5 = xyLL, xyUU, xyUL, xyLU, θcc3
+       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, yzUU, θcc1, Inf
+       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzUU, xzLU, θcc2, Inf
+       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyLU, θcc3, Inf
 
        cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
        cc2 = cc_ax2*x.cv + cc_ay2*y.cv + cc_az2*z.cc + cc_b2
@@ -496,6 +504,8 @@ Case 3.5 + Case 4.5 of Meyer-Floudas 2004
 function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 5"
+
     # define cv and coefficients
     cv_b1 = -(xyzLUL + xyzLLL)
     cv_b2 = -(xyzLUL + xyzLUU)
@@ -524,7 +534,7 @@ function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
        θcc2 = xyzULU - xyzLLL - xyzUUU + xyzLUU
 
        cc_b1 = -2.0*xyzLLU
-       Cc_b2 = -2.0*xyzUUL
+       cc_b2 = -2.0*xyzUUL
        cc_b3 = -(xyzULU + xyzULL)
        cc_b4 = -(xyzLUU + xyzLUL)
        cc_b5 = θcc1*zU/delZ - xyzULL - xyzLUL + xyzUUU
@@ -578,6 +588,8 @@ Case 3.6 + Case 4.6 of Meyer-Floudas 2004
 function trilinear_case_6(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 6"
+
     delY = yU - yL
     θcv = xyzULU - xyzUUL - xyzLLU + xyzLLL
     θcc = xyzLUL - xyzULL - xyzLUU + xyzUUU
@@ -630,6 +642,8 @@ Case 3.7 + Case 4.7 of Meyer-Floudas 2004
 """
 function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
+
+    @show "RAN 7"
 
     delX = xU - xL
     delY = yU - yL
@@ -716,6 +730,8 @@ Case 3.8 + Case 4.8 of Meyer-Floudas 2004
 function trilinear_case_8(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 8"
+
     # define cv and coefficients
     if (xyzLLL + xyzUUU <= xyzLLL + xyzUUU) &&
        (xyzLLL + xyzUUU <= xyzLUL + xyzULU)
@@ -798,6 +814,8 @@ Case 3.9 + Case 4.9 of Meyer-Floudas 2004
 function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 9"
+
     delX = xU - xL
     θcv = xyzUUL - xyzLLL - xyzUUU + xyzULU
     θcc = xyzLUL - xyzULL - xyzLUU + xyzLLU
@@ -805,10 +823,10 @@ function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     # define cv and coefficients
     cv_b1 = -2.0*xyzULL
     cv_b2 = -(xyzLUU + xyzLUL)
-    cv_b3 = -(xyzLUL + xyzLLI)
+    cv_b3 = -(xyzLUU + xyzLLU)
     cv_b4 = -(xyzULU + xyzLLU)
     cv_b5 = -(xyzLUL + xyzUUL)
-    cv_b6 = -θcv*xL/delX - xyzUUL - xyzULU + xyzLLL
+    cv_b6 = -θcv*xL/delX - xyzLLL - xyzUUU + xyzULU
 
     cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzLL, yzUU, yzUU, yzLU, yzUL, θcv/delX
     cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzUL, xzLL, xzLU, xzUU, xzLL, xzUU
@@ -851,6 +869,10 @@ Case 3.10 + Case 4.10 of Meyer-Floudas 2004
 function trilinear_case_10(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
+    @show "RAN 10"
+
+    delX = xU - xL
+
     θcc1 = xyzLUL - xyzULL - xyzLUU + xyzLLU
     θcc2 = xyzUUL - xyzLUU - xyzULL + xyzULU
 
@@ -867,7 +889,7 @@ function trilinear_case_10(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float
     cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyUU, xyLU, xyUU, xyLL, xyLL, xyUL
 
     # define cc and coefficients
-    cc_b1 = -2.0*xyLLL
+    cc_b1 = -2.0*xyzLLL
     cc_b2 = -2.0*xyzUUU
     cc_b3 = -(xyzLLU + xyzULU)
     cc_b4 = -(xyzLUL + xyzUUL)
@@ -919,7 +941,8 @@ function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}
     return trilinear_case_10(x1, x2, x3, z)
 end
 
-@inline function *(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
+@inline function trilinear(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
+    println("WARNING: VALID SUBGRADIENTS HAVE NOT YET BEEN DEFINED FOR trilinear()")
 	if x1 == x2
 		if x1 == x3
 			z = x1.Intv^3
@@ -933,3 +956,62 @@ end
 	end
 	return mult_kernel(x1, x2, x3, z)
 end
+
+#=
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(a,b,c),d)
+
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::Float64) where {N, T<:Union{NS,MV}} = *(*(a,b,c),d)
+*(a::MC{N,T}, b::MC{N,T}, c::Float64, d::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(a,b,d),c)
+*(a::MC{N,T}, b::Float64, c::MC{N,T}, d::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(a,c,d),b)
+*(a::Float64, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(b,c,d),a)
+
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(a,b,c),d,e)
+
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}, e::Float64) where {N, T<:Union{NS,MV}} = *(a,b,c,d)*e
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::Float64, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,b,c,e)*d
+*(a::MC{N,T}, b::MC{N,T}, c::Float64, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,b,d,e)*c
+*(a::MC{N,T}, b::Float64, c::MC{N,T}, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,c,d,e)*b
+*(a::Float64, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(b,c,d,e)*a
+
+*(a::Float64, b::Float64, c::MC{N,T}, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(c,d,e)*a*b
+*(a::Float64, b::MC{N,T}, c::Float64, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(b,d,e)*a*c
+*(a::Float64, b::MC{N,T}, c::MC{N,T}, d::Float64, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(b,c,e)*a*d
+*(a::Float64, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}, e::Float64) where {N, T<:Union{NS,MV}} = *(b,c,d)*a*e
+
+*(a::MC{N,T}, b::Float64, c::Float64, d::MC{N,T}, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,d,e)*b*c
+*(a::MC{N,T}, b::Float64, c::MC{N,T}, d::Float64, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,c,e)*b*d
+*(a::MC{N,T}, b::Float64, c::MC{N,T}, d::MC{N,T}, e::Float64) where {N, T<:Union{NS,MV}} = *(a,c,d)*b*e
+
+*(a::MC{N,T}, b::MC{N,T}, c::Float64, d::Float64, e::MC{N,T}) where {N, T<:Union{NS,MV}} = *(a,b,e)*c*d
+*(a::MC{N,T}, b::MC{N,T}, c::Float64, d::MC{N,T}, e::Float64) where {N, T<:Union{NS,MV}} = *(a,b,d)*c*e
+*(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::Float64, e::Float64) where {N, T<:Union{NS,MV}} = *(a,b,c)*d*e
+
+function *(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}, e::MC{N,T}, f::MC{N,T}) where {N, T<:Union{NS,MV}}
+    *(*(a,b,c),*(d,e,f))
+end
+=#
+
+#=
+function *(a,b,c,d,e,f,gs...)
+    y = *(a,b,c,d,e,f)
+    n = length(js)
+    t1 = a
+    t2 = b
+    t3 = c
+    for k = 1:n
+        y = @inbounds x[k]
+        !is_last
+        if mod(k)
+        end
+    end
+    for x in js;
+        y = op(y,x);
+    end
+    y
+end
+=#
+
+#=
+function prod(A::Array{MC{N,T},Q}; dims) where {N, Q, T<:Union{NS,MV}}
+end
+=#
