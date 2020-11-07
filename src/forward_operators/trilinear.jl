@@ -553,7 +553,7 @@ function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
    else
 
-       delY = zU - zL
+       delY = yU - yL
        θcc1 = xyzLLL - xyzLUU - xyzULL + xyzULU
        θcc2 = xyzLUL - xyzULL - xyzLUU + xyzUUU
 
@@ -561,8 +561,8 @@ function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
        cc_b2 = -2.0*xyzUUL
        cc_b3 = -(xyzLLL + xyzLUL)
        cc_b4 = -(xyzULU + xyzUUU)
-       cc_b5 = θcc1*zU/delY - xyzLLL - xyzULU + xyzLUU
-       cc_b6 = -θcc2*zL/delY - xyzLUL - xyzUUU + xyzULL
+       cc_b5 = θcc1*yU/delY - xyzLLL - xyzULU + xyzLUU
+       cc_b6 = -θcc2*yL/delY - xyzLUL - xyzUUU + xyzULL
 
        cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLU, yzUL, yzLL, yzUU, yzLL, yzUU
        cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLU, xzUL, xzLL, xzUU, -θcc1/delY, θcc2/delY

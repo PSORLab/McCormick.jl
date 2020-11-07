@@ -2075,8 +2075,8 @@ end
    q5bv = (x[9]*y[9])*z[9]
    #@test isapprox(q5b.cv, 0.0, atol = 1E-3)
    #@test isapprox(q5b.cc, 0.0, atol = 1E-3)
-   @show q5b
-   @show q5bv
+   #@show q5b
+   #@show q5bv
 
    # TODO: SWITCHED RELAXATIONS
    q6 = trilinear(x[10], y[10], z[10])
