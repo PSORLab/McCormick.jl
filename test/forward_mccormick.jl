@@ -2022,13 +2022,13 @@ end
    #@show q2
    #@show q2v
 
-   # TODO: SWITCHED RELAXATIONS
+   # improves and likely valid
    q3a = trilinear(x[3], y[3], z[3])
    q3av = (x[3]*y[3])*z[3]
    #@test isapprox(q3a.cv, 0.0, atol = 1E-3)
    #@test isapprox(q3a.cc, 0.0, atol = 1E-3)
-   @show q3a
-   @show q3av
+   #@show q3a
+   #@show q3av
 
    # improves and likely valid
    q3b = trilinear(x[4], y[4], z[4])

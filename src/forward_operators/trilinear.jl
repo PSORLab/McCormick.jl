@@ -244,8 +244,8 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
 
     delY = yU - yL
     delZ = zU - zL
-    θcv1 = xyzLUU - xyzUUL - xyzLLU + xyzULU
-    θcv2 = xyzLUU - xyzUUL - xyzLLU + xyzULU
+    θcv1 = xyzLLL - xyzUUL - xyzLLU + xyzULU
+    θcv2 = xyzULU - xyzUUL - xyzLLU + xyzLUU
 
     # define cv and coefficients
     cv_b1 = -2.0*xyzUUU
