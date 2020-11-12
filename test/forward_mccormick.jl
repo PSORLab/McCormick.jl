@@ -1993,7 +1993,7 @@ end
         MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2); MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2);
         MC{3,NS}(-2.0, Interval{Float64}(-4.0, 1.0), 2); MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2);
         MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2);  MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2);
-        MC{3,NS}(-2.4, Interval{Float64}(-3.0, 0.4), 2); MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+        MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2); MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
        ]
 
    z = [MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3); MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3);
@@ -2118,13 +2118,13 @@ end
    #@show q8b
    #@show q8bv
 
-   # TODO: SWITCHED RELAXATIONS
+   # improves and likely valid
    q9 = trilinear(x[15], y[15], z[15])
    q9v = (x[15]*y[15])*z[15]
    #@test isapprox(q9.cv, 0.0, atol = 1E-3)
    #@test isapprox(q9.cc, 0.0, atol = 1E-3)
-   @show q9
-   @show q9v
+   #@show q9
+   #@show q9v
 
    # improves and likely valid
    q10 = trilinear(x[16], y[16], z[16])
