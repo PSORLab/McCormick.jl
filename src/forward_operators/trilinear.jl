@@ -349,7 +349,7 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cv_b3 = -2.0*xyzUUU
         cv_b4 = -2.0*xyzULL
         cv_b5 = θcv4
-        cv_b6 = Inf #TODO? eq 6 not in paper
+        cv_b6 = Inf #TODO? eq 6 not in either paper
 
         cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv1, Inf  # TODO? eq 6 not in paper
         cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, xzUL, θcv2, Inf  # TODO? eq 6 not in paper
@@ -362,7 +362,7 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) +
               cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) +
               cv_az5*ifelse(cv_az5 > 0.0, z.cv, -z.cc) + cv_b5
-        cv6 = -Inf # TODO? eq 6 not in paper
+        cv6 = -Inf # TODO? eq 6 not in either paper
 
     elseif xyzUUL + xyzULU + xyzLUU >= xyzLLL + 2*xyzUUU
 

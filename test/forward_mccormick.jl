@@ -2008,129 +2008,80 @@ end
 
    # improves and likely valid
    q1 = trilinear(x[1], y[1], z[1])
-   q1v = (x[1]*y[1])*z[1]
-   #@test isapprox(q1.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q1.cc, 0.0, atol = 1E-3)
-   #@show q1
-   #@show q1v
+   @test isapprox(q1.cv, 7.279999999999999, atol = 1E-3)
+   @test isapprox(q1.cc, 9.0, atol = 1E-3)
 
    # improves and likely valid
    q2 = trilinear(x[2], y[2], z[2])
-   q2v = (x[2]*y[2])*z[2]
-   #@test isapprox(q2.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q2.cc, 0.0, atol = 1E-3)
-   #@show q2
-   #@show q2v
+   @test isapprox(q2.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q2.cc, 15.3, atol = 1E-3)
 
    # improves and likely valid
    q3a = trilinear(x[3], y[3], z[3])
-   q3av = (x[3]*y[3])*z[3]
-   #@test isapprox(q3a.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q3a.cc, 0.0, atol = 1E-3)
-   #@show q3a
-   #@show q3av
+   @test isapprox(q3a.cv, -0.10000000000000009, atol = 1E-3)
+   @test isapprox(q3a.cc, 0.20000000000000018, atol = 1E-3)
 
    # improves and likely valid
    q3b = trilinear(x[4], y[4], z[4])
-   q3bv = (x[4]*y[4])*z[4]
-   #@test isapprox(q3b.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q3b.cc, 0.0, atol = 1E-3)
-   #@show q3b
-   #@show q3bv
+   @test isapprox(q3b.cv, 1.8666666666666671, atol = 1E-3)
+   @test isapprox(q3b.cc, 1.9833333333333334, atol = 1E-3)
 
    # improves and likely valid
    q4a = trilinear(x[5], y[5], z[5])
-   q4av = (x[5]*y[5])*z[5]
-   #@test isapprox(q4a.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q4a.cc, 0.0, atol = 1E-3)
-   #@show q4a
-   #@show q4av
+   @test isapprox(q4a.cv, -4.65, atol = 1E-3)
+   @test isapprox(q4a.cc, 1.0, atol = 1E-3)
 
    # improves and likely valid
    q4b = trilinear(x[6], y[6], z[6])
    q4bv = (x[6]*y[6])*z[6]
-   #@test isapprox(q4b.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q4b.cc, 0.0, atol = 1E-3)
-   #@show q4b
-   #@show q4bv
+   @test isapprox(q4b.cv, -15.0, atol = 1E-3)
+   @test isapprox(q4b.cc, 0.0, atol = 1E-3)
 
    # improves and likely valid
    q4c = trilinear(x[7], y[7], z[7])
-   q4cv = (x[7]*y[7])*z[7]
-   #@test isapprox(q4c.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q4c.cc, 0.0, atol = 1E-3)
-   #@show q4c
-   #@show q4cv
+   @test isapprox(q4c.cv, -21.0, atol = 1E-3)
+   @test isapprox(q4c.cc, -3.0, atol = 1E-3)
 
    # improves and likely valid
    q5a = trilinear(x[8], y[8], z[8])
-   q5av = (x[8]*y[8])*z[8]
-   #@test isapprox(q5a.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q5a.cc, 0.0, atol = 1E-3)
-   #@show q5a
-   #@show q5av
+   @test isapprox(q5a.cv, -9.5, atol = 1E-3)
+   @test isapprox(q5a.cc, -4.5, atol = 1E-3)
 
-   # TODO: SWITCHED RELAXATIONS
    q5b = trilinear(x[9], y[9], z[9])
-   q5bv = (x[9]*y[9])*z[9]
-   #@test isapprox(q5b.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q5b.cc, 0.0, atol = 1E-3)
-   #@show q5b
-   #@show q5bv
+   @test isapprox(q5b.cv, -9.5, atol = 1E-3)
+   @test isapprox(q5b.cc, -4.5, atol = 1E-3)
 
-   # TODO: SWITCHED RELAXATIONS
    q6 = trilinear(x[10], y[10], z[10])
-   q6v = (x[10]*y[10])*z[10]
-   #@test isapprox(q6.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q6.cc, 0.0, atol = 1E-3)
-   @show q6
-   @show q6v
+   @test isapprox(q6.cv, 13.0, atol = 1E-3)
+   @test isapprox(q6.cc, 45.0, atol = 1E-3)
 
    # improves and likely valid
    q7a = trilinear(x[11], y[11], z[11])
-   q7av = (x[11]*y[11])*z[11]
-   #@test isapprox(q7a.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q7a.cc, 0.0, atol = 1E-3)
-   #@show q7a
-   #@show q7av
+   @test isapprox(q7a.cv, -1.0, atol = 1E-3)
+   @test isapprox(q7a.cc, 8.0, atol = 1E-3)
 
    # improves and likely valid
    q7b = trilinear(x[12], y[12], z[12])
-   q7bv = (x[12]*y[12])*z[12]
-   #@test isapprox(q7b.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q7b.cc, 0.0, atol = 1E-3)
-   #@show q7b
-   #@show q7bv
+   @test isapprox(q7b.cv, -11.5, atol = 1E-3)
+   @test isapprox(q7b.cc, -1.0, atol = 1E-3)
 
    # improves and likely valid
    q8a = trilinear(x[13], y[13], z[13])
-   q8av = (x[13]*y[13])*z[13]
-   #@test isapprox(q8a.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q8a.cc, 0.0, atol = 1E-3)
-   #@show q8a
-   #@show q8av
+   @test isapprox(q8a.cv, 10.799999999999997, atol = 1E-3)
+   @test isapprox(q8a.cc, 15.0, atol = 1E-3)
 
    # improves and likely valid
    q8b = trilinear(x[14], y[14], z[14])
-   q8bv = (x[14]*y[14])*z[14]
-   #@test isapprox(q8b.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q8b.cc, 0.0, atol = 1E-3)
-   #@show q8b
-   #@show q8bv
+   @test isapprox(q8b.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q8b.cc, 15.0, atol = 1E-3)
 
    # improves and likely valid
    q9 = trilinear(x[15], y[15], z[15])
-   q9v = (x[15]*y[15])*z[15]
-   #@test isapprox(q9.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q9.cc, 0.0, atol = 1E-3)
-   #@show q9
-   #@show q9v
+   @test isapprox(q9.cv, 3.0, atol = 1E-3)
+   @test isapprox(q9.cc, 10.2, atol = 1E-3)
 
    # improves and likely valid
    q10 = trilinear(x[16], y[16], z[16])
-   q10v = (x[16]*y[16])*z[16]
-   #@test isapprox(q10.cv, 0.0, atol = 1E-3)
-   #@test isapprox(q10.cc, 0.0, atol = 1E-3)
-   #@show q10
-   #@show q10v
+   @test isapprox(q10.cv, -106.0, atol = 1E-3)
+   @test isapprox(q10.cc, -64.0, atol = 1E-3)
 end
