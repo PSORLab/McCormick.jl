@@ -45,7 +45,11 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
                            setrounding, diam, isthin, abs2
 
-import SpecialFunctions: erf, erfc, erfinv, erfcinv
+if ~(VERSION < v"1.1-")
+    import SpecialFunctions: erf, erfc, erfinv, erfcinv
+    export erf, erfinv, erfc, erfcinv, erf_kernel,
+           erfinv_kernel, erfc_kernel, erfcinv_kernel
+end
 
 import Base.MathConstants.golden
 
@@ -56,7 +60,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        abs, step, sign, pow, in, isempty, intersect, length, mid3,
        acos, asin, atan, sinh, cosh, tanh, asinh, atanh, inv, sqr, sech,
        csch, coth, acsch, acoth, asech, rad2deg, deg2rad, diam,
-       sind, cosd, tand, asind, acosd, atand, nan, erf, erfinv, erfc, erfcinv,
+       sind, cosd, tand, asind, acosd, atand, nan,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
        secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
@@ -76,8 +80,7 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
        acot_kernel, sech_kernel, csch_kernel, coth_kernel, acsch_kernel,
        acoth_kernel, sind_kernel, cosd_kernel, tand_kernel, secd_kernel,
        cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
-       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, erf_kernel,
-       erfinv_kernel, erfc_kernel, erfcinv_kernel, relu_kernel,
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, relu_kernel,
        param_relu_kernel, leaky_relu_kernel, maxsig_kernel,
        maxtanh_kernel, softplus_kernel, pentanh_kernel, sigmoid_kernel,
        bisigmoid_kernel, softsign_kernel, gelu_kernel, elu_kernel, selu_kernel,

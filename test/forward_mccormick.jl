@@ -55,6 +55,71 @@ end
    @test out == 1.0
 end
 
+if ~(VERSION < v"1.1-")
+   @testset "Test Error Functions" begin
+      x_erf_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_z1 = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_z2 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+      yerfp = erf(x_erf_p)
+      yerfn = erf(x_erf_n)
+      yerfz1 = erf(x_erf_z1)
+      yerfz2 = erf(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.3219683520780011, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.3219683520780011, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.30801138150037066, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.3080113815003707, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.3286267594591274, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+   end
+end
+
 @testset "Test Univariate" begin
 
    mctol = 1E-4
@@ -267,67 +332,6 @@ end
    yref_tanh_d1_z1 = MC{2,Diff}(-0.9640275800758169, -0.5558207301372651, Interval{Float64}(-0.995055, 0.761595), @SVector[0.0706508, 0.0], @SVector[0.439234, 0.0], false)
    yref_tanh_d1_z2 = MC{2,Diff}(0.5558207301372651, 0.9640275800758169, Interval{Float64}(-0.761595, 0.995055), @SVector[0.439234, 0.0], @SVector[0.0706508, 0.0], false)
    yref_tanh_ns = MC{2,NS}(-0.9640275800758169, -0.5558207301372651, Interval{Float64}(-0.995055, 0.761595), @SVector[0.0706508, 0.0], @SVector[0.439234, 0.0], false)
-
-   x_erf_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
-   x_erf_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
-   x_erf_z1 = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
-   x_erf_z2 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
-
-   yerfp = erf(x_erf_p)
-   yerfn = erf(x_erf_n)
-   yerfz1 = erf(x_erf_z1)
-   yerfz2 = erf(x_erf_z2)
-
-   @test isapprox(yerfp.cv, 0.3219683520780011, atol=1E-8)
-   @test isapprox(yerfp.cc, 0.3286267594591274, atol=1E-8)
-   @test isapprox(yerfn.cv, -0.3286267594591274, atol=1E-8)
-   @test isapprox(yerfn.cc, -0.3219683520780011, atol=1E-8)
-   @test isapprox(yerfz1.cv, -0.3286267594591274, atol=1E-8)
-   @test isapprox(yerfz1.cc, -0.30801138150037066, atol=1E-8)
-   @test isapprox(yerfz2.cv, 0.3080113815003707, atol=1E-8)
-   @test isapprox(yerfz2.cc, 0.3286267594591274, atol=1E-8)
-
-   yerfp = erfinv(x_erf_p)
-   yerfn = erfinv(x_erf_n)
-   yerfz1 = erfinv(x_erf_z1)
-   yerfz2 = erfinv(x_erf_z2)
-
-   @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
-   @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
-
-   yerfp = erfinv(x_erf_p)
-   yerfn = erfinv(x_erf_n)
-   yerfz1 = erfinv(x_erf_z1)
-   yerfz2 = erfinv(x_erf_z2)
-
-   @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
-   @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
-
-   yerfp = erfinv(x_erf_p)
-   yerfn = erfinv(x_erf_n)
-   yerfz1 = erfinv(x_erf_z1)
-   yerfz2 = erfinv(x_erf_z2)
-
-   @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
-   @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
-   @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
-   @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
 
    @test check_vs_ref1(tanh, x_tanh_p, yref_tanh_d1_p, mctol)
    @test check_vs_ref1(tanh, x_tanh_n, yref_tanh_d1_n, mctol)

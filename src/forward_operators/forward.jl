@@ -1,4 +1,7 @@
-include("interval_special_functions.jl")
+if ~(VERSION < v"1.1-")
+    include("interval_special_functions.jl")
+end
+
 include("arithmetic.jl")
 include("convex_increasing.jl")
 include("concave_increasing.jl")
