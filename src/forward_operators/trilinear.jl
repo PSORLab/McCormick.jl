@@ -94,34 +94,6 @@ macro unpack_trilinear_end()
     end)
 end
 
-function is_tri_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) >= 0.0) && (lo(z) >= 0.0)
-end
-function is_tri_case_2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) >= 0.0) && (lo(z) <= 0.0) && (hi(z) >= 0.0)
-end
-function is_tri_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) <= 0.0) && (lo(z) <= 0.0) && (hi(y) >= 0.0) && (hi(z) >= 0.0)
-end
-function is_tri_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) <= 0.0) && (lo(y) <= 0.0) && (lo(z) <= 0.0) && (hi(x) >= 0.0) && (hi(y) >= 0.0) && (hi(z) >= 0.0)
-end
-function is_tri_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) >= 0.0) && (hi(z) <= 0.0)
-end
-function is_tri_case_6(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) <= 0.0) && (hi(z) <= 0.0) && (hi(y) >= 0.0)
-end
-function is_tri_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (lo(y) <= 0.0) && (hi(z) <= 0.0) && (hi(x) >= 0.0) && (hi(y) >= 0.0)
-end
-function is_tri_case_8(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) >= 0.0) && (hi(y) <= 0.0) && (hi(z) <= 0.0)
-end
-function is_tri_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
-    (lo(x) <= 0.0) && (hi(x) >= 0.0) && (hi(y) <= 0.0) && (hi(z) <= 0.0)
-end
-
 """
 trilinear_case_1
 
@@ -129,8 +101,6 @@ Case 3.1 + Case 4.1 of Meyer-Floudas 2004
 """
 function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
-
-    @show "RAN 1"
 
     delX = xU - xL
     θcv1 = xyzUUL - xyzLUU - xyzULL + xyzULU
@@ -186,8 +156,6 @@ Case 3.2 + Case 4.2 of Meyer-Floudas 2004
 function trilinear_case_2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 2"
-
     delZ = zU - zL
     θcv = xyzLUU - xyzUUL - xyzLLU + xyzULU
     θcc = xyzULL - xyzUUU - xyzLLL + xyzLUL
@@ -240,8 +208,6 @@ Case 3.3 + Case 4.3 of Meyer-Floudas 2004
 """
 function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
-
-    @show "RAN 3"
 
     delY = yU - yL
     delZ = zU - zL
@@ -326,8 +292,6 @@ Case 3.4 + Case 4.4 of Meyer-Floudas 2004
 """
 function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
-
-    @show "RAN 4"
 
     delX = xU - xL
     delY = yU - yL
@@ -505,8 +469,6 @@ Case 3.5 + Case 4.5 of Meyer-Floudas 2004
 function trilinear_case_5(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 5"
-
     # define cv and coefficients
     cv_b1 = -(xyzLUL + xyzLLL)
     cv_b2 = -(xyzLUL + xyzLUU)
@@ -598,8 +560,6 @@ Case 3.7 + Case 4.7 of Meyer-Floudas 2004
 function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 7"
-
     delX = xU - xL
     delY = yU - yL
 
@@ -685,8 +645,6 @@ Case 3.8 + Case 4.8 of Meyer-Floudas 2004
 function trilinear_case_8(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 8"
-
     # define cv and coefficients
     if (xyzLLL + xyzUUU <= xyzLLL + xyzUUU) &&
        (xyzLLL + xyzUUU <= xyzLUL + xyzULU)
@@ -769,8 +727,6 @@ Case 3.9 + Case 4.9 of Meyer-Floudas 2004
 function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 9"
-
     delX = xU - xL
     θcv = xyzUUL - xyzLLL - xyzUUU + xyzULU
     θcc = xyzLUL - xyzULL - xyzLUU + xyzLLU
@@ -824,8 +780,6 @@ Case 3.10 + Case 4.10 of Meyer-Floudas 2004
 function trilinear_case_10(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
-    @show "RAN 10"
-
     delX = xU - xL
 
     θcc1 = xyzLUL - xyzULL - xyzLUU + xyzLLU
@@ -874,6 +828,10 @@ end
 
 x_mul_y2(x, y) = x*y^2
 
+is_neg(x) = x.Intv.hi <= 0.0
+is_pos(x) = x.Intv.lo >= 0.0
+is_mix(x) = (x.Intv.hi > 0.0 > x.Intv.lo)
+
 function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	if x1 == x2
 		if x1 == x3
@@ -884,16 +842,41 @@ function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}
 	elseif x2 == x3
 		return x_mul_y2(x1, x2)
 	end
-	is_tri_case_1(x1, x2, x3) && return trilinear_case_1(x1, x2, x3, z)
-    is_tri_case_2(x1, x2, x3) && return trilinear_case_2(x1, x2, x3, z)
-    is_tri_case_3(x1, x2, x3) && return trilinear_case_3(x1, x2, x3, z)
-    is_tri_case_4(x1, x2, x3) && return trilinear_case_4(x1, x2, x3, z)
-    is_tri_case_5(x1, x2, x3) && return trilinear_case_5(x1, x2, x3, z)
-    is_tri_case_6(x1, x2, x3) && return trilinear_case_6(x1, x2, x3, z)
-    is_tri_case_7(x1, x2, x3) && return trilinear_case_7(x1, x2, x3, z)
-    is_tri_case_8(x1, x2, x3) && return trilinear_case_8(x1, x2, x3, z)
-    is_tri_case_9(x1, x2, x3) && return trilinear_case_9(x1, x2, x3, z)
-    return trilinear_case_10(x1, x2, x3, z)
+
+	(is_pos(x1) && is_pos(x2) && is_pos(x3)) && return trilinear_case_1(x1, x2, x3, z)
+
+    (is_pos(x1) && is_pos(x2) && is_mix(x3)) && trilinear_case_2(x1, x2, x3, z)
+    (is_pos(x1) && is_mix(x2) && is_pos(x3)) && trilinear_case_2(x1, x3, x2, z)
+    (is_mix(x1) && is_pos(x2) && is_pos(x3)) && trilinear_case_2(x2, x3, x1, z)
+
+    (is_mix(x1) && is_mix(x2) && is_mix(x3)) && && return trilinear_case_4(x1, x2, x3, z)
+
+    (is_pos(x1) && is_pos(x2) && is_neg(x3)) && return trilinear_case_5(x1, x2, x3, z)
+    (is_pos(x1) && is_neg(x2) && is_pos(x3)) && return trilinear_case_5(x1, x3, x2, z)
+    (is_neg(x1) && is_pos(x2) && is_pos(x3)) && return trilinear_case_5(x2, x3, x1, z)
+
+    (is_pos(x1) && is_mix(x2) && is_neg(x3)) && return trilinear_case_6(x1, x2, x3, z)
+    (is_pos(x1) && is_neg(x2) && is_mix(x3)) && return trilinear_case_6(x1, x3, x2, z)
+    (is_neg(x1) && is_mix(x2) && is_pos(x3)) && return trilinear_case_6(x3, x2, x1, z)
+    (is_neg(x1) && is_pos(x2) && is_mix(x3)) && return trilinear_case_6(x2, x3, x1, z)
+    (is_mix(x1) && is_pos(x2) && is_neg(x3)) && return trilinear_case_6(x2, x1, x3, z)
+    (is_mix(x1) && is_neg(x2) && is_pos(x3)) && return trilinear_case_6(x3, x1, x2, z)
+
+    (is_mix(x1) && is_mix(x2) && is_neg(x3)) && return trilinear_case_7(x1, x2, x3, z)
+    (is_mix(x1) && is_neg(x2) && is_mix(x3)) && return trilinear_case_7(x1, x3, x2, z)
+    (is_neg(x1) && is_mix(x2) && is_mix(x3)) && return trilinear_case_7(x2, x3, x1, z)
+
+    (is_pos(x1) && is_neg(x2) && is_neg(x3)) && return trilinear_case_8(x1, x2, x3, z)
+    (is_neg(x1) && is_pos(x2) && is_neg(x3)) && return trilinear_case_8(x2, x1, x3, z)
+    (is_neg(x1) && is_neg(x2) && is_pos(x3)) && return trilinear_case_8(x3, x1, x2, z)
+
+    (is_mix(x1) && is_neg(x2) && is_neg(x3)) && return trilinear_case_9(x1, x2, x3, z)
+    (is_neg(x1) && is_mix(x2) && is_neg(x3)) && return trilinear_case_9(x2, x1, x3, z)
+    (is_neg(x1) && is_neg(x2) && is_mix(x3)) && return trilinear_case_9(x3, x1, x2, z)
+
+    (is_neg(x1) && is_neg(x2) && is_neg(x3)) && trilinear_case_10(x1, x2, x3, z)
+
+    return trilinear_case_3(x1, x2, x3, z)
 end
 
 @inline function trilinear(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
