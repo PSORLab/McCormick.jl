@@ -449,13 +449,13 @@ end
 
 # Defines interval version of cbrt if necessary
 # Copy of recent version from IntervalArithmetic.jl
-if VERSION < v"1.2-"
+if VERSION < v"1.3-"
     function cbrt(x::BigFloat, r::RoundingMode)
             setrounding(BigFloat, r) do
                 cbrt(x)
             end
         end
-    cbrt(a::Interval{Float64}) where T = atomic(Interval{T}, cbrt(big53(a)))
+    cbrt(a::Interval{Float64}) = atomic(Interval{Float64}, cbrt(big53(a)))
     function cbrt(a::Interval{BigFloat})
         isempty(a) && return a
         @round(cbrt(a.lo), cbrt(a.hi))
