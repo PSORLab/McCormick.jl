@@ -32,6 +32,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              <, <=, ==, fma, cbrt, sinpi, cospi
 
 using IntervalArithmetic: @round, big53
+using IntervalRootFinding
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,
                            expm1, log, log2, log10, log1p, sqrt, ^,
