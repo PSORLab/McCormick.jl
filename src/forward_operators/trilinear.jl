@@ -81,14 +81,20 @@ end
 macro unpack_trilinear_end()
     esc(quote
         cv, cvind = max6(cv1, cv2, cv3, cv4, cv5, cv6)
-        cv_grad = coeff6(cvind, cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6)*x.cv_grad +
-                  coeff6(cvind, cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6)*y.cv_grad +
-                  coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)*z.cv_grad
+        cvsubax = coeff6(cvind, cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6)
+        cvsubay = coeff6(cvind, cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6)
+        cysubaz = coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)
+        cv_grad = cvsubax*ifelse(cvsubax > 0.0, x.cv_grad, x.cc_grad) +
+                  cvsubay*ifelse(cvsubay > 0.0, y.cv_grad, y.cc_grad) +
+                  cysubaz*ifelse(cvsubaz > 0.0, z.cv_grad, z.cc_grad)
 
         cc, ccind = min6(cc1, cc2, cc3, cc4, cc5, cc6)
-        cc_grad = coeff6(cvind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)*x.cc_grad +
-                  coeff6(cvind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)*y.cc_grad +
-                  coeff6(cvind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)*z.cc_grad
+        ccsubax = coeff6(ccind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)
+        ccsubay = coeff6(ccind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)
+        ccsubaz = coeff6(ccind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)
+        cc_grad = ccsubax*ifelse(ccsubax > 0.0, x.cc_grad, x.cv_grad) +
+                  ccsubay*ifelse(ccsubay > 0.0, y.cc_grad, y.cv_grad) +
+                  ccsubaz*ifelse(ccsubaz > 0.0, z.cc_grad, z.cv_grad)
 
         MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
     end)
@@ -880,7 +886,6 @@ function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}
 end
 
 @inline function trilinear(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
-    println("WARNING: VALID SUBGRADIENTS HAVE NOT YET BEEN DEFINED FOR trilinear()")
 	if x1 == x2
 		if x1 == x3
 			z = x1.Intv^3
