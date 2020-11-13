@@ -117,6 +117,69 @@ if ~(VERSION < v"1.1-")
       @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
       @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
       @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      x1 = MC{1,NS}(0.1, Interval(-1.5, 1.5), 1)
+      x2 = MC{1,NS}(-0.5, Interval(-1.5, 1.5), 1)
+      x3 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+      x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+      x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+      x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+      x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+      x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+      x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+      x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+      x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+      x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
+
+      y1 = gelu(x1)
+      y2 = gelu(x2)
+      y3 = gelu(x3)
+
+      y4 = gelu(x4)
+      y5 = gelu(x5)
+      y6 = gelu(x6)
+
+      y7 = gelu(x7)
+      y8 = gelu(x8)
+      y9 = gelu(x9)
+
+      y10 = gelu(x10)
+      y11 = gelu(x11)
+      y12 = gelu(x12)
+
+      @test isapprox(gelu(7), 6.999999999991041, atol=1E-8)
+      @test isapprox(gelu(-0.75), -0.16997051428265114, atol=1E-8)
+
+      @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
+      @test isapprox(y1.cc, 0.6997891980967129, atol=1E-8)
+      @test isapprox(y2.cv, -0.15426876936299344, atol=1E-8)
+      @test isapprox(y2.cc, 0.3997891980967129, atol=1E-8)
+      @test isapprox(y3.cv, 0.5306254434438489, atol=1E-8)
+      @test isapprox(y3.cc, 0.5565428241289478, atol=1E-8)
+
+      @test isapprox(y4.cv, -5.222141651051171e-8, atol=1E-8)
+      @test isapprox(y4.cc, -2.610399119085116e-10, atol=1E-8)
+      @test isapprox(y5.cv, 6.4999999477785835, atol=1E-8)
+      @test isapprox(y5.cc, 6.49999999973896, atol=1E-8)
+      @test isapprox(y6.cv, 0.5306254434438489, atol=1E-8)
+      @test isapprox(y6.cc, 0.5565428241289478, atol=1E-8)
+
+      @test isapprox(y7.cv, 3.073809840032428, atol=1E-8)
+      @test isapprox(y7.cc, 3.299185798223376, atol=1E-8)
+      @test isapprox(y8.cv, 0.9505770065222403, atol=1E-8)
+      @test isapprox(y8.cc, 1.697372160948963, atol=1E-8)
+      @test isapprox(y9.cv, 0.18537342665668577, atol=1E-8)
+      @test isapprox(y9.cc, 1.4368229984446212, atol=1E-8)
+
+      @test isapprox(y10.cv, -0.14923266704102095, atol=1E-8)
+      @test isapprox(y10.cc, -0.02584062996129348, atol=1E-8)
+      @test isapprox(y11.cv, 0.7343458871879165, atol=1E-8)
+      @test isapprox(y11.cc, 0.8328461064510111, atol=1E-8)
+      @test isapprox(y12.cv, 0.18537342665668577, atol=1E-8)
+      @test isapprox(y12.cc, 0.5343290419885047, atol=1E-8)
    end
 end
 
@@ -1705,53 +1768,6 @@ end
    x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
    x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
    x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
-
-   y1 = gelu(x1)
-   y2 = gelu(x2)
-   y3 = gelu(x3)
-
-   y4 = gelu(x4)
-   y5 = gelu(x5)
-   y6 = gelu(x6)
-
-   y7 = gelu(x7)
-   y8 = gelu(x8)
-   y9 = gelu(x9)
-
-   y10 = gelu(x10)
-   y11 = gelu(x11)
-   y12 = gelu(x12)
-
-   @test isapprox(gelu(7), 6.999999999991041, atol=1E-8)
-   @test isapprox(gelu(-0.75), -0.16997051428265114, atol=1E-8)
-
-   @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
-   @test isapprox(y1.cc, 0.6997891980967129, atol=1E-8)
-   @test isapprox(y2.cv, -0.15426876936299344, atol=1E-8)
-   @test isapprox(y2.cc, 0.3997891980967129, atol=1E-8)
-   @test isapprox(y3.cv, 0.5306254434438489, atol=1E-8)
-   @test isapprox(y3.cc, 0.5565428241289478, atol=1E-8)
-
-   @test isapprox(y4.cv, -5.222141651051171e-8, atol=1E-8)
-   @test isapprox(y4.cc, -2.610399119085116e-10, atol=1E-8)
-   @test isapprox(y5.cv, 6.4999999477785835, atol=1E-8)
-   @test isapprox(y5.cc, 6.49999999973896, atol=1E-8)
-   @test isapprox(y6.cv, 0.5306254434438489, atol=1E-8)
-   @test isapprox(y6.cc, 0.5565428241289478, atol=1E-8)
-
-   @test isapprox(y7.cv, 3.073809840032428, atol=1E-8)
-   @test isapprox(y7.cc, 3.299185798223376, atol=1E-8)
-   @test isapprox(y8.cv, 0.9505770065222403, atol=1E-8)
-   @test isapprox(y8.cc, 1.697372160948963, atol=1E-8)
-   @test isapprox(y9.cv, 0.18537342665668577, atol=1E-8)
-   @test isapprox(y9.cc, 1.4368229984446212, atol=1E-8)
-
-   @test isapprox(y10.cv, -0.14923266704102095, atol=1E-8)
-   @test isapprox(y10.cc, -0.02584062996129348, atol=1E-8)
-   @test isapprox(y11.cv, 0.7343458871879165, atol=1E-8)
-   @test isapprox(y11.cc, 0.8328461064510111, atol=1E-8)
-   @test isapprox(y12.cv, 0.18537342665668577, atol=1E-8)
-   @test isapprox(y12.cc, 0.5343290419885047, atol=1E-8)
 
    y1 = swish1(x1)
    y2 = swish1(x2)
