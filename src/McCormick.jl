@@ -31,7 +31,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
              <, <=, ==, fma, cbrt, sinpi, cospi
 
-using IntervalArithmetic: @round, big53
+using IntervalArithmetic: @round, big53, bigequiv, setrounding
 using IntervalRootFinding
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,

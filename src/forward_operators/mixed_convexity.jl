@@ -447,6 +447,21 @@ end
     return cbrt(x), cbrt_deriv(x), p
 end
 
+# Defines interval version of cbrt if necessary
+# Copy of recent version from IntervalArithmetic.jl
+if VERSION < v"1.2-"
+    function cbrt(x::BigFloat, r::RoundingMode)
+            setrounding(BigFloat, r) do
+                cbrt(x)
+            end
+        end
+    cbrt(a::Interval{T}) where T = atomic(Interval{T}, cbrt(bigequiv(a)))
+    function cbrt(a::Interval{BigFloat})
+        isempty(a) && return a
+        @round(cbrt(a.lo), cbrt(a.hi))
+    end
+end
+
 # basic method overloading operator (sinh, tanh, atanh, asinh), convexoconcave or concavoconvex
 eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
                                  :atanh => :xL, :tan => :xL, :acos => :xU,
