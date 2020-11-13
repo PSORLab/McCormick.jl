@@ -855,7 +855,7 @@ function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}
     (is_pos(x1) && is_mix(x2) && is_pos(x3)) && trilinear_case_2(x1, x3, x2, z)
     (is_mix(x1) && is_pos(x2) && is_pos(x3)) && trilinear_case_2(x2, x3, x1, z)
 
-    (is_mix(x1) && is_mix(x2) && is_mix(x3)) && && return trilinear_case_4(x1, x2, x3, z)
+    (is_mix(x1) && is_mix(x2) && is_mix(x3)) && return trilinear_case_4(x1, x2, x3, z)
 
     (is_pos(x1) && is_pos(x2) && is_neg(x3)) && return trilinear_case_5(x1, x2, x3, z)
     (is_pos(x1) && is_neg(x2) && is_pos(x3)) && return trilinear_case_5(x1, x3, x2, z)
