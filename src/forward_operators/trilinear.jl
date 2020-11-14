@@ -842,6 +842,13 @@ is_neg(x) = x.Intv.hi <= 0.0
 is_pos(x) = x.Intv.lo >= 0.0
 is_mix(x) = (x.Intv.hi > 0.0 > x.Intv.lo)
 
+function trilinear_case1_map_chk(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
+    @unpack_trilinear_bnd()
+    (xyzULL + xyzLUU <= xyzLUL + xyzULU) && (xyzULL + xyzLUU <= xyzUUL + xyzLLU)
+end
+
+# TO DO: REARRANGE MAPPING FOR CASE 3 & CASE 4
+# CASE 1, 2, 6, AND 9 done with condition map...
 function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	if x1 == x2
 		if x1 == x3
@@ -853,7 +860,14 @@ function mult_kernel(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}, z::Interval{Float64}
 		return x_mul_y2(x1, x2)
 	end
 
-	(is_pos(x1) && is_pos(x2) && is_pos(x3)) && return trilinear_case_1(x1, x2, x3, z)
+	if (is_pos(x1) && is_pos(x2) && is_pos(x3))
+        trilinear_case1_map_chk(x1, x2, x3) && (return trilinear_case_1(x1, x2, x3, z))
+        trilinear_case1_map_chk(x1, x3, x2) && (return trilinear_case_1(x1, x3, x2, z))
+        trilinear_case1_map_chk(x2, x1, x3) && (return trilinear_case_1(x2, x1, x3, z))
+        trilinear_case1_map_chk(x2, x3, x1) && (return trilinear_case_1(x2, x3, x1, z))
+        trilinear_case1_map_chk(x3, x1, x2) && (return trilinear_case_1(x3, x1, x2, z))
+        trilinear_case1_map_chk(x3, x2, x1) && (return trilinear_case_1(x3, x2, x1, z))
+    end
 
     (is_pos(x1) && is_pos(x2) && is_mix(x3)) && trilinear_case_2(x1, x2, x3, z)
     (is_pos(x1) && is_mix(x2) && is_pos(x3)) && trilinear_case_2(x1, x3, x2, z)
