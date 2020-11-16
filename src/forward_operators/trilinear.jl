@@ -327,6 +327,9 @@ trilinear_case_3
 Case 3.3 + Case 4.3 of Meyer-Floudas 2004
 """
 function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
+    xL = x.Intv.lo;     xU = x.Intv.hi
+    yL = y.Intv.lo;     yU = y.Intv.hi
+    zL = z.Intv.lo;     zU = z.Intv.hi
 
     if @is_pos(x) && @is_mix(y) && @is_mix(z)
         if trilinear_case3_chk_cv(x,y,z)
@@ -372,180 +375,383 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
 end
 
-"""
-trilinear_case_4
+function trilinear_case4_chk_cv1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
 
-Case 3.4 + Case 4.4 of Meyer-Floudas 2004
-"""
-function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
+    @unpack_trilinear_bnd()
+
+    (xyzUUL + xyzULU + xyzLUU <= xyzLLL + 2*xyzUUU) &&
+    (xyzLLL + xyzUUL + xyzULU <= xyzLUU + 2*xyzULL) &&
+    (xyzLLL + xyzUUL + xyzLUU <= xyzULU + 2*xyzLUL) &&
+    (xyzLLL + xyzULU + xyzLUU <= xyzUUL + 2*xyzLLU)
+end
+function trilinear_case4_chk_cv2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    xyzUUL + xyzULU + xyzLUU >= xyzLLL + 2*xyzUUU
+end
+function trilinear_case4_chk_cv3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    xyzLLL + xyzUUL + xyzULU >= xyzLUU + 2.0*xyzULL
+end
+
+function trilinear_case4_cv1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
     @unpack_trilinear_bnd()
 
     delX = xU - xL
     delY = yU - yL
     delZ = zU - zL
 
-    # define cv and coefficients
-    if  (xyzUUL + xyzULU + xyzLUU <= xyzLLL + 2*xyzUUU) &&
-        (xyzLLL + xyzUUL + xyzULU <= xyzLUU + 2*xyzULL) &&
-        (xyzLLL + xyzUUL + xyzLUU <= xyzULU + 2*xyzLUL) &&
-        (xyzLLL + xyzULU + xyzLUU <= xyzUUL + 2*xyzLLU)
+    θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
+    θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
+    θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
+    θcv4 = xyzLLL - θcv1*xL - θcv2*yL - θcv3*zL
 
-        θcv1 = -0.5*(xyzLUU + xyzLLL - xyzUUL - xyzULU)/delX
-        θcv2 = -0.5*(xyzULU + xyzLLL - xyzUUL - xyzLUU)/delY
-        θcv3 = -0.5*(xyzUUL + xyzLLL - xyzULU - xyzLUU)/delX
-        θcv4 = xyzLLL - θcv1*xL - θcv2*yL - θcv3*zL
+    cv_b1 = -2.0*xyzLUL
+    cv_b2 = -2.0*xyzLLU
+    cv_b3 = -2.0*xyzUUU
+    cv_b4 = -2.0*xyzULL
+    cv_b5 = θcv4
+    cv_b6 = Inf #TODO? eq 6 not in either paper
 
-        cv_b1 = -2.0*xyzLUL
-        cv_b2 = -2.0*xyzLLU
-        cv_b3 = -2.0*xyzUUU
-        cv_b4 = -2.0*xyzULL
-        cv_b5 = θcv4
-        cv_b6 = Inf #TODO? eq 6 not in either paper
+    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv1, Inf  # TODO? eq 6 not in paper
+    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, xzUL, θcv2, Inf  # TODO? eq 6 not in paper
+    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUU, xyUL, θcv3, Inf  # TODO? eq 6 not in paper
 
-        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv1, Inf  # TODO? eq 6 not in paper
-        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, xzUL, θcv2, Inf  # TODO? eq 6 not in paper
-        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUU, xyUL, θcv3, Inf  # TODO? eq 6 not in paper
+    cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
+    cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
+    cv3 = cv_ax3*x.cv + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
+    cv4 = cv_ax4*x.cv + cv_ay4*y.cc + cv_az4*z.cc + cv_b4
+    cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) +
+          cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) +
+          cv_az5*ifelse(cv_az5 > 0.0, z.cv, -z.cc) + cv_b5
+    cv6 = -Inf # TODO? eq 6 not in either paper
 
-        cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
-        cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
-        cv3 = cv_ax3*x.cv + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
-        cv4 = cv_ax4*x.cv + cv_ay4*y.cc + cv_az4*z.cc + cv_b4
-        cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) +
-              cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) +
-              cv_az5*ifelse(cv_az5 > 0.0, z.cv, -z.cc) + cv_b5
-        cv6 = -Inf # TODO? eq 6 not in either paper
+    cv, cvind = max6(cv1, cv2, cv3, cv4, cv5, cv6)
+    cvsubax = coeff6(cvind, cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6)
+    cvsubay = coeff6(cvind, cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6)
+    cvsubaz = coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)
+    cv_grad = cvsubax*ifelse(cvsubax > 0.0, x.cv_grad, x.cc_grad) +
+              cvsubay*ifelse(cvsubay > 0.0, y.cv_grad, y.cc_grad) +
+              cvsubaz*ifelse(cvsubaz > 0.0, z.cv_grad, z.cc_grad)
 
-    elseif xyzUUL + xyzULU + xyzLUU >= xyzLLL + 2*xyzUUU
+    return cv, cv_grad
+end
+function trilinear_case4_cv2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
 
-        θcv1 = xyzUUL - xyzLLL - xyzUUU + xyzULU
-        θcv2 = xyzULU - xyzLLL - xyzUUU + xyzLUU
-        θcv3 = xyzUUL - xyzLLL - xyzUUU + xyzLUU
+    @unpack_trilinear_bnd()
 
-        cv_b1 = -2.0*xyzLUL
-        cv_b2 = -2.0*xyzLLU
-        cv_b3 = -2.0*xyzULL
-        cv_b4 = -θcv1*xL/delX - xyzUUL - xyzULU + xyzLLL
-        cv_b5 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzLLL
-        cv_b6 = -θcv3*yL/delY - xyzUUL - xyzLUU + xyzLLL
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
 
-        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzLL, θcv1/delX, yzUU, yzUU
-        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUL, xzUU, xzUU, θcv3/delY
-        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUL, xyUU, θcv2/delZ, xyUU
+    θcv1 = xyzUUL - xyzLLL - xyzUUU + xyzULU
+    θcv2 = xyzULU - xyzLLL - xyzUUU + xyzLUU
+    θcv3 = xyzUUL - xyzLLL - xyzUUU + xyzLUU
 
-        cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
-        cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
-        cv3 = cv_ax3*x.cv + cv_ay3*y.cc + cv_az3*z.cc + cv_b3
-        cv4 = cv_ax4*ifelse(cv_ax4 > 0.0, x.cv, -x.cc) + cv_ay4*y.cv + cv_az4*z.cv + cv_b4
-        cv5 = cv_ax5*x.cv + cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) + cv_az5*z.cv + cv_b5
-        cv6 = cv_ax6*x.cv + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+    cv_b1 = -2.0*xyzLUL
+    cv_b2 = -2.0*xyzLLU
+    cv_b3 = -2.0*xyzULL
+    cv_b4 = -θcv1*xL/delX - xyzUUL - xyzULU + xyzLLL
+    cv_b5 = -θcv2*zL/delZ - xyzULU - xyzLUU + xyzLLL
+    cv_b6 = -θcv3*yL/delY - xyzUUL - xyzLUU + xyzLLL
 
+    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzLL, θcv1/delX, yzUU, yzUU
+    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUL, xzUU, xzUU, θcv3/delY
+    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUL, xyUU, θcv2/delZ, xyUU
+
+    cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
+    cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
+    cv3 = cv_ax3*x.cv + cv_ay3*y.cc + cv_az3*z.cc + cv_b3
+    cv4 = cv_ax4*ifelse(cv_ax4 > 0.0, x.cv, -x.cc) + cv_ay4*y.cv + cv_az4*z.cv + cv_b4
+    cv5 = cv_ax5*x.cv + cv_ay5*ifelse(cv_ay5 > 0.0, y.cv, -y.cc) + cv_az5*z.cv + cv_b5
+    cv6 = cv_ax6*x.cv + cv_ay6*y.cv + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+
+    cv, cvind = max6(cv1, cv2, cv3, cv4, cv5, cv6)
+    cvsubax = coeff6(cvind, cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6)
+    cvsubay = coeff6(cvind, cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6)
+    cvsubaz = coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)
+    cv_grad = cvsubax*ifelse(cvsubax > 0.0, x.cv_grad, x.cc_grad) +
+              cvsubay*ifelse(cvsubay > 0.0, y.cv_grad, y.cc_grad) +
+              cvsubaz*ifelse(cvsubaz > 0.0, z.cv_grad, z.cc_grad)
+
+    return cv, cv_grad
+end
+function trilinear_case4_cv3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
+
+    θcv1 = xyzLLL - xyzLUU - xyzULL + xyzULU
+    θcv2 = xyzUUL - xyzLUU - xyzULL + xyzULU
+    θcv3 = xyzLLL - xyzLUU - xyzULL + xyzUUL
+
+    cv_b1 = -2.0*xyzLUL
+    cv_b2 = -2.0*xyzLLU
+    cv_b3 = -2.0*xyzUUU
+    cv_b4 = θcv1*yU/delY - xyzLLL - xyzULU + xyzLUU
+    cv_b5 = -θcv2*xL/delX - xyzUUL - xyzULU + xyzLUU
+    cv_b6 = θcv3*zU/delZ - xyzLLL - xyzUUL + xyzLUU
+
+    cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv2/delX, yzLL
+    cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, -θcv1/delY, xzUL, xzUL
+    cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUU, xyUL, xyUL, -θcv3/delZ
+
+    cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
+    cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
+    cv3 = cv_ax3*x.cv + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
+    cv4 = cv_ax4*x.cv + cv_ay4*ifelse(cv_ay4 > 0.0, y.cv, -y.cc) + cv_az4*z.cc + cv_b4
+    cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) + cv_ay5*y.cc + cv_az5*z.cc + cv_b5
+    cv6 = cv_ax6*x.cv + cv_ay6*y.cc + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
+
+    cv, cvind = max6(cv1, cv2, cv3, cv4, cv5, cv6)
+    cvsubax = coeff6(cvind, cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6)
+    cvsubay = coeff6(cvind, cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6)
+    cvsubaz = coeff6(cvind, cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6)
+    cv_grad = cvsubax*ifelse(cvsubax > 0.0, x.cv_grad, x.cc_grad) +
+              cvsubay*ifelse(cvsubay > 0.0, y.cv_grad, y.cc_grad) +
+              cvsubaz*ifelse(cvsubaz > 0.0, z.cv_grad, z.cc_grad)
+
+    return cv, cv_grad
+end
+
+function trilinear_case4_chk_cc1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    (xyzULL + xyzLUL + xyzLLU) >= (xyzUUU + 2.0*xyzLLL) &&
+    (xyzLUL + xyzLLU + xyzUUU) >= (xyzULL + 2.0*xyzLUU) &&
+    (xyzULL + xyzLLU + xyzUUU) >= (xyzLUL + 2.0*xyzULU) &&
+    (xyzULL + xyzLUL + xyzUUU) >= (xyzLLU + 2.0*xyzUUL)
+end
+function trilinear_case4_chk_cc2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    (xyzULL + xyzLUL + xyzLLU) <= (xyzUUU + 2.0*xyzLLL)
+end
+function trilinear_case4_chk_cc3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    xyzLUL + xyzLLU + xyzUUU <= xyzULL + 2.0*xyzLUU
+end
+
+function trilinear_case4_cc1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
+
+    θcc1 = 0.5*(xyzULL + xyzUUU - xyzLLU - xyzLUL)/delX
+    θcc2 = 0.5*(xyzLUL + xyzUUU - xyzLLU - xyzULL)/delY
+    θcc3 = 0.5*(xyzLLU + xyzUUU - xyzLUL - xyzULL)/delZ
+    θcc4 = xyzUUU - θcc1*xU - θcc2*yU - θcc3*zU
+
+    cc_b1 = -2.0*xyzLLL
+    cc_b2 = -2.0*xyzUUL
+    cc_b3 = -2.0*xyzULU
+    cc_b4 = -2.0*xyzLUU
+    cc_b5 = θcc4
+    cc_b6 = Inf #TODO? eq 6 not in paper
+
+    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, yzUU, θcc1, Inf
+    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzUU, xzLU, θcc2, Inf
+    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyLU, θcc3, Inf
+
+    cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
+    cc2 = cc_ax2*x.cv + cc_ay2*y.cv + cc_az2*z.cc + cc_b2
+    cc3 = cc_ax3*x.cv + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
+    cc4 = cc_ax4*x.cc + cc_ay4*y.cv + cc_az4*z.cv + cc_b4
+    cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) +
+          cc_ay5*ifelse(cc_ay5 > 0.0, y.cc, -y.cv) +
+          cc_az5*ifelse(cc_az5 > 0.0, z.cc, -z.cv) + cc_b5
+    cc6 = Inf # TODO? eq 6 not in paper
+
+    cc, ccind = min6(cc1, cc2, cc3, cc4, cc5, cc6)
+    ccsubax = coeff6(ccind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)
+    ccsubay = coeff6(ccind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)
+    ccsubaz = coeff6(ccind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)
+    cc_grad = ccsubax*ifelse(ccsubax > 0.0, x.cc_grad, x.cv_grad) +
+              ccsubay*ifelse(ccsubay > 0.0, y.cc_grad, y.cv_grad) +
+              ccsubaz*ifelse(ccsubaz > 0.0, z.cc_grad, z.cv_grad)
+
+    return cc, cc_grad
+end
+
+function trilinear_case4_cc2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
+
+    θcc1 = xyzULL - xyzUUU - xyzLLL + xyzLUL
+    θcc2 = xyzLLU - xyzUUU - xyzLLL + xyzLUL
+    θcc3 = xyzLLU - xyzUUU - xyzLLL + xyzULL
+
+    cc_b1 = -2.0*xyzUUL
+    cc_b2 = -2.0*xyzULU
+    cc_b3 = -2.0*xyzLUU
+    cc_b4 = θcc1*zU/delZ - xyzULL - xyzLUL + xyzUUU
+    cc_b5 = θcc2*xU/delX - xyzLLU - xyzLUL + xyzUUU
+    cc_b6 = θcc3*yU/delY - xyzLLU - xyzULL + xyzUUU
+
+    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLU, yzUU, yzLL, -θcc2/delX, yzLL
+    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzLL, -θcc3/delY
+    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLU, -θcc1/delZ, xyLL, xyLL
+
+    cc1 = cc_ax1*x.cv + cc_ay1*y.cv + cc_az1*z.cc + cc_b1
+    cc2 = cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
+    cc3 = cc_ax3*x.cc + cc_ay3*y.cv + cc_az3*z.cv + cc_b3
+    cc4 = cc_ax4*x.cc + cc_ay4*y.cc + cc_az4*ifelse(cc_az4 > 0.0, z.cc, -z.cv) + cc_b4
+    cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) + cc_ay5*y.cc + cc_az5*z.cc + cc_b5
+    cc6 = cc_ax6*x.cc + cc_ay6*ifelse(cc_ay6 > 0.0, y.cc, -y.cv) + cc_az6*z.cc + cc_b6
+
+    cc, ccind = min6(cc1, cc2, cc3, cc4, cc5, cc6)
+    ccsubax = coeff6(ccind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)
+    ccsubay = coeff6(ccind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)
+    ccsubaz = coeff6(ccind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)
+    cc_grad = ccsubax*ifelse(ccsubax > 0.0, x.cc_grad, x.cv_grad) +
+              ccsubay*ifelse(ccsubay > 0.0, y.cc_grad, y.cv_grad) +
+              ccsubaz*ifelse(ccsubaz > 0.0, z.cc_grad, z.cv_grad)
+
+    return cc, cc_grad
+end
+
+function trilinear_case4_cc3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
+
+    @unpack_trilinear_bnd()
+
+    delX = xU - xL
+    delY = yU - yL
+    delZ = zU - zL
+
+    θcc1 = xyzLLU - xyzULL - xyzLUU + xyzLUL
+    θcc2 = xyzUUU - xyzULL - xyzLUU + xyzLUL
+    θcc3 = xyzLLU - xyzULL - xyzLUU + xyzUUU
+
+    cc_b1 = -2.0*xyzLLL
+    cc_b2 = -2.0*xyzUUL
+    cc_b3 = -2.0*xyzULU
+    cc_b4 = θcc1*xU/delX - xyzLLU - xyzLUL + xyzULL
+    cc_b5 = -θcc2*yL/delY - xyzUUU - xyzLUL + xyzULL
+    cc_b6 = -θcc3*zL/delZ - xyzLLU - xyzUUU + xyzULL
+
+    cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, -θcc1/delX, yzUU, yzUU
+    cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzUU, xzLU, θcc2/delY, xzLU
+    cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyLU, xyLU, θcc3/delZ
+
+    cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
+    cc2 = cc_ax2*x.cv + cc_ay2*y.cv + cc_az2*z.cc + cc_b2
+    cc3 = cc_ax3*x.cv + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
+    cc4 = cc_ax4*ifelse(cc_ax4 > 0.0, x.cc, -x.cv) + cc_ay4*y.cv + cc_az4*z.cv + cc_b4
+    cc5 = cc_ax5*x.cc + cc_ay5*ifelse(cc_ay5 > 0.0, y.cc, -y.cv) + cc_az5*z.cv + cc_b5
+    cc6 = cc_ax6*x.cc + cc_ay6*y.cv + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
+
+    cc, ccind = min6(cc1, cc2, cc3, cc4, cc5, cc6)
+    ccsubax = coeff6(ccind, cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6)
+    ccsubay = coeff6(ccind, cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6)
+    ccsubaz = coeff6(ccind, cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6)
+    cc_grad = ccsubax*ifelse(ccsubax > 0.0, x.cc_grad, x.cv_grad) +
+              ccsubay*ifelse(ccsubay > 0.0, y.cc_grad, y.cv_grad) +
+              ccsubaz*ifelse(ccsubaz > 0.0, z.cc_grad, z.cv_grad)
+
+    return cc, cc_grad
+end
+
+"""
+trilinear_case_4
+
+Case 3.4 + Case 4.4 of Meyer-Floudas 2004
+"""
+function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
+    if trilinear_case4_chk_cv1(x,y,z)
+        cv, cv_grad = trilinear_case4_cv1(x,y,z)
+    elseif trilinear_case4_chk_cv1(x,z,y)
+        cv, cv_grad = trilinear_case4_cv1(x,z,y)
+    elseif trilinear_case4_chk_cv1(y,x,z)
+        cv, cv_grad = trilinear_case4_cv1(y,x,z)
+    elseif trilinear_case4_chk_cv1(y,z,x)
+        cv, cv_grad = trilinear_case4_cv1(y,z,x)
+    elseif trilinear_case4_chk_cv1(z,x,y)
+        cv, cv_grad = trilinear_case4_cv1(z,x,y)
+    elseif trilinear_case4_chk_cv1(z,y,x)
+        cv, cv_grad = trilinear_case4_cv1(z,y,x)
+    elseif trilinear_case4_chk_cv2(x,y,z)
+        cv, cv_grad = trilinear_case4_cv2(x,y,z)
+    elseif trilinear_case4_chk_cv2(x,z,y)
+        cv, cv_grad = trilinear_case4_cv2(x,z,y)
+    elseif trilinear_case4_chk_cv2(y,x,z)
+        cv, cv_grad = trilinear_case4_cv2(y,x,z)
+    elseif trilinear_case4_chk_cv2(y,z,x)
+        cv, cv_grad = trilinear_case4_cv2(y,z,x)
+    elseif trilinear_case4_chk_cv2(z,x,y)
+        cv, cv_grad = trilinear_case4_cv2(z,x,y)
+    elseif trilinear_case4_chk_cv2(z,y,x)
+        cv, cv_grad = trilinear_case4_cv2(z,y,x))
+    elseif trilinear_case4_chk_cv3(x,y,z)
+        cv, cv_grad = trilinear_case4_cv3(x,y,z)
+    elseif trilinear_case4_chk_cv3(x,z,y)
+        cv, cv_grad = trilinear_case4_cv3(x,z,y)
+    elseif trilinear_case4_chk_cv3(y,x,z)
+        cv, cv_grad = trilinear_case4_cv3(y,x,z)
+    elseif trilinear_case4_chk_cv3(y,z,x)
+        cv, cv_grad = trilinear_case4_cv3(y,z,x)
+    elseif trilinear_case4_chk_cv3(z,x,y)
+        cv, cv_grad = trilinear_case4_cv3(z,x,y)
     else
-
-        θcv1 = xyzLLL - xyzLUU - xyzULL + xyzULU
-        θcv2 = xyzUUL - xyzLUU - xyzULL + xyzULU
-        θcv3 = xyzLLL - xyzLUU - xyzULL + xyzUUL
-
-        cv_b1 = -2.0*xyzLUL
-        cv_b2 = -2.0*xyzLLU
-        cv_b3 = -2.0*xyzUUU
-        cv_b4 = θcv1*yU/delY - xyzLLL - xyzULU + xyzLUU
-        cv_b5 = -θcv2*xL/delX - xyzUUL - xyzULU + xyzLUU
-        cv_b6 = θcv3*zU/delZ - xyzLLL - xyzUUL + xyzLUU
-
-        cv_ax1, cv_ax2, cv_ax3, cv_ax4, cv_ax5, cv_ax6 = yzUL, yzLU, yzUU, yzLL, θcv2/delX, yzLL
-        cv_ay1, cv_ay2, cv_ay3, cv_ay4, cv_ay5, cv_ay6 = xzLL, xzLU, xzUU, -θcv1/delY, xzUL, xzUL
-        cv_az1, cv_az2, cv_az3, cv_az4, cv_az5, cv_az6 = xyLU, xyLL, xyUU, xyUL, xyUL, -θcv3/delZ
-
-        cv1 = cv_ax1*x.cc + cv_ay1*y.cv + cv_az1*z.cc + cv_b1
-        cv2 = cv_ax2*x.cc + cv_ay2*y.cc + cv_az2*z.cv + cv_b2
-        cv3 = cv_ax3*x.cv + cv_ay3*y.cv + cv_az3*z.cv + cv_b3
-        cv4 = cv_ax4*x.cv + cv_ay4*ifelse(cv_ay4 > 0.0, y.cv, -y.cc) + cv_az4*z.cc + cv_b4
-        cv5 = cv_ax5*ifelse(cv_ax5 > 0.0, x.cv, -x.cc) + cv_ay5*y.cc + cv_az5*z.cc + cv_b5
-        cv6 = cv_ax6*x.cv + cv_ay6*y.cc + cv_az6*ifelse(cv_az6 > 0.0, z.cv, -z.cc) + cv_b6
-
+        cv, cv_grad = trilinear_case4_cv3(z,y,x)
     end
 
-    if (xyzULL + xyzLUL + xyzLLU) >= (xyzUUU + 2*xyzLLL) &&
-       (xyzLUL + xyzLLU + xyzUUU) >= (xyzULL + 2*xyzLUU) &&
-       (xyzULL + xyzLLU + xyzUUU) >= (xyzLUL + 2*xyzULU) &&
-       (xyzULL + xyzLUL + xyzUUU) >= (xyzLLU + 2*xyzUUL)
-
-       θcc1 = 0.5*(xyzULL + xyzUUU - xyzLLU - xyzLUL)/delX
-       θcc2 = 0.5*(xyzLUL + xyzUUU - xyzLLU - xyzULL)/delY
-       θcc3 = 0.5*(xyzLLU + xyzUUU - xyzLUL - xyzULL)/delZ
-       θcc4 = xyzUUU - θcc1*xU - θcc2*yU - θcc3*zU
-
-       cc_b1 = -2.0*xyzLLL
-       cc_b2 = -2.0*xyzUUL
-       cc_b3 = -2.0*xyzULU
-       cc_b4 = -2.0*xyzLUU
-       cc_b5 = θcc4
-       cc_b6 = Inf #TODO? eq 6 not in paper
-
-       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, yzUU, θcc1, Inf
-       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzUU, xzLU, θcc2, Inf
-       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyLU, θcc3, Inf
-
-       cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
-       cc2 = cc_ax2*x.cv + cc_ay2*y.cv + cc_az2*z.cc + cc_b2
-       cc3 = cc_ax3*x.cv + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
-       cc4 = cc_ax4*x.cc + cc_ay4*y.cv + cc_az4*z.cv + cc_b4
-       cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) +
-             cc_ay5*ifelse(cc_ay5 > 0.0, y.cc, -y.cv) +
-             cc_az5*ifelse(cc_az5 > 0.0, z.cc, -z.cv) + cc_b5
-       cc6 = Inf # TODO? eq 6 not in paper
-
-   elseif (xyzULL + xyzLUL + xyzLLU) <= (xyzUUU + 2*xyzLLL)
-
-       θcc1 = xyzULL - xyzUUU - xyzLLL + xyzLUL
-       θcc2 = xyzLLU - xyzUUU - xyzLLL + xyzLUL
-       θcc3 = xyzLLU - xyzUUU - xyzLLL + xyzULL
-
-       cc_b1 = -2.0*xyzUUL
-       cc_b2 = -2.0*xyzULU
-       cc_b3 = -2.0*xyzLUU
-       cc_b4 = θcc1*zU/delZ - xyzULL - xyzLUL + xyzUUU
-       cc_b5 = θcc2*xU/delX - xyzLLU - xyzLUL + xyzUUU
-       cc_b6 = θcc3*yU/delY - xyzLLU - xyzULL + xyzUUU
-
-       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzUL, yzLU, yzUU, yzLL, -θcc2/delX, yzLL
-       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzUL, xzUU, xzLU, xzLL, xzLL, -θcc3/delY
-       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyUU, xyUL, xyLU, -θcc1/delZ, xyLL, xyLL
-
-       cc1 = cc_ax1*x.cv + cc_ay1*y.cv + cc_az1*z.cc + cc_b1
-       cc2 = cc_ax2*x.cv + cc_ay2*y.cc + cc_az2*z.cv + cc_b2
-       cc3 = cc_ax3*x.cc + cc_ay3*y.cv + cc_az3*z.cv + cc_b3
-       cc4 = cc_ax4*x.cc + cc_ay4*y.cc + cc_az4*ifelse(cc_az4 > 0.0, z.cc, -z.cv) + cc_b4
-       cc5 = cc_ax5*ifelse(cc_ax5 > 0.0, x.cc, -x.cv) + cc_ay5*y.cc + cc_az5*z.cc + cc_b5
-       cc6 = cc_ax6*x.cc + cc_ay6*ifelse(cc_ay6 > 0.0, y.cc, -y.cv) + cc_az6*z.cc + cc_b6
-
-   else
-
-       θcc1 = xyzLLU - xyzULL - xyzLUU + xyzLUL
-       θcc2 = xyzUUU - xyzULL - xyzLUU + xyzLUL
-       θcc3 = xyzLLU - xyzULL - xyzLUU + xyzUUU
-
-       cc_b1 = -2.0*xyzLLL
-       cc_b2 = -2.0*xyzUUL
-       cc_b3 = -2.0*xyzULU
-       cc_b4 = θcc1*xU/delX - xyzLLU - xyzLUL + xyzULL
-       cc_b5 = -θcc2*yL/delY - xyzUUU - xyzLUL + xyzULL
-       cc_b6 = -θcc3*zL/delZ - xyzLLU - xyzUUU + xyzULL
-
-       cc_ax1, cc_ax2, cc_ax3, cc_ax4, cc_ax5, cc_ax6 = yzLL, yzUL, yzLU, -θcc1/delX, yzUU, yzUU
-       cc_ay1, cc_ay2, cc_ay3, cc_ay4, cc_ay5, cc_ay6 = xzLL, xzUL, xzUU, xzLU, θcc2/delY, xzLU
-       cc_az1, cc_az2, cc_az3, cc_az4, cc_az5, cc_az6 = xyLL, xyUU, xyUL, xyLU, xyLU, θcc3/delZ
-
-       cc1 = cc_ax1*x.cc + cc_ay1*y.cc + cc_az1*z.cc + cc_b1
-       cc2 = cc_ax2*x.cv + cc_ay2*y.cv + cc_az2*z.cc + cc_b2
-       cc3 = cc_ax3*x.cv + cc_ay3*y.cc + cc_az3*z.cv + cc_b3
-       cc4 = cc_ax4*ifelse(cc_ax4 > 0.0, x.cc, -x.cv) + cc_ay4*y.cv + cc_az4*z.cv + cc_b4
-       cc5 = cc_ax5*x.cc + cc_ay5*ifelse(cc_ay5 > 0.0, y.cc, -y.cv) + cc_az5*z.cv + cc_b5
-       cc6 = cc_ax6*x.cc + cc_ay6*y.cv + cc_az6*ifelse(cc_az6 > 0.0, z.cc, -z.cv) + cc_b6
-
+    if trilinear_case4_chk_cc1(x,y,z)
+        cc, cc_grad = trilinear_case4_cc1(x,y,z)
+    elseif trilinear_case4_chk_cc1(x,z,y)
+        cc, cc_grad = trilinear_case4_cc1(x,z,y)
+    elseif trilinear_case4_chk_cc1(y,x,z)
+        cc, cc_grad = trilinear_case4_cc1(y,x,z)
+    elseif trilinear_case4_chk_cc1(y,z,x)
+        cc, cc_grad = trilinear_case4_cc1(y,z,x)
+    elseif trilinear_case4_chk_cc1(z,x,y)
+        cc, cc_grad = trilinear_case4_cc1(z,x,y)
+    elseif trilinear_case4_chk_cc1(z,y,x)
+        cc, cc_grad = trilinear_case4_cc1(z,y,x)
+    elseif trilinear_case4_chk_cc2(x,y,z)
+        cc, cc_grad = trilinear_case4_cc2(x,y,z)
+    elseif trilinear_case4_chk_cc2(x,z,y)
+        cc, cc_grad = trilinear_case4_cc2(x,z,y)
+    elseif trilinear_case4_chk_cc2(y,x,z)
+        cc, cc_grad = trilinear_case4_cc2(y,x,z)
+    elseif trilinear_case4_chk_cc2(y,z,x)
+        cc, cc_grad = trilinear_case4_cc2(y,z,x)
+    elseif trilinear_case4_chk_cc2(z,x,y)
+        cc, cc_grad = trilinear_case4_cc2(z,x,y)
+    elseif trilinear_case4_chk_cc2(z,y,x)
+        cc, cc_grad = trilinear_case4_cc2(z,y,x))
+    elseif trilinear_case4_chk_cc3(x,y,z)
+        cc, cc_grad = trilinear_case4_cc3(x,y,z)
+    elseif trilinear_case4_chk_cc3(x,z,y)
+        cc, cc_grad = trilinear_case4_cc3(x,z,y)
+    elseif trilinear_case4_chk_cc3(y,x,z)
+        cc, cc_grad = trilinear_case4_cc3(y,x,z)
+    elseif trilinear_case4_chk_cc3(y,z,x)
+        cc, cc_grad = trilinear_case4_cc3(y,z,x)
+    elseif trilinear_case4_chk_cc3(z,x,y)
+        cc, cc_grad = trilinear_case4_cc3(z,x,y)
+    else
+        cc, cc_grad = trilinear_case4_cc3(z,y,x)
     end
 
-    @unpack_trilinear_end()
+    MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
 end
 
 macro trilinear_case5_cv()
@@ -650,8 +856,6 @@ Case 3.7 + Case 4.7 of Meyer-Floudas 2004
 """
 function trilinear_case_7(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
-
-    @show "trilinear case 7"
 
     delX = xU - xL
     delY = yU - yL
@@ -951,8 +1155,8 @@ function trilinear_case10_map_chk(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N, 
     (xyzULL + xyzLUU >= xyzLUL + xyzULU) && (xyzULL + xyzLUU >= xyzUUL + xyzLLU)
 end
 
-# MAY SPLIT: Cases 4, 7
-# CASE 1, 2, 3, 5, 6, 8, 9, 10 done with condition map...
+# MAY SPLIT: Cases 7
+# CASE 1, 2, 3, 4, 5, 6, 8, 9, 10 done with condition map...
 function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	if x == y
 		if x == z
