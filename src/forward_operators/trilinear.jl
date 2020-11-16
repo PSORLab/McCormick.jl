@@ -372,6 +372,7 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         else
             cc, cc_grad = trilinear_case3_cc2(x,y,z)
         end
+        @show cv, cc
         return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
     elseif @is_mix(x) && @is_pos(y) && @is_mix(z)
         if trilinear_case3_chk_cv(y,x,z)
@@ -386,6 +387,7 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         else
             cc, cc_grad = trilinear_case3_cc2(y,x,z)
         end
+        @show cv, cc
         return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
     end
 
@@ -401,7 +403,7 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     else
         cc, cc_grad = trilinear_case3_cc2(z,x,y)
     end
-
+    @show cv, cc
     MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
 end
 
@@ -1235,44 +1237,77 @@ function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) w
 	end
 
     @unpack_trilinear_bnd()
-	if (@is_pos(x) && @is_pos(y) && @is_pos(z))
-        trilinear_case1_map_chk(x, y, z) && (return trilinear_case_1(x, y, z, q))
-        trilinear_case1_map_chk(x, z, y) && (return trilinear_case_1(x, z, y, q))
-        trilinear_case1_map_chk(y, x, z) && (return trilinear_case_1(y, x, z, q))
-        trilinear_case1_map_chk(y, z, x) && (return trilinear_case_1(y, z, x, q))
-        trilinear_case1_map_chk(z, x, y) && (return trilinear_case_1(z, x, y, q))
-        return trilinear_case_1(z, y, x, q)
+	if @is_pos(x) && @is_pos(y) && @is_pos(z)
+        if trilinear_case1_map_chk(x, y, z)
+            return trilinear_case_1(x, y, z, q)
+        elseif trilinear_case1_map_chk(x, z, y)
+            return trilinear_case_1(x, z, y, q)
+        elseif trilinear_case1_map_chk(y, x, z)
+            return trilinear_case_1(y, x, z, q)
+        elseif trilinear_case1_map_chk(y, z, x)
+            return trilinear_case_1(y, z, x, q)
+        elseif trilinear_case1_map_chk(z, x, y)
+            return trilinear_case_1(z, x, y, q)
+        else
+            return trilinear_case_1(z, y, x, q)
+        end
     end
 
-    (@is_pos(x) && @is_pos(y) && @is_mix(z)) && (return trilinear_case_2(x, y, z, q))
-    (@is_pos(x) && @is_mix(y) && @is_pos(z)) && (return trilinear_case_2(x, z, y, q))
-    (@is_mix(x) && @is_pos(y) && @is_pos(z)) && (return trilinear_case_2(y, z, x, q))
-
-    (@is_mix(x) && @is_mix(y) && @is_mix(z)) && (return trilinear_case_4(x, y, z, q))
+    if @is_pos(x) && @is_pos(y) && @is_mix(z)
+        return trilinear_case_2(x, y, z, q)
+    elseif @is_pos(x) && @is_mix(y) && @is_pos(z)
+        return trilinear_case_2(x, z, y, q)
+    elseif @is_mix(x) && @is_pos(y) && @is_pos(z)
+        return trilinear_case_2(y, z, x, q)
+    elseif @is_mix(x) && @is_mix(y) && @is_mix(z)
+        return trilinear_case_4(x, y, z, q)
+    end
 
     if (@is_pos(x) && @is_pos(y) && @is_neg(z))
-        trilinear_case5_map_chk1(x, y, z) && (return trilinear_case_5a(x, y, z, q))
-        trilinear_case5_map_chk1(y, x, z) && (return trilinear_case_5a(y, x, z, q))
-        trilinear_case5_map_chk2(x, y, z) && (return trilinear_case_5b(x, y, z, q))
-        trilinear_case5_map_chk2(y, x, z) && (return trilinear_case_5b(y, x, z, q))
+        if trilinear_case5_map_chk1(x, y, z)
+            return trilinear_case_5a(x, y, z, q)
+        elseif trilinear_case5_map_chk1(y, x, z)
+            return trilinear_case_5a(y, x, z, q)
+        elseif trilinear_case5_map_chk2(x, y, z)
+            return trilinear_case_5b(x, y, z, q)
+        elseif trilinear_case5_map_chk2(y, x, z)
+            return trilinear_case_5b(y, x, z, q)
+        end
     elseif (@is_pos(x) && @is_neg(y) && @is_pos(z))
-        trilinear_case5_map_chk1(x, z, y) && (return trilinear_case_5a(x, z, y, q))
-        trilinear_case5_map_chk1(z, x, y) && (return trilinear_case_5a(z, x, y, q))
-        trilinear_case5_map_chk2(x, z, y) && (return trilinear_case_5b(x, z, y, q))
-        trilinear_case5_map_chk2(z, x, y) && (return trilinear_case_5b(z, x, y, q))
+        if trilinear_case5_map_chk1(x, z, y)
+            return trilinear_case_5a(x, z, y, q)
+        elseif trilinear_case5_map_chk1(z, x, y)
+            return trilinear_case_5a(z, x, y, q)
+        elseif trilinear_case5_map_chk2(x, z, y)
+            return trilinear_case_5b(x, z, y, q)
+        elseif trilinear_case5_map_chk2(z, x, y)
+            return trilinear_case_5b(z, x, y, q)
+        end
     elseif (@is_neg(x) && @is_pos(y) && @is_pos(z))
-        trilinear_case5_map_chk1(y, z, x) && (return trilinear_case_5a(y, z, x, q))
-        trilinear_case5_map_chk1(z, y, x) && (return trilinear_case_5a(z, y, x, q))
-        trilinear_case5_map_chk2(y, z, x) && (return trilinear_case_5b(y, z, x, q))
-        trilinear_case5_map_chk2(z, y, x) && (return trilinear_case_5b(z, y, x, q))
+        if trilinear_case5_map_chk1(y, z, x)
+            return trilinear_case_5a(y, z, x, q)
+        elseif trilinear_case5_map_chk1(z, y, x)
+            return trilinear_case_5a(z, y, x, q)
+        elseif trilinear_case5_map_chk2(y, z, x)
+            return trilinear_case_5b(y, z, x, q)
+        elseif trilinear_case5_map_chk2(z, y, x)
+            return trilinear_case_5b(z, y, x, q)
+        end
     end
 
-    (@is_pos(x) && @is_mix(y) && @is_neg(z)) && (return trilinear_case_6(x, y, z, q))
-    (@is_pos(x) && @is_neg(y) && @is_mix(z)) && (return trilinear_case_6(x, z, y, q))
-    (@is_neg(x) && @is_mix(y) && @is_pos(z)) && (return trilinear_case_6(z, y, x, q))
-    (@is_neg(x) && @is_pos(y) && @is_mix(z)) && (return trilinear_case_6(y, z, x, q))
-    (@is_mix(x) && @is_pos(y) && @is_neg(z)) && (return trilinear_case_6(y, x, z, q))
-    (@is_mix(x) && @is_neg(y) && @is_pos(z)) && (return trilinear_case_6(z, x, y, q))
+    if @is_pos(x) && @is_mix(y) && @is_neg(z)
+        return trilinear_case_6(x, y, z, q)
+    elseif @is_pos(x) && @is_neg(y) && @is_mix(z)
+        return trilinear_case_6(x, z, y, q)
+    elseif @is_neg(x) && @is_mix(y) && @is_pos(z)
+        return trilinear_case_6(z, y, x, q)
+    elseif @is_neg(x) && @is_pos(y) && @is_mix(z)
+        return trilinear_case_6(y, z, x, q)
+    elseif @is_mix(x) && @is_pos(y) && @is_neg(z)
+        return trilinear_case_6(y, x, z, q)
+    elseif @is_mix(x) && @is_neg(y) && @is_pos(z)
+        return trilinear_case_6(z, x, y, q)
+    end
 
     if (@is_mix(x) && @is_mix(y) && @is_neg(z))
         return -trilinear_case_3(-z, x, y, -q)
@@ -1282,28 +1317,46 @@ function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) w
         return -trilinear_case_3(-x, y, z, -q)
     end
 
-    if (@is_pos(x) && @is_neg(y) && @is_neg(z))
-        trilinear_case8_map_chk(x, y, z) && (return trilinear_case_8a(x, y, z, q))
-        return trilinear_case_8b(x, z, y, q)
-    elseif (@is_neg(x) && @is_pos(y) && @is_neg(z))
-        trilinear_case8_map_chk(y, x, z) && (return trilinear_case_8a(y, x, z, q))
-        return trilinear_case_8b(y, z, x, q)
-    elseif (@is_neg(x) && @is_neg(y) && @is_pos(z))
-        trilinear_case8_map_chk(z, x, y) && (return trilinear_case_8a(z, x, y, q))
-        return trilinear_case_8b(z, y, x, q)
+    if @is_pos(x) && @is_neg(y) && @is_neg(z)
+        if trilinear_case8_map_chk(x, y, z)
+            return trilinear_case_8a(x, y, z, q)
+        else
+            return trilinear_case_8b(x, z, y, q)
+        end
+    elseif @is_neg(x) && @is_pos(y) && @is_neg(z)
+        if trilinear_case8_map_chk(y, x, z)
+            return trilinear_case_8a(y, x, z, q)
+        else
+            return trilinear_case_8b(y, z, x, q)
+        end
+    elseif @is_neg(x) && @is_neg(y) && @is_pos(z)
+        if trilinear_case8_map_chk(z, x, y)
+            return trilinear_case_8a(z, x, y, q)
+        else
+            return trilinear_case_8b(z, y, x, q)
+        end
+    elseif @is_mix(x) && @is_neg(y) && @is_neg(z)
+        return trilinear_case_9(x, y, z, q)
+    elseif @is_neg(x) && @is_mix(y) && @is_neg(z)
+        return trilinear_case_9(y, x, z, q)
+    elseif @is_neg(x) && @is_neg(y) && @is_mix(z)
+        return trilinear_case_9(z, x, y, q)
     end
 
-    (@is_mix(x) && @is_neg(y) && @is_neg(z)) && return trilinear_case_9(x, y, z, q)
-    (@is_neg(x) && @is_mix(y) && @is_neg(z)) && return trilinear_case_9(y, x, z, q)
-    (@is_neg(x) && @is_neg(y) && @is_mix(z)) && return trilinear_case_9(z, x, y, q)
-
     if (@is_neg(x) && @is_neg(y) && @is_neg(z))
-        trilinear_case10_map_chk(x, y, z) && (return trilinear_case_10(x, y, z, q))
-        trilinear_case10_map_chk(x, z, y) && (return trilinear_case_10(x, z, y, q))
-        trilinear_case10_map_chk(y, x, z) && (return trilinear_case_10(y, x, z, q))
-        trilinear_case10_map_chk(y, z, x) && (return trilinear_case_10(y, z, x, q))
-        trilinear_case10_map_chk(z, x, y) && (return trilinear_case_10(z, x, y, q))
-        return trilinear_case_10(z, y, x, q)
+        if trilinear_case10_map_chk(x, y, z)
+            return trilinear_case_10(x, y, z, q)
+        elseif trilinear_case10_map_chk(x, z, y)
+            return trilinear_case_10(x, z, y, q)
+        elseif trilinear_case10_map_chk(y, x, z)
+            return trilinear_case_10(y, x, z, q)
+        elseif trilinear_case10_map_chk(y, z, x)
+            return trilinear_case_10(y, z, x, q)
+        elseif trilinear_case10_map_chk(z, x, y)
+            return trilinear_case_10(z, x, y, q)
+        else
+            return trilinear_case_10(z, y, x, q)
+        end
     end
 
     return trilinear_case_3(x, y, z, q)
