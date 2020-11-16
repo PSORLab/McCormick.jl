@@ -2026,6 +2026,13 @@ end
         MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3); MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
        ]
 
+   #x01 = MC{3,NS}(2.0, Interval{Float64}(-1.0, 5.0), 1)
+   #y01 = MC{3,NS}(-2.0, Interval{Float64}(-4.0, 1.0), 2)
+   #z01 = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 1.0), 3)
+
+   #rr = -(trilinear(-z01, y01, x01))
+   #@show rr
+
    # improves and likely valid
    q1 = trilinear(x[1], y[1], z[1])
    @test isapprox(q1.cv, 4.68, atol = 1E-3)

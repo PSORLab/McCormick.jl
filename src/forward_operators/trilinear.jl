@@ -1275,47 +1275,11 @@ function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) w
     (@is_mix(x) && @is_neg(y) && @is_pos(z)) && (return trilinear_case_6(z, x, y, q))
 
     if (@is_mix(x) && @is_mix(y) && @is_neg(z))
-        if trilinear_case7_chk_cv(x,y,z)
-            cv, cv_grad = trilinear_case7_cv1(x,y,z)
-        elseif trilinear_case7_chk_cv(y,x,z)
-            cv, cv_grad = trilinear_case7_cv1(y,x,z)
-        else
-            cv, cv_grad = trilinear_case7_cv2(x,y,z)
-        end
-        if trilinear_case7_chk_cc(x, y, z)
-            cc, cc_grad = trilinear_case7_cc(x, y, z)
-        else
-            cc, cc_grad = trilinear_case7_cc(y, x, z)
-        end
-        return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
+        return -trilinear_case_3(-z, x, y, -q)
     elseif (@is_mix(x) && @is_neg(y) && @is_mix(z))
-        if trilinear_case7_chk_cv(x, z, y)
-            cv, cv_grad = trilinear_case7_cv1(x, z, y)
-        elseif trilinear_case7_chk_cv(z, x, y)
-            cv, cv_grad = trilinear_case7_cv1(z, x, y)
-        else
-            cv, cv_grad = trilinear_case7_cv2(x, z, y)
-        end
-        if trilinear_case7_chk_cc(x, z, y)
-            cc, cc_grad = trilinear_case7_cc(x, z, y)
-        else
-            cc, cc_grad = trilinear_case7_cc(z, x, y)
-        end
-        return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
+        return -trilinear_case_3(-y, x, z, -q)
     elseif (@is_neg(x) && @is_mix(y) && @is_mix(z))
-        if trilinear_case7_chk_cv(y, z, x)
-            cv, cv_grad = trilinear_case7_cv1(y, z, x)
-        elseif trilinear_case7_chk_cv(z, y, x)
-            cv, cv_grad = trilinear_case7_cv1(z, y, x)
-        else
-            cv, cv_grad = trilinear_case7_cv2(y, z, x)
-        end
-        if trilinear_case7_chk_cc(y, z, x)
-            cc, cc_grad = trilinear_case_7_cc(y, z, x)
-        else
-            cc, cc_grad = trilinear_case_7_cc(z, y, x)
-        end
-        return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
+        return -trilinear_case_3(-x, y, z, -q)
     end
 
     if (@is_pos(x) && @is_neg(y) && @is_neg(z))
