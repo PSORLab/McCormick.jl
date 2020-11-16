@@ -3,7 +3,7 @@ A Forward McCormick Operator Library
 
 | **Linux/Windows**                                                             |           **Coverage**                                                                    
 |:-----------------------------------------------------:|:-------------------------------------------------------:|
-| [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![Coverage Status](https://coveralls.io/repos/github/PSORLab/McCormick.jl/badge.svg?branch=master)](https://coveralls.io/github/PSORLab/McCormick.jl?branch=master) |
+| [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) |
 
 McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) in the form of Jupyter notebooks.
 
