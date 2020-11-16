@@ -2028,11 +2028,10 @@ end
 
    # improves and likely valid
    q1 = trilinear(x[1], y[1], z[1])
-   @test isapprox(q1.cv, 7.279999999999999, atol = 1E-3)
+   @test isapprox(q1.cv, 4.68, atol = 1E-3)
    @test isapprox(q1.cc, 9.0, atol = 1E-3)
 
    # improves and likely valid
-   @show "CHECK ME"
    q2 = trilinear(x[2], y[2], z[2])
    #@test isapprox(q2.cv, -0.6066666666666656, atol = 1E-3)
    #@test isapprox(q2.cc, 15.3, atol = 1E-3)
@@ -2075,14 +2074,13 @@ end
 
    q5b = trilinear(x[9], y[9], z[9])
    @test isapprox(q5b.cv, -9.5, atol = 1E-3)
-   @test isapprox(q5b.cc, -4.5, atol = 1E-3)
+   @test isapprox(q5b.cc, -4.1666666, atol = 1E-3)
 
    q6 = trilinear(x[10], y[10], z[10])
    @test isapprox(q6.cv, 13.0, atol = 1E-3)
    @test isapprox(q6.cc, 45.0, atol = 1E-3)
 
    # improves and likely valid
-   @show "CHECK ME"
    q7a = trilinear(x[11], y[11], z[11])
    #@test isapprox(q7a.cv, -1.0, atol = 1E-3)
    #@test isapprox(q7a.cc, 8.0, atol = 1E-3)
@@ -2093,7 +2091,6 @@ end
    @show q7az.cc
 
    # improves and likely valid
-   @show "CHECK ME"
    q7b = trilinear(x[12], y[12], z[12])
    #@test isapprox(q7b.cv, -11.5, atol = 1E-3)
    #@test isapprox(q7b.cc, -1.0, atol = 1E-3)
@@ -2105,7 +2102,7 @@ end
 
    # improves and likely valid
    q8a = trilinear(x[13], y[13], z[13])
-   @test isapprox(q8a.cv, 10.799999999999997, atol = 1E-3)
+   @test isapprox(q8a.cv, 9.799999999999997, atol = 1E-3)
    @test isapprox(q8a.cc, 15.0, atol = 1E-3)
 
    # improves and likely valid
