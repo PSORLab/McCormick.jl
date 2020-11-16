@@ -2033,13 +2033,9 @@ end
 
    # improves and likely valid
    q2 = trilinear(x[2], y[2], z[2])
-   #@test isapprox(q2.cv, -0.6066666666666656, atol = 1E-3)
-   #@test isapprox(q2.cc, 15.3, atol = 1E-3)
+   @test isapprox(q2.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q2.cc, 15.3, atol = 1E-3)
    q2az = x[2]*y[2]*z[2]
-   @show q2.cv
-   @show q2.cc
-   @show q2az.cv
-   @show q2az.cc
 
    # improves and likely valid
    q3a = trilinear(x[3], y[3], z[3])
@@ -2092,13 +2088,9 @@ end
 
    # improves and likely valid
    q7b = trilinear(x[12], y[12], z[12])
-   #@test isapprox(q7b.cv, -11.5, atol = 1E-3)
-   #@test isapprox(q7b.cc, -1.0, atol = 1E-3)
+   @test isapprox(q7b.cv, -11.5, atol = 1E-3)
+   @test isapprox(q7b.cc, 7.000000000000001, atol = 1E-3)
    q7bz = x[12]*y[12]*z[12]
-   @show q7b.cv
-   @show q7b.cc
-   @show q7bz.cv
-   @show q7bz.cc
 
    # improves and likely valid
    q8a = trilinear(x[13], y[13], z[13])
