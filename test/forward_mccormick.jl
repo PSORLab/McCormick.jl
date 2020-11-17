@@ -2210,13 +2210,43 @@ end
    y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
    z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
    q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
    @test isapprox(q.cc, 0.0, atol = 1E-3)
-   println(" ")
-   @show "Case 6"
-   @show q
-   @show qz
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 0.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 0.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 0.0, atol = 1E-3)
+
+   x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 0.0, atol = 1E-3)
+
+   x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 0.0, atol = 1E-3)
 
    # improves and likely valid
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
