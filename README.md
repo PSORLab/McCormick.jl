@@ -1,9 +1,9 @@
 # McCormick.jl
 A Forward McCormick Operator Library
 
-| **Linux/Windows**                                                             |           **Coverage**                                                                    
-|:-----------------------------------------------------:|:-------------------------------------------------------:|
-| [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) |
+| **Linux/Windows**                                                        |          **Coverage**                                                         |           **Persistant DOI**                       |                                              
+|:-----------------------------------------------------:|:-------------------------------------------------------:|:-------------------------------------------------------:|
+| [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | To Be Added (Zenodo) |
 
 McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) in the form of Jupyter notebooks.
 
@@ -101,6 +101,16 @@ Iv = fMC.Intv            # retrieve interval bounds of f(x) on Intv
 ```
 
 ![Figure_3](Figure_3.png)
+
+## Citing McCormick.jl
+
+McCormick.jl is a component of the EAGO.jl ecosystem. Please cite the following paper when using McCormick.jl:
+
+```
+ M. E. Wilhelm & M. D. Stuber (2020) EAGO.jl: easy advanced global optimization in Julia,
+ Optimization Methods and Software, DOI: 10.1080/10556788.2020.1786566
+```
+
 
 ## Unit Testing Note
 While McCormick.jl generally supports Julia 1.1+, some functions may return an error for Julia versions less than 1.3. In particular, `cbrt` will result in a StackOverflow when called. McCormick is unit tested using Julia versions 1.3 and beyond.
