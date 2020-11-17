@@ -879,6 +879,7 @@ function trilinear_case_6(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     -trilinear_case_9(y, -x, z, q)
 end
 
+#=
 function trilinear_case7_chk_cv(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
     xyzLLL + xyzUUU <= xyzUUL + xyzLLU
@@ -1003,6 +1004,7 @@ function trilinear_case7_cc(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:Rela
 
     return cc, cc_grad
 end
+=#
 
 macro trilinear_case8_cc()
     esc(quote
@@ -1220,11 +1222,6 @@ end
 function trilinear_case8_map_chk(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N, T<:Union{NS,MV}}
     @unpack_trilinear_bnd()
     (xyzLLL + xyzUUU <= xyzLLL + xyzUUU) && (xyzLLL + xyzUUU <= xyzLUL + xyzULU)
-end
-
-function trilinear_case10_map_chk(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N, T<:Union{NS,MV}}
-    @unpack_trilinear_bnd()
-    (xyzULL + xyzLUU >= xyzLUL + xyzULU) && (xyzULL + xyzLUU >= xyzUUL + xyzLLU)
 end
 
 function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N, T<:Union{NS,MV}}
