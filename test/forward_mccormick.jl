@@ -2196,6 +2196,66 @@ end
    @show q
    @show qz
 
+   x = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+   println(" ")
+   @show "Case 10a"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+   println(" ")
+   @show "Case 10b"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+   println(" ")
+   @show "Case 10c"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+   println(" ")
+   @show "Case 10d"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+   println(" ")
+   @show "Case 10e"
+   @show q
+   @show qz
+
    # improves and likely valid
    x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 5.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-4.0, 1.0), 2)
@@ -2214,11 +2274,71 @@ end
    y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
    z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
    q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-#   @test isapprox(q7b.cv, -11.5, atol = 1E-3)
-#   @test isapprox(q7b.cc, 7.000000000000001, atol = 1E-3)
+   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
    qz = (x*y)*z
    println(" ")
    @show "Case 12"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   qz = (x*y)*z
+   println(" ")
+   @show "Case 12a"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   qz = (x*y)*z
+   println(" ")
+   @show "Case 12b"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   qz = (x*y)*z
+   println(" ")
+   @show "Case 12c"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   qz = (x*y)*z
+   println(" ")
+   @show "Case 12d"
+   @show q
+   @show qz
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   qz = (x*y)*z
+   println(" ")
+   @show "Case 12e"
    @show q
    @show qz
 
