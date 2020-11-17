@@ -2000,7 +2000,7 @@ end
    x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    z = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2008,7 +2008,7 @@ end
    x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    z = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2016,7 +2016,7 @@ end
    x = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2024,7 +2024,7 @@ end
    x = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
    y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2032,7 +2032,7 @@ end
    x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    y = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2040,7 +2040,7 @@ end
    x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    y = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
    z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 4.68, atol = 1E-3)
    @test isapprox(q.cc, 9.0, atol = 1E-3)
@@ -2049,7 +2049,7 @@ end
    x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2057,7 +2057,7 @@ end
    x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2065,7 +2065,7 @@ end
    x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2073,7 +2073,7 @@ end
    x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2081,7 +2081,7 @@ end
    x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
    y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2089,7 +2089,7 @@ end
    x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
    y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
    z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
    @test isapprox(q.cc, 15.3, atol = 1E-3)
@@ -2098,449 +2098,498 @@ end
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
    z = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    y = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
    z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    z = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
    y = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    x = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
    y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    x = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv,-3.1500000000000004, atol = 1E-3)
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
    @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
 
    # improves and likely valid
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
    z = MC{3,NS}(-0.5, Interval{Float64}(-3.0, 1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   #@test isapprox(q.cv, 1.8666666666666671, atol = 1E-3)
-   @test isapprox(q.cc, 1.9833333333333334, atol = 1E-3)
-   println(" ")
-   @show "Case 4 (FAILS, CV)"
-   @show q
-   @show qz
+   @test isapprox(q.cv, -3.975, atol = 1E-3)
+   @test isapprox(q.cc, 2.3000000000000007, atol = 1E-3)
 
    # improves and likely valid
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
    y = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
    z = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -4.65, atol = 1E-3)
+   @test isapprox(q.cv, -11.15, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
    y = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
    z = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -4.666666666666667, atol = 1E-3)
+   @test isapprox(q.cv, -9.866666666666667, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
+   #@show "MARKER 1"
    x = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
    z = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -3.1499999999999995, atol = 1E-3)
+   @test isapprox(q.cv, -12.0, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
+   #@show "MARKER 2"
    x = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
    y = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -3.916666666666666, atol = 1E-3)
+   @test isapprox(q.cv, -9.41666666666666, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
+   #@show "MARKER 3"
    x = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
    y = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -4.916666666666668, atol = 1E-3)
+   @test isapprox(q.cv, -10.416666666666668, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
+   #@show "MARKER 4"
    x = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
    z = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   @test isapprox(q.cv, -4.65, atol = 1E-3)
+   @test isapprox(q.cv, -9.816666666666668, atol = 1E-3)
    @test isapprox(q.cc, 1.0, atol = 1E-3)
 
+   #@show "MARKER 5"
    # improves and likely valid
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
    z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
+   #@show "MARKER 6"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
    z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
+   #@show "MARKER 7"
    x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
    y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
+   #@show "MARKER 8"
    x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
+   #@show "MARKER 9"
    x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
+   #@show "MARKER 10"
    x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
    y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -15.0, atol = 1E-3)
-   @test isapprox(q.cc, 0.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
 
    # improves and likely valid
+   #@show "MARKER 11"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
    y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 2)
    z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 4.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   #@test isapprox(q.cv, -2.25, atol = 1E-3)
-   #@test isapprox(q.cc, 6.0, atol = 1E-3)
-   println(" ")
-   @show "Case 7 (FAILS, cv)"
-   @show q
-   @show qz
+   @test isapprox(q.cv, -23.0, atol = 1E-3)
+   @test isapprox(q.cc, 6.0, atol = 1E-3)
 
    # improves and likely valid
+   #@show "MARKER 12"
    x = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 13"
    x = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 14"
    x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 15"
    x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 16"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 17"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.5, atol = 1E-3)
 
+   #@show "MARKER 18"
    x = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 19"
    x = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 20"
    x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 21"
    x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 22"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
    z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 23"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -9.5, atol = 1E-3)
    @test isapprox(q.cc, -4.1666666, atol = 1E-3)
 
+   #@show "MARKER 24"
    x = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
+   #@show "MARKER 25"
    x = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
+   #@show "MARKER 26"
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
    y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
+   #@show "MARKER 27"
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
    z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
+   #@show "MARKER 28"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
    z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
+   #@show "MARKER 29"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
    y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 13.0, atol = 1E-3)
    @test isapprox(q.cc, 45.0, atol = 1E-3)
 
    # improves and likely valid
+   #@show "MARKER 30"
    x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 5.0), 1)
    y = MC{3,NS}(-2.0, Interval{Float64}(-4.0, 1.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   #@test isapprox(q7a.cv, -1.0, atol = 1E-3)
-   #@test isapprox(q7a.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
-   println(" ")
-   @show "Case 11 (FAILS, CV)"
-   @show q
-   @show qz
+   @test isapprox(q.cv, -6.800000000000001, atol = 1E-3)
+   @test isapprox(q.cc, 30.0, atol = 1E-3)
 
    # improves and likely valid (GOOD)
+   #@show "MARKER 31"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
    z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
+   #@show "MARKER 32"
    x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
+   #@show "MARKER 33"
    x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
    y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
+   #@show "MARKER 34"
    x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
    y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
+   #@show "MARKER 35"
    x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
    y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
    z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 3.1999999999999993, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
+   #@show "MARKER 36"
    x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
    y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
    z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, -6.550000000000001, atol = 1E-3)
-   @test isapprox(q.cc, 8.0, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
 
    # improves and likely valid (GOOD)
+   #@show "MARKER 37"
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 9.799999999999997, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
+   #@show "MARKER 38"
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 10.8, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
-   @show "Case 13a (modified)"
 
+   #@show "MARKER 39"
    x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 9.799999999999997, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
+   #@show "MARKER 40"
    x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
-   @test isapprox(q.cv, 9.799999999999997, atol = 1E-3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 10.8, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
-   @show "Case 13d (modified)"
 
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    qz = (x*y)*z
    @test isapprox(q.cv, 10.8, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
-   @show "Case 13e (modified)"
 
    # improves and likely valid (GOOD)
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
    y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
    z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    y = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
    z = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
    x = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
    z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
    @test isapprox(q.cc, 15.0, atol = 1E-3)
 
@@ -2548,85 +2597,97 @@ end
    x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
    z = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
    y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
    z = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    x = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
    y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    x = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
    y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
    z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
    y = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
    z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
    y = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
    z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
    @test isapprox(q.cv, 3.0, atol = 1E-3)
    @test isapprox(q.cc, 10.2, atol = 1E-3)
 
    # improves and likely valid
+   #println("MARKER 06")
    x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
    @test isapprox(q.cc, -48.0, atol = 1E-3)
 
+   #println("MARKER 05")
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
    y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
    @test isapprox(q.cc, -48.0, atol = 1E-3)
 
+   #println("MARKER 04")
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
    z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
-   @test isapprox(q.cc, -50.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
 
+   #println("MARKER 03")
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
    y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
    @test isapprox(q.cc, -48.0, atol = 1E-3)
 
+   #println("MARKER 02")
    x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
    z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
    @test isapprox(q.cc, -48.0, atol = 1E-3)
 
+   #println("MARKER 01")
    x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
    y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
    z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
-   q = mult_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
    @test isapprox(q.cv, -106.0, atol = 1E-3)
-   @test isapprox(q.cc, -50.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
 end
