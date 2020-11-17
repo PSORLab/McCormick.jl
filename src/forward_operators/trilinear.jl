@@ -1143,6 +1143,7 @@ function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     @unpack_trilinear_end()
 end
 
+#=
 """
 trilinear_case_10
 
@@ -1196,6 +1197,7 @@ function trilinear_case_10(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float
 
     @unpack_trilinear_end()
 end
+=#
 
 x_mul_y2(x, y) = x*y^2
 
@@ -1344,22 +1346,10 @@ function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) w
     end
 
     if (@is_neg(x) && @is_neg(y) && @is_neg(z))
-        if trilinear_case10_map_chk(x, y, z)
-            return trilinear_case_10(x, y, z, q)
-        elseif trilinear_case10_map_chk(x, z, y)
-            return trilinear_case_10(x, z, y, q)
-        elseif trilinear_case10_map_chk(y, x, z)
-            return trilinear_case_10(y, x, z, q)
-        elseif trilinear_case10_map_chk(y, z, x)
-            return trilinear_case_10(y, z, x, q)
-        elseif trilinear_case10_map_chk(z, x, y)
-            return trilinear_case_10(z, x, y, q)
-        else
-            return trilinear_case_10(z, y, x, q)
-        end
+        return -mult_kernel(-x,y,z,-q)
     end
 
-    return trilinear_case_3(x, y, z, q)
+    return trilinear_case_3(x,y,z,q)
 end
 
 @inline function trilinear(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
