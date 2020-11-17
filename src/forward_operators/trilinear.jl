@@ -372,7 +372,6 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         else
             cc, cc_grad = trilinear_case3_cc2(x,y,z)
         end
-        @show cv, cc
         return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
     elseif @is_mix(x) && @is_pos(y) && @is_mix(z)
         if trilinear_case3_chk_cv(y,x,z)
@@ -387,7 +386,6 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         else
             cc, cc_grad = trilinear_case3_cc2(y,x,z)
         end
-        @show cv, cc
         return MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
     end
 
@@ -403,7 +401,6 @@ function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     else
         cc, cc_grad = trilinear_case3_cc2(z,x,y)
     end
-    @show cv, cc
     MC{N,T}(cv, cc, q, cv_grad, cc_grad, x.cnst && y.cnst && z.cnst)
 end
 
