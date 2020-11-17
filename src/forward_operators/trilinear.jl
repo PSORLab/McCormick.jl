@@ -1363,17 +1363,18 @@ function mult_kernel(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) w
 end
 
 @inline function trilinear(x1::MC{N,T}, x2::MC{N,T}, x3::MC{N,T}) where {N, T<:Union{NS,MV}}
-	if x1 == x2
-		if x1 == x3
-			z = x1.Intv^3
-		else
-			z = x_mul_y2(x3.Intv, x1.Intv)
-		end
-	elseif x2 == x3
-		z = x_mul_y2(x1.Intv, x2.Intv)
-	else
-		z = x1.Intv*x2.Intv*x3.Intv
-	end
+	#if x1 == x2
+	#	if x1 == x3
+	#		z = x1.Intv^3
+	#	else
+	#		z = x_mul_y2(x3.Intv, x1.Intv)
+	#	end
+	#elseif x2 == x3
+	#	z = x_mul_y2(x1.Intv, x2.Intv)
+	#else
+	#	z = x1.Intv*x2.Intv*x3.Intv
+	#end
+    z = x1.Intv*x2.Intv*x3.Intv
 	return mult_kernel(x1, x2, x3, z)
 end
 
