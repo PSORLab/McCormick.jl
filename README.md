@@ -1,7 +1,7 @@
 # McCormick.jl
 A Forward McCormick Operator Library
 
-| **Linux/Windows**                                                        |          **Coverage**                                                         |           **Persistant DOI**                       |                                              
+| **Linux/Windows**                                                        |          **Coverage**                                                         |           **Persistent DOI**                       |                                              
 |:-----------------------------------------------------:|:-------------------------------------------------------:|:-------------------------------------------------------:|
 | [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
 
