@@ -209,3 +209,10 @@ end
 @inline max(x::MC, y::MC) = max_kernel(x, y, max(x.Intv, y.Intv))
 @inline min_kernel(x::MC{N,T}, y::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{MV, Diff}} = -max(-x, -y)
 @inline min(x::MC, y::MC) = min_kernel(x, y, min(x.Intv, y.Intv))
+
+@inline function union(x::MC{N,T}, y::MC{N,T}) where {N, T <: RelaxTag}
+    cv_MC = min(x, y)
+    cc_MC = max(x, y)
+    return MC{N, NS}(cv_MC.cv, cc_MC.cc, Interval(cv.Intv.lo, cc.Intv.hi),
+                     cv_MC.cv_grad, cc_MC.cc_grad, x.cnst && y.cnst)
+end
