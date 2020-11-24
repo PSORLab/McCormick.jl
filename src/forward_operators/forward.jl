@@ -1,3 +1,7 @@
+if ~(VERSION < v"1.1-")
+    include("interval_special_functions.jl")
+end
+
 include("arithmetic.jl")
 include("convex_increasing.jl")
 include("concave_increasing.jl")
@@ -7,3 +11,7 @@ include("division.jl")
 include("multiplication.jl")
 include("power.jl")
 include("other.jl")
+include("activation_functions.jl")
+include("set_bounds.jl")
+include("comparison.jl")
+include("trilinear.jl")

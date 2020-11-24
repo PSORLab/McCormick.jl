@@ -274,12 +274,23 @@ end
     end
 	return npp_or_pow4(x, c, y)
 end
-@inline function pow(x::MC{N,T}, c::Z) where {Z<:Integer, N, T<:RelaxTag}
-	if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
-		return nan(MC{N,T})
+
+if ~(VERSION < v"1.1-")
+	@inline function pow(x::MC{N,T}, c::Z) where {Z<:Integer, N, T<:RelaxTag}
+		if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
+			return nan(MC{N,T})
+		end
+		(c < 0) && pow_kernel(x, c, inv(pow(x.Intv,-c)))
+		return pow_kernel(x, c, pow(x.Intv,c))
 	end
-	(c < 0) && pow_kernel(x, c, inv(pow(x.Intv,-c)))
-	return pow_kernel(x, c, pow(x.Intv,c))
+else
+	@inline function pow(x::MC{N,T}, c::Z) where {Z<:Integer, N, T<:RelaxTag}
+		if (x.Intv.lo <= 0.0 <= x.Intv.hi) && (c < 0)
+			return nan(MC{N,T})
+		end
+		(c < 0) && pow_kernel(x, c, inv(x.Intv^(-c)))
+		return pow_kernel(x, c, x.Intv^c)
+	end
 end
 @inline (^)(x::MC, c::Z) where {Z <: Integer} = pow(x,c)
 

@@ -13,6 +13,7 @@
 # version of standard McCormick arithmetic.
 #############################################################################
 
+#=
 # Need to add this to Project.toml... requires Julia 1.3+
 using CRLibm
 using RoundingEmulator
@@ -77,3 +78,5 @@ end
 	end
 	return MC{N,T}(cc, cv, z, c*x.cc_grad, c*x.cv_grad, x.cnst)
 end
+=#
+

@@ -343,20 +343,151 @@ end
     return asinh(x), 1.0/sqrt(1.0+x^2), p
 end
 
+@inline erf_deriv(x::Float64) = (2.0/sqrt(pi))*exp(-x^2)
+@inline erf_deriv2(x::Float64) = 4.0*x*exp(-x^2)/sqrt(pi)
+@inline function erf_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (erf(x) - erf(y))/erf_deriv(x)
+end
+@inline function cv_erf(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(erf, erf_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return erf(x), erf_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, erf_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, erf_env, xU, 0.0))
+    end
+    (x <= p) && (return erf(x), erf_deriv(x), p)
+    return dline_seg(erf, erf_deriv, x, p, xU)..., p
+end
+@inline function cc_erf(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return erf(x), erf_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(erf, erf_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, erf_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, erf_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(erf, erf_deriv, x, xL, p)..., p)
+    return erf(x), erf_deriv(x), p
+end
+
+@inline erfinv_deriv(x::Float64) = (sqrt(pi)/2.0)*exp(erfinv(x)^2)
+@inline erfinv_deriv2(x::Float64) = (sqrt(pi)/2.0)*exp(2.0*erfinv(x)^2)*erfinv(x)
+@inline function erfinv_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (erfinv(x) - erfinv(y))/erfinv_deriv(x)
+end
+@inline function cv_erfinv(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return erfinv(x), erfinv_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(erfinv, erfinv_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, erfinv_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, erfinv_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(erfinv, erfinv_deriv, x, xL, p)..., p)
+    return erfinv(x), erfinv_deriv(x), p
+end
+@inline function cc_erfinv(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(erfinv, erfinv_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return erfinv(x), erf_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, erfinv_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, erfinv_env, xU, 0.0))
+    end
+    (x >= p) && (return dline_seg(erfinv, erfinv_deriv, x, p, xU)..., p)
+    return erfinv(x), erfinv_deriv(x), p
+end
+
+@inline erfc_deriv(x::Float64) = (-2.0/sqrt(pi))*exp(-x^2)
+@inline erfc_deriv2(x::Float64) = (4.0/sqrt(pi))*exp(-x^2)*x
+@inline function erfc_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (erfc(x) - erfc(y))/erfc_deriv(x)
+end
+@inline function cv_erfc(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return erfc(x), erfc_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(erfc, erfc_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, erfc_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, erfc_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(erfc, erfc_deriv, x, xL, p)..., p)
+    return erfc(x), erfc_deriv(x), p
+end
+@inline function cc_erfc(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(erfc, erfc_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return erfc(x), erfc_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, erfc_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, erfc_env, xU, 0.0))
+    end
+    (x >= p) && (return dline_seg(erfc, erfc_deriv, x, p, xU)..., p)
+    return erfc(x), erfc_deriv(x), p
+end
+
+@inline cbrt_deriv(x::Float64) = 1.0/(3.0*cbrt(x)^2)
+@inline cbrt_deriv2(x::Float64) = -2.0/(9.0*cbrt(x)^5)
+@inline function cbrt_env(x::Float64, y::Float64, z::Float64)
+    (x - y) - (cbrt(x) - cbrt(y))/cbrt_deriv(x)
+end
+@inline function cv_cbrt(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return dline_seg(cbrt, cbrt_deriv, x, xL, xU)..., p)
+    (xU <= 0.0) && (return cbrt(x), cbrt_deriv(x), p)
+    if p === Inf
+        p, flag = secant(xL, 0.0, xL, 0.0, cbrt_env, xU, 0.0)
+        flag && (p = golden_section(xL, 0.0, cbrt_env, xU, 0.0))
+    end
+    (x <= p) && (return cbrt(x), cbrt_deriv(x), p)
+    return dline_seg(cbrt, cbrt_deriv, x, p, xU)..., p
+end
+@inline function cc_cbrt(x::Float64, xL::Float64, xU::Float64, p::Float64)
+    (xL >= 0.0) && (return cbrt(x), cbrt_deriv(x), p)
+    (xU <= 0.0) && (return dline_seg(cbrt, cbrt_deriv, x, xL, xU)..., p)
+    if p === Inf
+        p, flag = secant(0.0, xU, 0.0, xU, cbrt_env, xL, 0.0)
+        flag && (p = golden_section(0.0, xU, cbrt_env, xL, 0.0))
+    end
+    (x <= p) && (return dline_seg(cbrt, cbrt_deriv, x, xL, p)..., p)
+    return cbrt(x), cbrt_deriv(x), p
+end
+
+# Defines interval version of cbrt if necessary
+# Copy of recent version from IntervalArithmetic.jl
+if VERSION < v"1.3-"
+    function cbrt(x::BigFloat, r::RoundingMode)
+            setrounding(BigFloat, r) do
+                cbrt(x)
+            end
+        end
+    cbrt(a::Interval{Float64}) = atomic(Interval{Float64}, cbrt(big53(a)))
+    function cbrt(a::Interval{BigFloat})
+        isempty(a) && return a
+        @round(cbrt(a.lo), cbrt(a.hi))
+    end
+end
+
 # basic method overloading operator (sinh, tanh, atanh, asinh), convexoconcave or concavoconvex
 eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
                                  :atanh => :xL, :tan => :xL, :acos => :xU,
-                                 :asin => :xL, :atan => :xL)
+                                 :asin => :xL, :atan => :xL, :erf => :xL,
+                                 :cbrt => :xL, :erfinv => :xL, :erfc => :xU)
 eps_max_dict = Dict{Symbol,Symbol}(:sinh => :xU, :tanh => :xU, :asinh => :xU,
                                  :atanh => :xU, :tan => :xU, :acos => :xL,
-                                 :asin => :xU, :atan => :xU)
+                                 :asin => :xU, :atan => :xU, :erf => :xU,
+                                 :cbrt => :xU, :erfinv => :xU, :erfc => :xL)
 
-for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
-    expri_cv = Symbol("cv_"*String(expri))
-    expri_cc = Symbol("cc_"*String(expri))
-    expri_kernel = Symbol(String(expri)*"_kernel")
-    eps_min = eps_min_dict[expri]
-    eps_max = eps_max_dict[expri]
+for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
+              (:(SpecialFunctions.erf), :erf), :cbrt,
+              (:(SpecialFunctions.erfinv), :erfinv),
+              (:(SpecialFunctions.erfc), :erfc))
+    if expri isa Symbol
+        expri_name = expri
+        expri_sym = expri
+    else
+        expri_name = expri[1]
+        expri_sym = expri[2]
+    end
+    expri_kernel = Symbol(String(expri_sym)*"_kernel")
+    expri_cv = Symbol("cv_"*String(expri_sym))
+    expri_cc = Symbol("cc_"*String(expri_sym))
+    eps_min = eps_min_dict[expri_sym]
+    eps_max = eps_max_dict[expri_sym]
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
         xL = x.Intv.lo
@@ -386,8 +517,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan)
         cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
         return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
-    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
-        z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
+    @eval @inline function ($expri_name)(x::MC{N,T}) where {N, T<:RelaxTag}
+        z, tp1, tp2 = ($expri_kernel)(x, ($expri_name)(x.Intv), Inf, Inf)
         return z
     end
 end
@@ -466,10 +597,21 @@ end
 @inline deg2rad_kernel(x::MC, y::Interval{Float64}) = deg2rad(x,y)
 @inline rad2deg_kernel(x::MC, y::Interval{Float64}) = rad2deg(x,y)
 
+@inline sinpi(x::MC) = sin(pi*x)
+@inline cospi(x::MC) = cos(pi*x)
+
+@inline erfcinv(x::MC) = erfinv(1.0 - x)
+
 for expri in (:sec, :csc, :cot, :asec, :acsc, :acot, :sech, :csch, :coth,
               :acsch, :acoth, :sind, :cosd, :tand, :secd, :cscd, :cotd,
-              :asind, :acosd, :atand, :asecd, :acscd, :acotd)
+              :asind, :acosd, :atand, :asecd, :acscd, :acotd, :sinpi, :cospi)
 
      expri_kernel = Symbol(String(expri)*"_kernel")
      @eval @inline ($expri)(x::MC, y::Interval{Float64}) = ($expri)(x)
  end
+ @eval @inline erfcinv_kernel(x::MC, y::Interval{Float64}) = erfcinv(x)
+
+erf(x) = SpecialFunctions.erf(x)
+erfc(x) = SpecialFunctions.erfc(x)
+erfinv(x) = SpecialFunctions.erfinv(x)
+erfcinv(x) = SpecialFunctions.erfcinv(x)

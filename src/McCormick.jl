@@ -20,7 +20,7 @@ using DocStringExtensions, LinearAlgebra
 using DiffRules: diffrule
 using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
-using NaNMath
+using NaNMath, SpecialFunctions
 
 import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              abs, inv, exp, exp2, exp10, expm1, log, log2, log10, log1p, acosh,
@@ -28,8 +28,11 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
-             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty
+             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
+             <, <=, ==, fma, cbrt, sinpi, cospi
 
+using IntervalArithmetic: @round, big53, setrounding
+using IntervalRootFinding
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,
                            expm1, log, log2, log10, log1p, sqrt, ^,
@@ -40,7 +43,13 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            atan, asin, acos, AbstractInterval, atomic,
                            sind, cosd, tand, asind, acosd, atand,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
-                           setrounding, diam, isthin
+                           setrounding, diam, isthin, abs2
+
+if ~(VERSION < v"1.1-")
+    import SpecialFunctions: erf, erfc, erfinv, erfcinv
+    export erf, erfinv, erfc, erfcinv, erf_kernel,
+           erfinv_kernel, erfc_kernel, erfcinv_kernel
+end
 
 import Base.MathConstants.golden
 
@@ -54,18 +63,31 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        sind, cosd, tand, asind, acosd, atand, nan,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
-       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC
+       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
+       relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
+       sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
+       positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
+       <, <=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax, trilinear
 
 # Export kernel operators
-export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel, min_kernel,
-       log_kernel, log2_kernel, log10_kernel, log1p_kernel, acosh_kernel, sqrt_kernel,
-       exp_kernel, exp2_kernel, exp10_kernel, expm1_kernel, div_kernel, cos_kernel,
-       sin_kernel, sinh_kernel, tanh_kernel, asinh_kernel, atanh_kernel, tan_kernel,
-       acos_kernel, asin_kernel, atan_kernel, cosh_kernel, deg2rad_kernel, rad2deg_kernel,
-       sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel, acot_kernel, sech_kernel,
-       csch_kernel, coth_kernel, acsch_kernel, acoth_kernel, sind_kernel, cosd_kernel,
-       tand_kernel, secd_kernel, cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
-       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel
+export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
+       min_kernel, log_kernel, log2_kernel, log10_kernel, log1p_kernel,
+       acosh_kernel, sqrt_kernel, exp_kernel, exp2_kernel, exp10_kernel,
+       expm1_kernel, div_kernel, cos_kernel, sin_kernel, sinh_kernel,
+       tanh_kernel, asinh_kernel, atanh_kernel, tan_kernel, acos_kernel,
+       asin_kernel, atan_kernel, cosh_kernel, deg2rad_kernel, rad2deg_kernel,
+       sec_kernel, csc_kernel, cot_kernel, asec_kernel, acsc_kernel,
+       acot_kernel, sech_kernel, csch_kernel, coth_kernel, acsch_kernel,
+       acoth_kernel, sind_kernel, cosd_kernel, tand_kernel, secd_kernel,
+       cscd_kernel, cotd_kernel, asind_kernel, acosd_kernel,
+       atand_kernel, asecd_kernel, acscd_kernel, acotd_kernel, relu_kernel,
+       param_relu_kernel, leaky_relu_kernel, maxsig_kernel,
+       maxtanh_kernel, softplus_kernel, pentanh_kernel, sigmoid_kernel,
+       bisigmoid_kernel, softsign_kernel, gelu_kernel, elu_kernel, selu_kernel,
+       swish1_kernel, positive_kernel, negative_kernel, lower_bnd_kernel,
+       upper_bnd_kernel, bnd_kernel, xlogx_kernel, fma_kernel, cbrt_kernel,
+       abs2_kernel, sinpi_kernel, cospi_kernel, arh_kernel, xexpax_kernel,
+       trilinear_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 
@@ -490,5 +512,6 @@ include("implicit_routines/implicit.jl")
 using Reexport
 @reexport using IntervalArithmetic
 @reexport using StaticArrays
+@reexport using SpecialFunctions
 
 end

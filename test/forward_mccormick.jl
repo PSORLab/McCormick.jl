@@ -55,6 +55,134 @@ end
    @test out == 1.0
 end
 
+if ~(VERSION < v"1.1-")
+   @testset "Test Error Functions" begin
+      x_erf_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_z1 = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+      x_erf_z2 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+      yerfp = erf(x_erf_p)
+      yerfn = erf(x_erf_n)
+      yerfz1 = erf(x_erf_z1)
+      yerfz2 = erf(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.3219683520780011, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.3219683520780011, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.3286267594591274, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.30801138150037066, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.3080113815003707, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.3286267594591274, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      yerfp = erfinv(x_erf_p)
+      yerfn = erfinv(x_erf_n)
+      yerfz1 = erfinv(x_erf_z1)
+      yerfz2 = erfinv(x_erf_z2)
+
+      @test isapprox(yerfp.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfp.cc, 0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cv, -0.278407728482351, atol=1E-8)
+      @test isapprox(yerfn.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz1.cv, -0.2896752187685166, atol=1E-8)
+      @test isapprox(yerfz1.cc, -0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cv, 0.2724627147267543, atol=1E-8)
+      @test isapprox(yerfz2.cc, 0.28967521876851665, atol=1E-8)
+
+      x1 = MC{1,NS}(0.1, Interval(-1.5, 1.5), 1)
+      x2 = MC{1,NS}(-0.5, Interval(-1.5, 1.5), 1)
+      x3 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+      x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+      x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+      x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+      x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+      x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+      x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+      x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+      x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+      x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
+
+      y1 = gelu(x1)
+      y2 = gelu(x2)
+      y3 = gelu(x3)
+
+      y4 = gelu(x4)
+      y5 = gelu(x5)
+      y6 = gelu(x6)
+
+      y7 = gelu(x7)
+      y8 = gelu(x8)
+      y9 = gelu(x9)
+
+      y10 = gelu(x10)
+      y11 = gelu(x11)
+      y12 = gelu(x12)
+
+      @test isapprox(gelu(7), 6.999999999991041, atol=1E-8)
+      @test isapprox(gelu(-0.75), -0.16997051428265114, atol=1E-8)
+
+      @test isapprox(y1.cv, 0.053982783727702904, atol=1E-8)
+      @test isapprox(y1.cc, 0.6997891980967129, atol=1E-8)
+      @test isapprox(y2.cv, -0.15426876936299344, atol=1E-8)
+      @test isapprox(y2.cc, 0.3997891980967129, atol=1E-8)
+      @test isapprox(y3.cv, 0.5306254434438489, atol=1E-8)
+      @test isapprox(y3.cc, 0.5565428241289478, atol=1E-8)
+
+      @test isapprox(y4.cv, -5.222141651051171e-8, atol=1E-8)
+      @test isapprox(y4.cc, -2.610399119085116e-10, atol=1E-8)
+      @test isapprox(y5.cv, 6.4999999477785835, atol=1E-8)
+      @test isapprox(y5.cc, 6.49999999973896, atol=1E-8)
+      @test isapprox(y6.cv, 0.5306254434438489, atol=1E-8)
+      @test isapprox(y6.cc, 0.5565428241289478, atol=1E-8)
+
+      @test isapprox(y7.cv, 3.073809840032428, atol=1E-8)
+      @test isapprox(y7.cc, 3.299185798223376, atol=1E-8)
+      @test isapprox(y8.cv, 0.9505770065222403, atol=1E-8)
+      @test isapprox(y8.cc, 1.697372160948963, atol=1E-8)
+      @test isapprox(y9.cv, 0.18537342665668577, atol=1E-8)
+      @test isapprox(y9.cc, 1.4368229984446212, atol=1E-8)
+
+      @test isapprox(y10.cv, -0.14923266704102095, atol=1E-8)
+      @test isapprox(y10.cc, -0.02584062996129348, atol=1E-8)
+      @test isapprox(y11.cv, 0.7343458871879165, atol=1E-8)
+      @test isapprox(y11.cc, 0.8328461064510111, atol=1E-8)
+      @test isapprox(y12.cv, 0.18537342665668577, atol=1E-8)
+      @test isapprox(y12.cc, 0.5343290419885047, atol=1E-8)
+   end
+end
+
 @testset "Test Univariate" begin
 
    mctol = 1E-4
@@ -169,6 +297,10 @@ end
    @test check_vs_ref1(sin, x_sin_z, yref_sin_ns_z, mctol)
    @test check_vs_ref1(sin, x_sin_d1_z, yref_sin_d1_z, mctol)
 
+   ysinpi = sinpi(x_sin_z)
+   @test isapprox(ysinpi.cv, -1.0, atol=1E-8)
+   @test isapprox(ysinpi.cc, 0.682459570501031, atol=1E-8)
+
    #####  Cosine #####
    x_cos_p = MC{2,Diff}(4.0, 4.0, Interval{Float64}(3.0,7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_cos_n = MC{2,Diff}(-4.0, -4.0, Interval{Float64}(-7.0,-3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -184,6 +316,10 @@ end
    @test check_vs_ref1(cos, x_cos_n, yref_cos_d1_n, mctol)
    @test check_vs_ref1(cos, x_cos_z, yref_cos_d1_z, mctol)
    @test check_vs_ref1(cos, x_cos_z_ns, yref_cos_ns_z, mctol)
+
+   ycospi = cospi(x_sin_z)
+   @test isapprox(ycospi.cv, -1.0, atol=1E-8)
+   @test isapprox(ycospi.cc, 1.0, atol=1E-8)
 
    ##### Tangent #####
    x_tan_p = MC{2,NS}(0.6, 0.6, Interval{Float64}(0.5,1.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -266,6 +402,49 @@ end
    @test check_vs_ref1(tanh, x_tanh_z2, yref_tanh_d1_z2, mctol)
    @test check_vs_ref1(tanh, x_tanh_z1_ns, yref_tanh_ns, mctol)
 
+   x_cbrt_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_z1 = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_cbrt_z2 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(-0.5, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   ycbrtp = cbrt(x_cbrt_p)
+   ycbrtn = cbrt(x_cbrt_n)
+   ycbrtz1 = cbrt(x_cbrt_z1)
+   ycbrtz2 = cbrt(x_cbrt_z2)
+
+   @test isapprox(ycbrtp.cv, 0.6544358737564154, atol=1E-8)
+   @test isapprox(ycbrtp.cc, 0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtn.cv, -0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtn.cc, -0.6544358737564154, atol=1E-8)
+   @test isapprox(ycbrtz1.cv, -0.6694329500821695, atol=1E-8)
+   @test isapprox(ycbrtz1.cc, -0.3703935787925799, atol=1E-8)
+   @test isapprox(ycbrtz2.cv, 0.37039357879257984, atol=1E-8)
+   @test isapprox(ycbrtz2.cc, 0.6694329500821695, atol=1E-8)
+
+   x_arh_p1 = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.2, 0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p2 = MC{2,Diff}(4.1, 4.1, Interval{Float64}(3.5, 4.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p3 = MC{2,Diff}(0.6, 0.6, Interval{Float64}(0.5, 3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_p4 = MC{2,NS}(2.6, 2.6, Interval{Float64}(0.5, 3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_arh_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.5, -0.2), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+
+   arhp1 = arh(x_arh_p1, 2.0)
+   arhp2 = arh(x_arh_p2, 2.0)
+   arhp3 = arh(x_arh_p3, 2.0)
+   arhp4 = arh(x_arh_p4, 2.0)
+   arhn = arh(x_arh_n, 2.0)
+
+   @test isapprox(arhp1.cv, 0.0012726338013398079, atol=1E-8)
+   @test isapprox(arhp1.cc, 0.006135479582753048, atol=1E-8)
+   @test isapprox(arhp2.cv, 0.6130841525286383, atol=1E-8)
+   @test isapprox(arhp2.cc, 0.6139726608994069, atol=1E-8)
+   @test isapprox(arhp3.cv, 0.03850739431865814, atol=1E-8)
+   @test isapprox(arhp3.cc, 0.03986037228553247, atol=1E-8)
+   @test isapprox(arhp4.cv, 0.43426549824693633, atol=1E-8)
+   @test isapprox(arhp4.cc, 0.46336936923117533, atol=1E-8)
+   @test isapprox(arhn.cv, 785.7719942274175, atol=1E-8)
+   @test isapprox(arhn.cc, 14702.509913215526, atol=1E-8)
+
    ##### Inverse Hyperbolic Sine #####
    x_asinh_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_asinh_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.7,-0.1), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -339,7 +518,8 @@ end
    @test csch(xextras) == inv(sinh(xextras))
    @test coth(xextras) == inv(tanh(xextras))
    @test acsch(xextras) == log(sqrt(1.0+inv(sqr(xextras)))+inv(xextras))
-   @test acoth(xextras) == 0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras)))
+   @test isapprox(acoth(xextras).cv, (0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras)))).cv, atol = 1E-8)
+   @test isnan(acoth(xextras).cc) && isnan(0.5*(log(1.0+inv(xextras))-log(1.0-inv(xextras))))
    @test sind(xextras) == sin(deg2rad(xextras))
    @test cosd(xextras) == cos(deg2rad(xextras))
    @test tand(xextras) == tan(deg2rad(xextras))
@@ -527,6 +707,17 @@ end
    y = cos(x)*max(x^3, cos(x)*exp(x)/((x-4.0)*(x+2.0))-1.0)/(x+2.0)
    #@test y.cv == 0.02549714244205218
    #@test y.cc == 0.17002351564507798
+
+   yD = xlogx(xD)
+   yNS = xlogx(xNS)
+   @test isapprox(yD.cv, 1.3862943611198906, atol=1E-8)
+   @test isapprox(yD.cc, 1.8483924814931874, atol=1E-8)
+   @test isapprox(yNS.cv, 1.3862943611198906, atol=1E-8)
+   @test isapprox(yNS.cc, 1.8483924814931874, atol=1E-8)
+
+   fma1 = fma(mc6, mc6, mc6)
+   @test isapprox(fma1.cv, 7.683615424642269, atol = 1E-8)
+   @test isapprox(fma1.cc, 307.1925114113242, atol = 1E-8)
 end
 
 @testset "Test Arithmetic w/Constant" begin
@@ -534,6 +725,30 @@ end
    mctol = 1E-4
 
    x0 = MC{2,NS}(4.5, 4.5, Interval{Float64}(2.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   fma1 = fma(x0, 2.0, x0)
+   @test isapprox(fma1.cv, 13.5, atol = 1E-8)
+   @test isapprox(fma1.cc, 13.5, atol = 1E-8)
+
+   fma2 = fma(x0, x0, 2.0)
+   @test isapprox(fma2.cv, 16.0, atol = 1E-8)
+   @test isapprox(fma2.cc, 31.0, atol = 1E-8)
+
+   fma3 = fma(2.0, x0, x0)
+   @test isapprox(fma3.cv, 13.5, atol = 1E-8)
+   @test isapprox(fma3.cc, 13.5, atol = 1E-8)
+
+   fma4 = fma(x0, 2.0, 3.0)
+   @test isapprox(fma4.cv, 12.0, atol = 1E-8)
+   @test isapprox(fma4.cc, 12.0, atol = 1E-8)
+
+   fma5 = fma(2.0, x0, 3.0)
+   @test isapprox(fma5.cv, 12.0, atol = 1E-8)
+   @test isapprox(fma5.cc, 12.0, atol = 1E-8)
+
+   fma6 = fma(2.0, 3.0, x0)
+   @test isapprox(fma6.cv, 10.5, atol = 1E-8)
+   @test isapprox(fma6.cc, 10.5, atol = 1E-8)
 
    x0a = McCormick.div_kernel(x0, 2.0, x0.Intv/2.0)
    x0b = McCormick.div_kernel(2.0, x0, 2.0/x0.Intv)
@@ -673,6 +888,10 @@ end
    @test check_vs_refv(^, x3, 4, yref_ns_pow8, mctol)
    @test check_vs_refv(^, x4, 4, yref_ns_pow9, mctol)
    @test x2^(1) == x2
+
+   y1_abs2 = abs2(x1)
+   @test isapprox(y1_abs2.cv, 16.0, atol=1E-8)
+   @test isapprox(y1_abs2.cc, 19.0, atol=1E-8)
 
    x1_d1 = MC{2,Diff}(4.0, 4.0, Interval{Float64}(3.0, 7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x2_d1 = MC{2,Diff}(-4.5, -4.5, Interval{Float64}(-8.0, -3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
@@ -1111,7 +1330,7 @@ end
 
    @test zero(x) == zero(MC{2,NS})
    @test one(x) == one(MC{2,NS})
-   @test nan(x) == nan(MC{2,NS})
+   @test isnan(nan(x).cv) && isnan(nan(x).cc)
    @test real(x) == x
    @test dist(x, x0) == max(abs(x.cc - x0.cc), abs(x.cv - x0.cv))
    @test eps(x) == max(eps(x.cc), eps(x.cv))
@@ -1197,6 +1416,14 @@ end
    out2c = intersect(x, Interval{Float64}(9.0,10.0))
    @test isnan(out2c.cv)
    @test isnan(out2c.cc)
+
+   out2c1 = intersect(x, 2.0)
+   @test out2c1.cv == 2.0
+   @test out2c1.cc == 2.0
+
+   out2c2 = intersect(2.0, x)
+   @test out2c2.cv == 2.0
+   @test out2c2.cc == 2.0
 
    X = Interval{Float64}(-2,2)
    Y = Interval{Float64}(-2,2)
@@ -1317,4 +1544,1150 @@ end
    @test_nowarn atanh(x)
    @test_nowarn acos(x)
 
+end
+
+@testset "Activation Functions" begin
+
+   x1 = MC{1,NS}(0.1, Interval(-1.5, 1.5), 1)
+   x2 = MC{1,NS}(-0.5, Interval(-1.5, 1.5), 1)
+   x3 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   y1 = relu(x1)
+   y2 = relu(x2)
+   y3 = relu(x3)
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.8000000000000002, atol=1E-8)
+   @test y2.cv == 0.0
+   @test y2.cc == 0.5
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   @test relu(0.5) == 0.5
+   @test McCormick.relu_deriv(0.5) == 1.0
+   @test McCormick.relu_deriv2(0.5) == 0.0
+
+   y1 = leaky_relu(x1)
+   y2 = leaky_relu(x2)
+   y3 = leaky_relu(x3)
+
+   @test y1.cv == 0.1
+   @test y1.cc == 0.793
+   @test y2.cv == -0.005
+   @test y2.cc == 0.49
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   @test leaky_relu(0.5) == 0.5
+   @test McCormick.leaky_relu_deriv(0.5) == 1.0
+   @test McCormick.leaky_relu_deriv2(0.5) == 0.00
+
+   y1 = param_relu(x1, 0.01)
+   y2 = param_relu(x2, 0.01)
+   y3 = param_relu(x3, 0.01)
+
+   @test y1.cv == 0.1
+   @test y1.cc == 0.793
+   @test y2.cv == -0.005
+   @test y2.cc == 0.49
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   @test param_relu(0.5, 0.01) == 0.5
+   @test param_relu(1, 1) == 1
+   @test McCormick.param_relu_deriv(0.5, 0.01) == 1.0
+
+   gout = zeros(2)
+   McCormick.param_relu_grad(gout, 1.0, 0.5)
+   @test gout[1] == 0.5
+   @test gout[2] == 1.0
+
+   McCormick.param_relu_grad(gout, -1.0, 0.5)
+   @test gout[1] == 0.5
+   @test gout[2] == -1.0
+
+   y1 = maxsig(x1)
+   y2 = maxsig(x2)
+   y3 = maxsig(x3)
+
+   @test isapprox(y1.cv, 0.52497918747894, atol=1E-8)
+   @test isapprox(y1.cc, 0.885131911109633, atol=1E-8)
+   @test isapprox(y2.cv, 0.3775406687981454, atol=1E-8)
+   @test isapprox(y2.cc, 0.6216170158709042, atol=1E-8)
+   @test y3.cv == 0.7
+   @test isapprox(y3.cc, 0.7979674649614835, atol=1E-8)
+
+
+   @test maxsig(1) == 1
+   @test isapprox(maxsig(0.5), 0.6224593312018546, atol =1E-8)
+   @test isapprox(McCormick.maxsig_deriv(0.5), 0.2350037122015945, atol =1E-8)
+   @test isapprox(McCormick.maxsig_deriv2(5.5), 0.0, atol =1E-8)
+   @test isapprox(McCormick.maxsig_deriv2(-3.5), 0.026784980676662237, atol =1E-8)
+
+   y1 = elu(x1, 0.01)
+   y2 = elu(x2, 0.01)
+   y3 = elu(x3, 0.01)
+
+   @test elu(0.5, 0.01) == 0.5
+   @test elu(5, 1) == 5
+   @test isapprox((elu(Interval(-5.0,-3.0), 0.5)).lo, -0.4966310265004573, atol=1E-8)
+
+   gout = zeros(2)
+   McCormick.elu_grad(gout, 1.0, 0.5)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.7963746074140261, atol=1E-8)
+   @test isapprox(y2.cv, -0.003934693402873666, atol=1E-8)
+   @test isapprox(y2.cc, 0.4948208677343229, atol=1E-8)
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = selu(x1, 0.01, 0.5)
+   y2 = selu(x2, 0.01, 0.5)
+   y3 = selu(x3, 0.01, 0.5)
+
+   @test selu(0.5, 0.01, 0.5) == 0.25
+
+   gout = zeros(3)
+   McCormick.selu_grad(gout, 0.5, 1.0, 0.5)
+   @test gout[1] == 0.5
+   @test gout[2] == 0.0
+   @test gout[3] == 0.5
+
+
+   @test y1.cv == 0.05
+   @test isapprox(y1.cc, 0.39818730370701305, atol=1E-8)
+   @test isapprox(y2.cv, -0.001967346701436833, atol=1E-8)
+   @test isapprox(y2.cc, 0.24741043386716144, atol=1E-8)
+   @test y3.cv == 0.35
+   @test y3.cc == 0.35
+
+   y1 = maxtanh(x1)
+   y2 = maxtanh(x2)
+   y3 = maxtanh(x3)
+
+   @test maxtanh(0.75) == 0.75
+   @test maxtanh(2) == 2
+   @test McCormick.maxtanh_deriv2(0.75) == 0.0
+   @test isapprox(McCormick.maxtanh_deriv2(-5.75), 8.103746506240892e-5, atol=1E-8)
+
+   @test y1.cv == 0.1
+   @test isapprox(y1.cc, 0.3775974816323957, atol=1E-8)
+   @test isapprox(y2.cv, -0.46211715726000974, atol=1E-8)
+   @test isapprox(y2.cc, -0.10343216909657771, atol=1E-8)
+   @test y3.cv == 0.7
+   @test y3.cc == 0.7
+
+   y1 = softplus(x1)
+   y2 = softplus(x2)
+   y3 = softplus(x3)
+
+   @test isapprox(softplus(7), 7.000911466453774, atol=1E-8)
+   @test isapprox(softplus(0.75), 1.1368710061148999, atol=1E-8)
+   @test isapprox(McCormick.softplus_deriv2(0.75), 0.217894993761814, atol=1E-8)
+
+   @test isapprox(y1.cv, 0.744396660073571, atol=1E-8)
+   @test isapprox(y1.cc, 1.0014132779827525, atol=1E-8)
+   @test isapprox(y2.cv, 0.4740769841801067, atol=1E-8)
+   @test isapprox(y2.cc, 0.7014132779827524, atol=1E-8)
+   @test isapprox(y3.cv, 1.103186048885458, atol=1E-8)
+   @test isapprox(y3.cc, 1.1195442429406357, atol=1E-8)
+
+   y1 = pentanh(x1)
+   y2 = pentanh(x2)
+   y3 = pentanh(x3)
+
+   @test isapprox(pentanh(7), 0.9999983369439447, atol=1E-8)
+   @test isapprox(pentanh(0.75), 0.6351489523872873, atol=1E-8)
+   @test isapprox(McCormick.pentanh_deriv2(0.75), -0.08974759478157028, atol=1E-8)
+   @test isapprox(McCormick.pentanh_deriv2(-0.75), 0.022370912744158675, atol=1E-8)
+
+   @test isapprox(y1.cv, 0.060343216909657764, atol=1E-8)
+   @test isapprox(y1.cc, 0.35880541402007554, atol=1E-8)
+   @test isapprox(y2.cv, -0.1243530017715962, atol=1E-8)
+   @test isapprox(y2.cc, 0.08986935938100252, atol=1E-8)
+   @test isapprox(y3.cv, 0.550723376536981, atol=1E-8)
+   @test isapprox(y3.cc, 0.6043677771171636, atol=1E-8)
+
+   y1 = sigmoid(x1)
+   y2 = sigmoid(x2)
+   y3 = sigmoid(x3)
+
+   @test isapprox(sigmoid(7), 0.9990889488055994, atol=1E-8)
+   @test isapprox(sigmoid(0.75), 0.679178699175393, atol=1E-8)
+   @test isapprox(McCormick.sigmoid_deriv2(0.75), 0.4003874719875089, atol=1E-8)
+
+   @test isapprox(y1.cv, 0.5084495314200309, atol=1E-8)
+   @test isapprox(y1.cc, 0.5357111749761996, atol=1E-8)
+   @test isapprox(y2.cv, 0.37596741223133967, atol=1E-8)
+   @test isapprox(y2.cc, 0.4032290557875084, atol=1E-8)
+   @test isapprox(y3.cv, 0.6614823602002124, atol=1E-8)
+   @test isapprox(y3.cc, 0.6681877721681662, atol=1E-8)
+
+   y1 = bisigmoid(x1)
+   y2 = bisigmoid(x2)
+   y3 = bisigmoid(x3)
+
+   @test isapprox(bisigmoid(7), 0.9981778976111988, atol=1E-8)
+   @test isapprox(bisigmoid(0.75), 0.35835739835078595, atol=1E-8)
+   @test isapprox(McCormick.bisigmoid_deriv2(0.75), -0.1561685661562888, atol=1E-8)
+
+   @test isapprox(y1.cv, 0.01689906284006173, atol=1E-8)
+   @test isapprox(y1.cc, 0.07142234995239904, atol=1E-8)
+   @test isapprox(y2.cv, -0.2480651755373207, atol=1E-8)
+   @test isapprox(y2.cc, -0.19354188842498335, atol=1E-8)
+   @test isapprox(y3.cv, 0.3229647204004248, atol=1E-8)
+   @test isapprox(y3.cc, 0.3363755443363322, atol=1E-8)
+
+   y1 = softsign(x1)
+   y2 = softsign(x2)
+   y3 = softsign(x3)
+
+   @test softsign(7) == 0.875
+   @test isapprox(softsign(0.75), 0.42857142857142855, atol=1E-8)
+   @test isapprox(McCormick.softsign_deriv2(0.75), -0.3731778425655977, atol=1E-8)
+   @test isapprox(McCormick.softsign_deriv2(-0.75), 0.3731778425655977, atol=1E-8)
+
+   @test isapprox(y1.cv, -0.05362319120141322, atol=1E-8)
+   @test isapprox(y1.cc, 0.14699793280161522, atol=1E-8)
+   @test isapprox(y2.cv, -0.3333333333333333, atol=1E-8)
+   @test isapprox(y2.cc, -0.1331262919989905, atol=1E-8)
+   @test isapprox(y3.cv, 0.3866666666666666, atol=1E-8)
+   @test isapprox(y3.cc, 0.4117647058823529, atol=1E-8)
+
+   x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+   x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+   x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+   x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+   x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+   x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+   x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+   x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
+
+   y1 = swish1(x1)
+   y2 = swish1(x2)
+   y3 = swish1(x3)
+
+   y4 = swish1(x4)
+   y5 = swish1(x5)
+   y6 = swish1(x6)
+
+   y7 = swish1(x7)
+   y8 = swish1(x8)
+   y9 = swish1(x9)
+
+   y10 = swish1(x10)
+   y11 = swish1(x11)
+   y12 = swish1(x12)
+
+   @test isapprox(swish1(7), 6.993622641639196, atol=1E-8)
+   @test isapprox(swish1(-0.75), -0.24061597561845527, atol=1E-8)
+
+   @test isapprox(y1.cv, 0.052497918747894, atol=1E-8)
+   @test isapprox(y1.cc, 0.5263617142904655, atol=1E-8)
+   @test isapprox(y2.cv, -0.1887703343990727, atol=1E-8)
+   @test isapprox(y2.cc, 0.22636171429046548, atol=1E-8)
+   @test isapprox(y3.cv, 0.46773144051771626, atol=1E-8)
+   @test isapprox(y3.cc, 0.49425607533883487, atol=1E-8)
+
+   @test isapprox(y4.cv, -0.013265798607177848, atol=1E-8)
+   @test isapprox(y4.cc, -0.009757684668790446, atol=1E-8)
+   @test isapprox(y5.cv, 6.486734201392823, atol=1E-8)
+   @test isapprox(y5.cc, 6.490242315331209, atol=1E-8)
+   @test isapprox(y6.cv, 0.46773144051771626, atol=1E-8)
+   @test isapprox(y6.cc, 0.49425607533883487, atol=1E-8)
+
+   @test isapprox(y7.cv, 2.961190227697252, atol=1E-8)
+   @test isapprox(y7.cc, 3.1974071923702523, atol=1E-8)
+   @test isapprox(y8.cv, 0.8252861161546294, atol=1E-8)
+   @test isapprox(y8.cc, 1.5174068718163187, atol=1E-8)
+   @test isapprox(y9.cv, 0.1723327550434977, atol=1E-8)
+   @test isapprox(y9.cc, 1.2820250620927323, atol=1E-8)
+
+   @test isapprox(y10.cv, -0.2747138838453706, atol=1E-8)
+   @test isapprox(y10.cc, -0.17841452204467384, atol=1E-8)
+   @test isapprox(y11.cv, 0.6398545523625035, atol=1E-8)
+   @test isapprox(y11.cc, 0.7123064812859411, atol=1E-8)
+   @test isapprox(y12.cv, 0.1723327550434977, atol=1E-8)
+   @test isapprox(y12.cc, 0.4170112431680709, atol=1E-8)
+
+   @test isapprox(McCormick.swish1_env(1.0, 2.0, 3.0), -0.1028650654542731, atol=1E-8)
+
+   x4 = MC{1,NS}(-6.5, Interval(-7.5, -5.5), 1)
+   x5 = MC{1,NS}(6.5, Interval(5.5, 7.5), 1)
+   x6 = MC{1,NS}(0.7, Interval(0.5, 1.5), 1)
+
+   x7 = MC{1,NS}(3.1, Interval(-3.5, 3.5), 1)
+   x8 = MC{1,NS}(1.1, Interval(-2.0, 2.5), 1)
+   x9 =  MC{1,NS}(0.3, Interval(-2.0, 3.5), 1)
+
+   x10 = MC{1,NS}(-1.1, Interval(-1.3, 1.3), 1)
+   x11 = MC{1,NS}(0.9, Interval(-0.8, 1.1), 1)
+   x12 =  MC{1,NS}(0.3, Interval(-0.8, 1.3), 1)
+
+   y1 = xexpax(x1,-0.5)
+   y2 = xexpax(x2,-0.5)
+   y3 = xexpax(x3,-0.5)
+
+   y4 = xexpax(x4,-0.5)
+   y5 = xexpax(x5,-0.5)
+   y6 = xexpax(x6,-0.5)
+
+   y7 = xexpax(x7,-0.5)
+   y8 = xexpax(x8,-0.5)
+   y9 = xexpax(x9,-0.5)
+
+   y10 = xexpax(x10,-0.5)
+   y11 = xexpax(x11,-0.5)
+   y12 = xexpax(x12,-0.5)
+
+   @test isapprox(y1.cv, -1.1040067694360605, atol=1E-8)
+   @test isapprox(y1.cc, 0.09512294245007141, atol=1E-8)
+
+   @test isapprox(y2.cv, -1.8808167402421674, atol=1E-8)
+   @test isapprox(y2.cc, -0.6420127083438707, atol=1E-8)
+
+   @test isapprox(y3.cv, 0.4532302790508663, atol=1E-8)
+   @test isapprox(y3.cc, 0.4932816628030994, atol=1E-8)
+
+   @test isapprox(y4.cv, -202.4712951817529, atol=1E-8)
+   @test isapprox(y4.cc, -167.6372094617549, atol=1E-8)
+
+   @test isapprox(y5.cv, 0.2520323509061931, atol=1E-8)
+   @test isapprox(y5.cc, 0.26399316527848, atol=1E-8)
+
+   @test isapprox(y6.cv, 0.4532302790508663, atol=1E-8)
+   @test isapprox(y6.cc, 0.4932816628030994, atol=1E-8)
+
+   @test isapprox(y7.cv, -0.5774665218146768, atol=1E-8)
+   @test isapprox(y7.cc, 0.6579687188629034, atol=1E-8)
+
+   @test isapprox(y8.cv, -1.1979504320041896, atol=1E-8)
+   @test isapprox(y8.cc, 0.6346447914185354, atol=1E-8)
+
+   @test isapprox(y9.cv, -2.9087497195203285, atol=1E-8)
+   @test isapprox(y9.cc, 0.25821239292751735, atol=1E-8)
+
+   @test isapprox(y10.cv, -2.2464444171405744, atol=1E-8)
+   @test isapprox(y10.cc, -1.906578319654135, atol=1E-8)
+
+   @test isapprox(y11.cv, 0.44221273357310886, atol=1E-8)
+   @test isapprox(y11.cc, 0.5738653364595959, atol=1E-8)
+
+   @test isapprox(y12.cv, -0.21282585587845876, atol=1E-8)
+   @test isapprox(y12.cc, 0.25821239292751735, atol=1E-8)
+
+   y1 = xexpax(x1,0.5)
+   y2 = xexpax(x2,0.5)
+   y3 = xexpax(x3,0.5)
+
+   y4 = xexpax(x4,0.5)
+   y5 = xexpax(x5,0.5)
+   y6 = xexpax(x6,0.5)
+
+   y7 = xexpax(x7,0.5)
+   y8 = xexpax(x8,0.5)
+   y9 = xexpax(x9,0.5)
+
+   y10 = xexpax(x10,0.5)
+   y11 = xexpax(x11,0.5)
+   y12 = xexpax(x12,0.5)
+
+   @test isapprox(y1.cv, 0.10512710963760241, atol=1E-8)
+   @test isapprox(y1.cc, 1.3629434263714295, atol=1E-8)
+
+   @test isapprox(y2.cv, -0.38940039153570244, atol=1E-8)
+   @test isapprox(y2.cc, 0.5861334555653227, atol=1E-8)
+
+   @test isapprox(y3.cv, 0.9933472840152799, atol=1E-8)
+   @test isapprox(y3.cc, 1.148710171658899, atol=1E-8)
+
+   @test isapprox(y4.cv, -0.26399316527848, atol=1E-8)
+   @test isapprox(y4.cc, -0.2520323509061931, atol=1E-8)
+
+   @test isapprox(y5.cv, 167.6372094617549, atol=1E-8)
+   @test isapprox(y5.cc, 202.4712951817529, atol=1E-8)
+
+   @test isapprox(y6.cv, 0.9933472840152799, atol=1E-8)
+   @test isapprox(y6.cc, 1.148710171658899, atol=1E-8)
+
+   @test isapprox(y7.cv, 14.605557566031301, atol=1E-8)
+   @test isapprox(y7.cc, 18.955434042128815, atol=1E-8)
+
+   @test isapprox(y8.cv, 1.906578319654135, atol=1E-8)
+   @test isapprox(y8.cc, 5.782243441122052, atol=1E-8)
+
+   @test isapprox(y9.cv, 0.3485502728184849, atol=1E-8)
+   @test isapprox(y9.cc, 7.994567839699798, atol=1E-8)
+
+   @test isapprox(y10.cv, -0.6346447914185354, atol=1E-8)
+   @test isapprox(y10.cc, -0.43490084921182987, atol=1E-8)
+
+   @test isapprox(y11.cv, 1.4114809669411519, atol=1E-8)
+   @test isapprox(y11.cc, 1.6494378610770144, atol=1E-8)
+
+   @test isapprox(y12.cv, 0.3485502728184849, atol=1E-8)
+   @test isapprox(y12.cc, 1.0490320707911238, atol=1E-8)
+end
+
+@testset "Test bound enforcing functions" begin
+
+   x = MC{2,NS}(-1.5, 1.5, Interval(-5.5, 7.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   y1 = positive(x)
+   @test y1.cv == McCormick.MC_DOMAIN_TOL
+   @test positive(1.0) == 1.0
+
+   y2 = negative(x)
+   @test y2.cc == -McCormick.MC_DOMAIN_TOL
+   @test negative(1.0) == 1.0
+
+   y3 = lower_bnd(x, -1.0)
+   @test y3.cv == -1.0
+   @test lower_bnd(1.0, -1.0) == 1.0
+
+   y4 = upper_bnd(x, 1.0)
+   @test y4.cc == 1.0
+   @test upper_bnd(1.0, 1.0) == 1.0
+
+   y5 = bnd(x, -1.0, 1.0)
+   @test y5.cv == -1.0
+   @test y5.cc == 1.0
+   @test bnd(1.0, -1.0, 1.0) == 1.0
+
+   gout = zeros(2)
+   McCormick.d_lower_bnd_grad(gout, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+
+   McCormick.d_upper_bnd_grad(gout, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+
+   gout = zeros(3)
+   McCormick.d_bnd_grad(gout, 0.0, 0.0, 0.0)
+   @test gout[1] == 1.0
+   @test gout[2] == 0.0
+   @test gout[3] == 0.0
+end
+
+@testset "Comparisons" begin
+
+   x = MC{2,NS}(4.0, 4.0, Interval{Float64}(3.0,7.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   y = MC{2,NS}(-4.0, -4.0, Interval{Float64}(-7.0,-3.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   z = MC{2,NS}(1.0, 4.0, Interval{Float64}(0.0,5.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   @test x >= y
+   @test !(x <= z)
+   @test y <= z
+   @test x == x
+   @test !(x == z)
+   @test !(x != x)
+   @test x != z
+   @test x > y
+   @test !(x < z)
+   @test y < z
+end
+
+@testset "Trilinear" begin
+
+   # improves and likely valid
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   z = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   z = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   y = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   y = MC{3,NS}(1.4, Interval{Float64}(1.0, 3.5), 3)
+   z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 4.68, atol = 1E-3)
+   @test isapprox(q.cc, 9.0, atol = 1E-3)
+
+   # improves and likely valid
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   x = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   y = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0, 3.0), 1)
+   y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 3.5), 3)
+   z = MC{3,NS}(2.4, Interval{Float64}(0.4, 3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -0.6066666666666656, atol = 1E-3)
+   @test isapprox(q.cc, 15.3, atol = 1E-3)
+
+   # improves and likely valid
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   y = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   x = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   y = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0, 2.5), 3)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   z = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -2.971428571428571, atol = 1E-3)
+   @test isapprox(q.cc, 0.20000000000000018, atol = 1E-3)
+
+   # improves and likely valid
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   y = MC{3,NS}(1.4, Interval{Float64}(-1.0, 2.0), 2)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-3.0, 1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -3.975, atol = 1E-3)
+   @test isapprox(q.cc, 2.3000000000000007, atol = 1E-3)
+
+   # improves and likely valid
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   y = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   z = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.15, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   y = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   z = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.866666666666667, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   #@show "MARKER 1"
+   x = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   z = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -12.0, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   #@show "MARKER 2"
+   x = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   y = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.41666666666666, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   #@show "MARKER 3"
+   x = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   y = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -10.416666666666668, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   #@show "MARKER 4"
+   x = MC{3,NS}(3.0, Interval{Float64}(-2.0, 4.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   z = MC{3,NS}(0.5, Interval{Float64}(-1.0, 1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.816666666666668, atol = 1E-3)
+   @test isapprox(q.cc, 1.0, atol = 1E-3)
+
+   #@show "MARKER 5"
+   # improves and likely valid
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   #@show "MARKER 6"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   #@show "MARKER 7"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   y = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   #@show "MARKER 8"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   #@show "MARKER 9"
+   x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   #@show "MARKER 10"
+   x = MC{3,NS}(-1.0, Interval{Float64}(-2.0,1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-4.0,1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -15.0, atol = 1E-3)
+   @test isapprox(q.cc, 8.0, atol = 1E-3)
+
+   # improves and likely valid
+   #@show "MARKER 11"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, 2.0), 1)
+   y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 2)
+   z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 4.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -23.0, atol = 1E-3)
+   @test isapprox(q.cc, 6.0, atol = 1E-3)
+
+   # improves and likely valid
+   #@show "MARKER 12"
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 13"
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 14"
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 15"
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 16"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 17"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,-1.0), 3)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0,2.0), 1)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.5, atol = 1E-3)
+
+   #@show "MARKER 18"
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 19"
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 20"
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 21"
+   x = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 22"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   z = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 23"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(2.0, Interval{Float64}(1.0,3.0), 2)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0,4.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -9.5, atol = 1E-3)
+   @test isapprox(q.cc, -4.1666666, atol = 1E-3)
+
+   #@show "MARKER 24"
+   x = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   #@show "MARKER 25"
+   x = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   #@show "MARKER 26"
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   #@show "MARKER 27"
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   #@show "MARKER 28"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   z = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   #@show "MARKER 29"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,3.0), 2)
+   y = MC{3,NS}(4.0, Interval{Float64}(2.0,5.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 13.0, atol = 1E-3)
+   @test isapprox(q.cc, 45.0, atol = 1E-3)
+
+   # improves and likely valid
+   #@show "MARKER 30"
+   x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 5.0), 1)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-4.0, 1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -6.800000000000001, atol = 1E-3)
+   @test isapprox(q.cc, 30.0, atol = 1E-3)
+
+   # improves and likely valid (GOOD)
+   #@show "MARKER 31"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   #@show "MARKER 32"
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   #@show "MARKER 33"
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   #@show "MARKER 34"
+   x = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   y = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   #@show "MARKER 35"
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   y = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   z = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   #@show "MARKER 36"
+   x = MC{3,NS}(-2.0, Interval{Float64}(-3.0,2.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-1.0), 3)
+   z = MC{3,NS}(-0.5, Interval{Float64}(-1.0,1.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -11.5, atol = 1E-3)
+   @test isapprox(q.cc, 7.25, atol = 1E-3)
+
+   # improves and likely valid (GOOD)
+   #@show "MARKER 37"
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   #@show "MARKER 38"
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.8, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   #@show "MARKER 39"
+   x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   #@show "MARKER 40"
+   x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 10.2, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.8, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 2.0), 1)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, 10.8, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   # improves and likely valid (GOOD)
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   y = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   y = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   z = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   x = MC{3,NS}(1.5, Interval{Float64}(1.0, 5.0), 1)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -1.0), 3)
+   z = MC{3,NS}(-3.4, Interval{Float64}(-4.0, -2.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 9.299999999999997, atol = 1E-3)
+   @test isapprox(q.cc, 15.0, atol = 1E-3)
+
+   # improves and likely valid
+   x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   z = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   z = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   x = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   y = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   x = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   y = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   x = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   y = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   z = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   x = MC{3,NS}(2.0, Interval{Float64}(-1.0, 3.0), 1)
+   y = MC{3,NS}(-1.4, Interval{Float64}(-3.5, -1.0), 3)
+   z = MC{3,NS}(-2.4, Interval{Float64}(-3.0, -0.4), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   @test isapprox(q.cv, 3.0, atol = 1E-3)
+   @test isapprox(q.cc, 10.2, atol = 1E-3)
+
+   # improves and likely valid
+   #println("MARKER 06")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
+
+   #println("MARKER 05")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
+
+   #println("MARKER 04")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
+
+   #println("MARKER 03")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
+
+   #println("MARKER 02")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
+
+   #println("MARKER 01")
+   x = MC{3,NS}(-4.0, Interval{Float64}(-8.0,-3.0), 1)
+   y = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-2.0), 3)
+   z = MC{3,NS}(-4.0, Interval{Float64}(-7.0,-3.0), 2)
+   q = trilinear_kernel(x, y, z, x.Intv*y.Intv*z.Intv)
+   qz = (x*y)*z
+   @test isapprox(q.cv, -106.0, atol = 1E-3)
+   @test isapprox(q.cc, -48.0, atol = 1E-3)
 end
