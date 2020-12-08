@@ -29,7 +29,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
-             <, <=, ==, fma, cbrt, sinpi, cospi
+             <, <=, ==, fma, cbrt, sinpi, cospi, union
 
 using IntervalArithmetic: @round, big53, setrounding
 using IntervalRootFinding
