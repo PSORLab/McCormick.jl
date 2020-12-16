@@ -23,6 +23,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 DEALINGS IN THE SOFTWARE.
 =#
 
+if isdefined(IntervalArithmetic, :big53)
+    big_val(x) = IntervalArithmetic.big53(x)
+else
+    big_val(x) = IntervalArithmetic.bigequiv(x)
+end
 
 for f in (:erf, :erfc)
 
@@ -32,7 +37,7 @@ for f in (:erf, :erfc)
         end
     end
 
-    @eval ($f)(a::Interval{Float64}) = convert(Interval{Float64}, ($f)(big53(a)))
+    @eval ($f)(a::Interval{Float64}) = convert(Interval{Float64}, ($f)(big_val(a)))
 end
 
 function erf(a::Interval{T}) where T
