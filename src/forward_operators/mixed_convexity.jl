@@ -455,7 +455,7 @@ if VERSION < v"1.3-"
                 cbrt(x)
             end
         end
-    cbrt(a::Interval{Float64}) = atomic(Interval{Float64}, cbrt(big53(a)))
+    cbrt(a::Interval{Float64}) = atomic(Interval{Float64}, cbrt(big_val(a)))
     function cbrt(a::Interval{BigFloat})
         isempty(a) && return a
         @round(cbrt(a.lo), cbrt(a.hi))

@@ -22,13 +22,6 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 =#
-
-if isdefined(IntervalArithmetic, :big53)
-    big_val(x) = IntervalArithmetic.big53(x)
-else
-    big_val(x) = IntervalArithmetic.bigequiv(x)
-end
-
 for f in (:erf, :erfc)
 
     @eval function($f)(x::BigFloat, r::RoundingMode)

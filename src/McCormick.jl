@@ -33,6 +33,11 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
 
 using IntervalArithmetic
 using IntervalArithmetic: @round
+if isdefined(IntervalArithmetic, :big53)
+    big_val(x) = IntervalArithmetic.big53(x)
+else
+    big_val(x) = IntervalArithmetic.bigequiv(x)
+end
 
 using IntervalRootFinding
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
