@@ -99,13 +99,13 @@ The `maxsig` activation function  `maxsig(x) = max(x, 1.0/(1.0 + exp(-x)))`.
     if x > 1.0/(exp(-x) + 1.0)
         return 1.0
     end
-    return exp(x)/(exp(x) + 1.0)^2
+    return exp(-x)/(exp(-x) + 1.0)^2
 end
 @inline function maxsig_deriv2(x::Float64)
     if x > 1.0/(exp(-x) + 1.0)
         return 0.0
     end
-    return exp(x)*(1.0 - exp(x))/(exp(x) + 1.0)^3
+    return exp(x)*(1.0 - exp(x))/(exp(x) + 1.0)^3 #
 end
 function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
@@ -231,8 +231,8 @@ The `softplus` activation function  `softplus(x) = log(1.0 + exp(x))`.
 @inline softplus(x) = log(1.0 + exp(x))
 @inline softplus(x::Float64) = log(1.0 + exp(x))
 @inline softplus(x::Interval{Float64}) = log(1.0 + exp(x))
-@inline softplus_deriv(x::Float64) = exp(x)/(exp(x) + 1.0)
-@inline softplus_deriv2(x::Float64) = exp(x)/(exp(x) + 1.0)^2
+@inline softplus_deriv(x::Float64) = 1.0/(exp(-x) + 1.0)
+@inline softplus_deriv2(x::Float64) = exp(-x)/(exp(-x) + 1.0)^2
 function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     xLc = z.lo
     xUc = z.hi
@@ -585,7 +585,7 @@ The Swish-1 activation function `swish1(x) = x/(1.0 + exp(-x))`.
     return Interval(xLcv, xUcv)
 end
 @inline function swish1_deriv(x::Float64)
-    exp(x)*(x + exp(x) + 1.0)/(exp(x) + 1.0)^2
+    sigmoid(x) + x*sigmoid_deriv(x)
 end
 @inline function swish1_deriv2(x::Float64)
     frac1 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^3
