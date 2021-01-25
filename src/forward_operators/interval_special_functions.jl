@@ -1,6 +1,6 @@
 #=
 Code taken from IntervalSpecialFunctions.jl which will be added as a dependency
-once this has been tagged.
+once this has been tagged. Some modifications have been made.
 
 The IntervalSpecialFunctions.jl package is licensed under the MIT "Expat" License:
 Copyright (c) 2018: David Sanders.
