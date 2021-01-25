@@ -1,3 +1,5 @@
+
+#=
 @inline function mult_kernel_plus(x1::MC{N,NS}, x2::MC{N,NS}, z::Interval{Float64},
                                   u1cv::Float64, u2cv::Float64, a1cv::Float64, a2cv::Float64,
                                   u1cvgrad::SVector{N,Float64}, u2cvgrad::SVector{N,Float64}) where N
@@ -55,3 +57,4 @@
 
     cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
 end
+=#
