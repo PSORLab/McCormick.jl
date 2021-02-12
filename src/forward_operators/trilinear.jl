@@ -9,9 +9,9 @@
 # Defines trilinear product-based on the Meyer-Floudas envelope.
 #############################################################################
 
-"""
+#=
 Computes the maximum of six values and returns the position of their occurance.
-"""
+=#
 function max6(a::Float64, b::Float64, c::Float64, d::Float64, e::Float64, f::Float64)
     if a >= b && a >= c && a >= d && a >= e && a >= f
         return a, 1
@@ -27,9 +27,9 @@ function max6(a::Float64, b::Float64, c::Float64, d::Float64, e::Float64, f::Flo
     return f, 6
 end
 
-"""
+#=
 Computes the maximum of six values and returns the position of their occurance.
-"""
+=#
 function min6(a::Float64, b::Float64, c::Float64, d::Float64, e::Float64, f::Float64)
     if a <= b && a <= c && a <= d && a <= e && a <= f
         return a, 1
@@ -45,9 +45,9 @@ function min6(a::Float64, b::Float64, c::Float64, d::Float64, e::Float64, f::Flo
     return f, 6
 end
 
-"""
+#=
 Picks the `i + 1` argument provided of six elements.
-"""
+=#
 function coeff6(i::Int64, a::Float64, b::Float64, c::Float64, d::Float64, e::Float64, f::Float64)
     (i === 1) && (return a)
     (i === 2) && (return b)
@@ -112,11 +112,11 @@ macro unpack_trilinear_end()
     end)
 end
 
-"""
+#=
 trilinear_case_1
 
 Case 3.1 + Case 4.1 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
@@ -166,11 +166,11 @@ function trilinear_case_1(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     @unpack_trilinear_end()
 end
 
-"""
+#=
 trilinear_case_2
 
 Case 3.2 + Case 4.2 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
@@ -346,11 +346,11 @@ function trilinear_case3_cc2(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:Rel
     return cc, cc_grad
 end
 
-"""
+#=
 trilinear_case_3
 
 Case 3.3 + Case 4.3 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     xL = x.Intv.lo;     xU = x.Intv.hi
     yL = y.Intv.lo;     yU = y.Intv.hi
@@ -693,11 +693,11 @@ function trilinear_case4_cc3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}) where {N,T<:Rel
     return cc, cc_grad
 end
 
-"""
+#=
 trilinear_case_4
 
 Case 3.4 + Case 4.4 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     if trilinear_case4_chk_cv1(x,y,z)
         cv, cv_grad = trilinear_case4_cv1(x,y,z)
@@ -803,11 +803,11 @@ macro trilinear_case5_cv()
     end)
 end
 
-"""
+#=
 trilinear_case_5a
 
 Case 3.5 + Case 4.5 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_5a(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
     @trilinear_case5_cv()
@@ -866,11 +866,11 @@ function trilinear_case_5b(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float
     @unpack_trilinear_end()
 end
 
-"""
+#=
 trilinear_case_6
 
 Note: Case 3.6/Case 4.6 of thesis yielded incorrect result. So reformulated...
-"""
+=#
 function trilinear_case_6(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
@@ -1085,11 +1085,11 @@ macro trilinear_case8_cc()
     end)
 end
 
-"""
+#=
 trilinear_case_8
 
 Case 3.8 + Case 4.8 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_8a(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
@@ -1148,11 +1148,11 @@ function trilinear_case_8b(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float
     @unpack_trilinear_end()
 end
 
-"""
+#=
 trilinear_case_9
 
 Case 3.9 + Case 4.9 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
@@ -1201,11 +1201,11 @@ function trilinear_case_9(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
     @unpack_trilinear_end()
 end
 
-"""
+#=
 trilinear_case_10
 
 Case 3.10 + Case 4.10 of Meyer-Floudas 2004
-"""
+=#
 function trilinear_case_10(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
     @unpack_trilinear_bnd()
 
