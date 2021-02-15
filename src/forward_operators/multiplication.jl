@@ -252,10 +252,19 @@ end
 end
 
 @inline function mult_kernel(x1::MC{N,Diff}, x2::MC{N,Diff}, y::Interval{Float64}) where N
-	degen1 = ((x1.Intv.hi - x1.Intv.lo) <= MC_DEGEN_TOL)
-	degen2 = ((x2.Intv.hi - x2.Intv.lo) <= MC_DEGEN_TOL)
-	(degen1 || degen2) && (return nan(MC{N,Diff}))
-	return multiply_MV(x1, x2, y)
+	degen1 = (x1.Intv.hi - x1.Intv.lo) == 0.0
+	degen2 = (x2.Intv.hi - x2.Intv.lo) == 0.0
+    if degen1 && !degen2
+		out = x1.Intv.hi*x2
+	elseif !degen1 && degen2
+		out = x2.Intv.hi*x1
+	elseif degen1 && degen2
+		out = MC{N,Diff}(x1.Intv.hi*x2.Intv.hi)
+    else
+    	out = multiply_MV(x1, x2, y)
+		check_relaxation_error!(out)
+	end
+	return out
 end
 
 # Nonsmooth multiplication kernel definition

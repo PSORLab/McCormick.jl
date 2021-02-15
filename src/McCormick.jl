@@ -510,6 +510,16 @@ function golden_section_it(init::Int, a::Float64, fa::Float64, b::Float64,
     return out
 end
 
+function check_relaxation_error!(x::MC{N,T}) where {N, T<:RelaxTag}
+    if x.cc < x.cv
+        @error "After performing calculations, a convex relaxation greater
+                than the associated concave relaxation was encountered. Please
+                open an issue at https://github.com/PSORLab/McCormick.jl/issues/new
+                so we may address this error in the future."
+    end
+    return nothing
+end
+
 include("forward_operators/forward.jl")
 include("implicit_routines/implicit.jl")
 
