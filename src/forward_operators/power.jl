@@ -29,7 +29,7 @@ end
 end
 @inline function dcv_sqr(x::Float64, xL::Float64, xU::Float64)
     (0.0 <= xL || xU <= 0.0) && return 2.0*x
-	((xL < 0.0) && (0.0 <= xU) && (0.0 <= x)) && (3.0*x^2)/xU
+	((xL < 0.0) && (0.0 <= xU) && (0.0 <= x)) && return (3.0*x^2)/xU
 	return (3.0*x^2)/xL
 end
 @inline function sqr_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
@@ -65,16 +65,14 @@ end
        eps_min = 0.0
        eps_max = (abs(x.Intv.lo) >= abs(x.Intv.hi)) ? x.Intv.lo : x.Intv.hi
     end
-	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
 	midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
 	cc = cc_sqr(midcc, x.Intv.lo, x.Intv.hi)
-	dcc = dcc_sqr(midcc, x.Intv.lo, x.Intv.hi)
     cv = cv_sqr(midcv, x.Intv.lo, x.Intv.hi)
-    dcv = dcv_sqr(midcv, x.Intv.lo, x.Intv.hi)
-    gdcc1 = dcc_sqr(x.cv, x.Intv.lo, x.Intv.hi)
     gdcv1 = dcv_sqr(x.cv, x.Intv.lo, x.Intv.hi)
-    gdcc2 = dcc_sqr(x.cc, x.Intv.lo, x.Intv.hi)
     gdcv2 = dcv_sqr(x.cc, x.Intv.lo, x.Intv.hi)
+    gdcc1 = dcc_sqr(x.cv, x.Intv.lo, x.Intv.hi)
+    gdcc2 = dcc_sqr(x.cc, x.Intv.lo, x.Intv.hi)
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
