@@ -565,3 +565,163 @@ function xexpax(x::MC{N,T}, a::Float64) where {N, T <: RelaxTag}
 	yMC, tp1, tp2 = xexpax_kernel(x, a, intv_xexpax, Inf, Inf)
 	return yMC
 end
+
+"""
+xabsx
+
+The function `xabsx` is defined as `xabsx(x) = x*abs(x)`.
+"""
+xabsx(x::Float64) = x*abs(x)
+xabsx_deriv(x::Float64) = 2*abs(x)
+xabsx_deriv2(x::Float64) = 2*abs(x)/x #BUT DOESN'T EXIST AT 0
+@inline function cc_xabsx(x::Float64, xL::Float64, xU::Float64)
+	(xU <= 0.0) && (return xabsx(x), xabsx_deriv(x))
+	(0.0 <= xL) && (return dline_seg(^, pow_deriv, x, xL, xU, 2))
+
+	root_f(x::Float64, xL::Float64, xU::Float64) = (xabsx(xU) - xabsx(x)) - 2*(xU - x)*abs(x)
+	root_df(x::Float64, xL::Float64, xU::Float64) = xabsx_deriv(x) - xU*xabsx_deriv2(x)
+	inflection, flag = newton(xL, xL, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return dline_seg(^, pow_deriv, x, xL, xU, 2)
+	else
+		return xabsx(x), xabsx_deriv(x)
+	end
+end
+@inline function cv_xabsx(x::Float64, xL::Float64, xU::Float64)
+	(xU <= 0.0) && (return dline_seg(^, pow_deriv, x, xL, xU, 2))
+	(0.0 <= xL) && (return xabsx(x), xabsx_deriv(x))
+
+	root_f(x::Float64, xL::Float64, xU::Float64) = (xabsx(x) - xabsx(xL)) - 2*(x - xL)*abs(x)
+	root_df(x::Float64, xL::Float64, xU::Float64) = -xabsx_deriv(x) + xL*xabsx_deriv2(x)
+	inflection, flag = newton(xL, xL, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return xabsx(x), xabsx_deriv(x)
+	else
+		return dline_seg(^, pow_deriv, x, xL, xU, 2)
+	end
+end
+function xabsx(x::Interval{Float64})
+	xabsx_xL = Interval(x.lo)*abs(Interval(x.lo))
+	xabsx_xU = Interval(x.hi)*abs(Interval(x.hi))
+	Interval{Float64}(xabsx_xL, xabsx_xU)
+end
+
+
+# REWRITTEN ODD POWER FUNCTIONS USING NEWTON'S METHOD
+@inline function cv_powodd(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
+    (xU <= 0.0) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
+    (0.0 <= xL) && (return x^n, n*x^(n - 1))
+	
+	root_f(x::Float64, xL::Float64, xU::Float64) = (x^n - xL^n) - (x-xL)*(n)*(x^(n-1));
+	root_df(x::Float64, xL::Float64, xU::Float64) = n*x^(n-1) + xL*n*(n-1)*x - n*x^(n-1) - n*(n-1)*x^(n-1);
+	inflection, flag = newton(xU, xL, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return dline_seg(^, pow_deriv, x, xL, xU, n)
+	else
+		return x^n, n*x^(n-1)
+	end
+
+    #val = (xL^n)*(xU - x)/(xU - xL) + (max(0.0, x))^n
+    #dval = -(xL^n)/(xU - xL) + n*(max(0.0, x))^(n-1)
+    #return val, dval
+end
+@inline function cc_powodd(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
+    (xU <= 0.0) && (return x^n, n*x^(n - 1))
+    (0.0 <= xL) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
+
+	root_f(x::Float64, xL::Float64, xU::Float64) = (xU^n-x^n) - (xU-x)*(n)*(x^(n-1));
+	root_df(x::Float64, xL::Float64, xU::Float64) = -n*x^(n-1) - xU*n*(n-1)*x + n*x^(n-1) + n*(n-1)*x^(n-1);
+	inflection, flag = newton(xL, xL, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return x^n, n*x^(n-1)
+	else
+		return dline_seg(^, pow_deriv, x, xL, xU, n)
+	end
+
+    #val = (xU^n)*(x - xL)/(xU - xL) + (min(0.0, x))^n
+    #dval = (xU^n)/(xU - xL) + n*(min(0.0, x))^(n-1)
+    #return val, dval
+end
+
+#=
+# QUICK REWRITE OF NEWTON'S METHOD FOR FIXED ITERATIONS AND TOLERANCE
+function newton(x0::Float64, xL::Float64, xU::Float64, f::Function, df::Function,
+	envp1::Float64, envp2::Float64)
+
+	dfk = 0.0
+	xk = max(xL, min(x0, xU))
+	fk::Float64 = f(xk, envp1, envp2)
+
+	for i = 1:5000
+		dfk = df(xk, envp1, envp2)
+		if (abs(fk) < 1e-6)
+			return (xk, false)
+		end
+		(dfk == 0.0) && return (0.0, true)
+		if (xk == xL && fk/dfk > 0.0)
+			return (xk, false)
+		elseif (xk == xU && fk/dfk < 0.0)
+			return (xk, false)
+		end
+		xk = max(xL, min(xU, xk - fk/dfk))
+		fk = f(xk, envp1, envp2)
+	end
+
+	(0.0, true)
+end
+
+
+
+function xlogx(x::Interval{Float64})
+	min_pnt = one(Interval{Float64})/exp(one(Interval{Float64}))
+	xlogx_xL = Interval(x.lo)*log(Interval(x.lo))
+	xlogx_xU = Interval(x.hi)*log(Interval(x.hi))
+	xlogx_min_bool = isdisjoint(min_pnt, x)
+	if isdisjoint(min_pnt, x)
+		min_val = min(xlogx_xL.lo, xlogx_xU.hi)
+	else
+		min_val = -min_pnt.hi
+	end
+	Interval{Float64}(min_val, max(xlogx_xL.lo, xlogx_xU.hi))
+end
+@inline function xlogx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_max = xlogx(xU) > xlogx(xL) ?  xU : xL
+    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    cc, dcc = cc_xlogx(midcc, xL, xU)
+    cv, dcv = cv_xlogx(midcv, xL, xU)
+    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline function xlogx_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_max = xlogx(xU) > xlogx(xL) ?  xU : xL
+    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
+    midcc = mid3v(x.cv, x.cc, eps_max)
+    midcv = mid3v(x.cv, x.cc, eps_min)
+    cc, dcc = cc_xlogx(midcc, xL, xU)
+    cv, dcv = cv_xlogx(midcv, xL, xU)
+    gcc1, gdcc1 = cc_xlogx(x.cv, xL, xU)
+    gcv1, gdcv1 = cv_xlogx(x.cv, xL, xU)
+    gcc2, gdcc2 = cc_xlogx(x.cc, xL, xU)
+    gcv2, gdcv2 = cv_xlogx(x.cc, xL, xU)
+    cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
+    cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
+    return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+function xlogx(x::MC{N,T}) where {N, T <: RelaxTag}
+	xlogx_kernel(x, xlogx(x.Intv))
+end
+
+
+=#
