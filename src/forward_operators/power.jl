@@ -99,6 +99,7 @@ end
     return dline_seg(^, pow_deriv, x, xL, xU, n)
 end
 # convex/concave relaxation of odd powers
+#=
 @inline function cv_powodd(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
     (xU <= 0.0) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
     (0.0 <= xL) && (return x^n, n*x^(n - 1))
@@ -113,6 +114,7 @@ end
     dval = (xU^n)/(xU - xL) + n*(min(0.0, x))^(n-1)
     return val, dval
 end
+=#
 
 @inline function npp_or_pow4(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
     if (x.Intv.hi < 0.0)
