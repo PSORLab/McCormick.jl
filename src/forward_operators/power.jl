@@ -114,7 +114,6 @@ end
     return val, dval
 end
 
-
 @inline function npp_or_pow4(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
     if (x.Intv.hi < 0.0)
         eps_min = x.Intv.hi
