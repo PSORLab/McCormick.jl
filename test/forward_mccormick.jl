@@ -570,18 +570,6 @@ end
    @test check_vs_ref1(xabsx, x_xabsx_z1, yref_xabsx_d1_z1, mctol)
    @test check_vs_ref1(xabsx, x_xabsx_z2, yref_xabsx_d1_z2, mctol)
 
-   #=
-   "Convex relaxation"
-   cv::Float64
-   "Concave relaxation"
-   cc::Float64
-   "Interval bounds"
-   Intv::Interval{Float64}
-   "(Sub)gradient of convex relaxation"
-   cv_grad::SVector{N,Float64}
-   "(Sub)gradient of concave relaxation"
-   cc_grad::SVector{N,Float64}
-=#
    # CONVERSION
    X = MC{2,NS}(4.5, 4.5, Interval{Float64}(-3.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    X1 = convert(MC{2,NS}, 1)
