@@ -565,3 +565,75 @@ function xexpax(x::MC{N,T}, a::Float64) where {N, T <: RelaxTag}
 	yMC, tp1, tp2 = xexpax_kernel(x, a, intv_xexpax, Inf, Inf)
 	return yMC
 end
+
+"""
+xabsx
+
+The function `xabsx` is defined as `xabsx(x) = x*abs(x)`.
+"""
+xabsx(x::Float64) = x*abs(x)
+xabsx_deriv(x::Float64) = 2*abs(x)
+xabsx_deriv2(x::Float64) = 2*abs(x)/x #BUT DOESN'T EXIST AT 0
+@inline function cc_xabsx(x::Float64, xL::Float64, xU::Float64)
+	(xU <= 0.0) && (return xabsx(x), xabsx_deriv(x))
+	(0.0 <= xL) && (return dline_seg(xabsx, xabsx_deriv, x, xL, xU))
+
+	root_f(x, xL, xU) = (xabsx(xU) - xabsx(x)) - 2*(xU - x)*abs(x)
+	root_df(x, xL, xU) = xabsx_deriv(x) - xU*xabsx_deriv2(x)
+	inflection, flag = newton(xL, xL, 0.0, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return xabsx(x), xabsx_deriv(x)
+	else
+		return dline_seg(xabsx, xabsx_deriv, x, inflection, xU)
+	end
+end
+@inline function cv_xabsx(x::Float64, xL::Float64, xU::Float64)
+	(xU <= 0.0) && (return dline_seg(xabsx, xabsx_deriv, x, xL, xU))
+	(0.0 <= xL) && (return xabsx(x), xabsx_deriv(x))
+
+	root_f(x, xL, xU) = (xabsx(x) - xabsx(xL)) - 2*(x - xL)*abs(x)
+	root_df(x, xL, xU) = -xabsx_deriv(x) + xL*xabsx_deriv2(x)
+	inflection, flag = newton(xU, 0.0, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return dline_seg(xabsx, xabsx_deriv, x, xL, inflection)
+	else
+		return xabsx(x), xabsx_deriv(x)
+	end
+end
+function xabsx(x::Interval{Float64})
+	xabsx_xL = Interval(x.lo)*abs(Interval(x.lo))
+	xabsx_xU = Interval(x.hi)*abs(Interval(x.hi))
+	Interval{Float64}(xabsx_xL.lo, xabsx_xU.hi)
+end
+@inline function xabsx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
+	xL = x.Intv.lo
+	xU = x.Intv.hi
+	eps_max = xU
+	eps_min = xL
+	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+	midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+	cc, dcc = cc_xabsx(midcc, xL, xU)
+	cv, dcv = cv_xabsx(midcv, xL, xU)
+	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+	return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline function xabsx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
+	xL = x.Intv.lo
+	xU = x.Intv.hi
+	eps_max = xU
+	eps_min = xL
+	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+	midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+	cc, dcc = cc_xabsx(midcc, xL, xU)
+	cv, dcv = cv_xabsx(midcv, xL, xU)
+	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+	return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+function xabsx(x::MC{N,T}) where {N, T <: RelaxTag}
+	xabsx_kernel(x, xabsx(x.Intv))
+end
