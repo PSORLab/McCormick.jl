@@ -558,12 +558,12 @@ end
    x_xabsx_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_xabsx_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.7,-0.1), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    x_xabsx_z1 = MC{2,Diff}(0.2, 0.2, Interval{Float64}(-0.7,0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
-   x_xabsx_z2 = MC{2,Diff}(0.1, 0.1, Interval{Float64}(-0.5,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_xabsx_z2 = MC{2,Diff}(0.4, 0.4, Interval{Float64}(-0.7,0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    
    yref_xabsx_d1_p = MC{2, Diff}(0.09, 0.16999999999999998, Interval{Float64}(0.01, 0.49), @SVector[0.6, 0.0], @SVector[0.7999999999999999, 0.0], false)
    yref_xabsx_d1_n = MC{2, Diff}(-0.16999999999999998, -0.09, Interval{Float64}(-0.49, -0.01), @SVector[0.7999999999999999, 0.0], @SVector[0.6, 0.0], false)
    yref_xabsx_d1_z1 = MC{2, Diff}(0.03190908859009977, 0.1257359312880715, Interval{Float64}(-0.49, 0.25), @SVector[0.579898987322333, 0.0], @SVector[0.4142135623730951, 0.0], false)
-   yref_xabsx_d1_z2 = MC{2, Diff}(-0.001471862576142969, 0.14206060760660016, Interval{Float64}(-0.25, 0.49), @SVector[0.4142135623730951, 0.0], @SVector[0.579898987322333, 0.0], false)
+   yref_xabsx_d1_z2 = MC{2, Diff}(0.16000000000000003, 0.20857864376269047, Interval{Float64}(-0.49, 0.25), @SVector[0.8, 0.0], @SVector[0.4142135623730951, 0.0], false)
 
    @test check_vs_ref1(xabsx, x_xabsx_p, yref_xabsx_d1_p, mctol)
    @test check_vs_ref1(xabsx, x_xabsx_n, yref_xabsx_d1_n, mctol)
