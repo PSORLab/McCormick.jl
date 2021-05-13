@@ -262,6 +262,7 @@ end
 	correct_intersect(x, cv, cc, intv, cv_grad, cc_grad, cnst1 && cnst2)
 end
 @inline intersect(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag} = intersect(c, x)
+@inline intersect(c::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = intersect(c, x)
 
 @inline in(a::Int, x::MC) = in(a, x.Intv)
 @inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
