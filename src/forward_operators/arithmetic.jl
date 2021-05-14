@@ -158,5 +158,5 @@ promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Real, N, T <: RelaxTag} = MC{
 
 convert(::Type{MC{N,T}}, x::S) where {S<:NumberNotRelax, N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(x))
 convert(::Type{MC{N,T}}, x::S) where {S<:AbstractInterval, N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(x.lo, x.hi))
-Interval(x::Type{MC{N,T}}) where {N,T<:RelaxTag} = x.Intv
-Interval{Float64}(x::Type{MC{N,T}}) where {N,T<:RelaxTag} = x.Intv
+Interval(x::MC{N,T}) where {N,T<:RelaxTag} = x.Intv
+interval{Float64}(x::MC{N,T}) where {N,T<:RelaxTag} = x.Intv
