@@ -16,7 +16,7 @@ and `Diff` for differentiable relaxations ([Khan2016](https://link.springer.com/
 ## **Supported Operators**
 
 In addition, to supporting the implicit relaxation routines of ([Stuber 2015](https://www.tandfonline.com/doi/abs/10.1080/10556788.2014.924514?journalCode=goms20)). This package
-supports the computation of convex/concave relaxations (and asssociated subgradients) for
+supports the computation of convex/concave relaxations (and associated subgradients) for
 expressions containing the following operations:
 
 **Common algebraic expressions**: `inv`, `log`, `log2`, `log10`, `exp`, `exp2`, `exp10`,
