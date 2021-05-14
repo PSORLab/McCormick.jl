@@ -161,8 +161,8 @@ end
 @inline function pos_odd(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
     midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
     midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
-    cc, dcc = cc_powodd(midcc, x.Intv.lo, x.Intv.hi, c)
-    cv, dcv = cv_powodd(midcv, x.Intv.lo, x.Intv.hi, c)
+    cc, dcc = cc_powodd_ns(midcc, x.Intv.lo, x.Intv.hi, c)
+    cv, dcv = cv_powodd_ns(midcv, x.Intv.lo, x.Intv.hi, c)
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
 	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
@@ -180,6 +180,34 @@ end
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline function cv_powodd_ns(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
+    (xU <= 0.0) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
+    (0.0 <= xL) && (return x^n, n*x^(n - 1))
+	
+	root_f(x::Float64, xL::Float64, xU::Float64) = (x^n - xL^n) - (x-xL)*(n)*(x^(n-1));
+	root_df(x::Float64, xL::Float64, xU::Float64) = n*x^(n-1) + xL*n*(n-1)*x - n*x^(n-1) - n*(n-1)*x^(n-1);
+	inflection, flag = newton(xU, 0.0, xU, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return dline_seg(^, pow_deriv, x, xL, inflection, n)
+	else
+		return x^n, n*x^(n-1)
+	end
+end
+@inline function cc_powodd_ns(x::Float64, xL::Float64, xU::Float64, n::Z) where {Z <: Integer}
+    (xU <= 0.0) && (return x^n, n*x^(n - 1))
+    (0.0 <= xL) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
+
+	root_f(x::Float64, xL::Float64, xU::Float64) = (xU^n-x^n) - (xU-x)*(n)*(x^(n-1));
+	root_df(x::Float64, xL::Float64, xU::Float64) = -n*x^(n-1) - xU*n*(n-1)*x + n*x^(n-1) + n*(n-1)*x^(n-1);
+	inflection, flag = newton(xL, xL, 0.0, root_f, root_df, xL, xU)
+	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
+	if x <= inflection
+		return x^n, n*x^(n-1)
+	else
+		return dline_seg(^, pow_deriv, x, inflection, xU, n)
+	end
 end
 
 # neg_powneg_odd computes the McComrick relaxation of x^c where x < 0.0 and c is odd
