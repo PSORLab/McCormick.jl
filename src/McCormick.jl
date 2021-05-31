@@ -115,7 +115,7 @@ abstract type RelaxTag end
 struct NS <: RelaxTag end
 struct MV <: RelaxTag end
 struct Diff <: RelaxTag end
-const ANYRELAX = Union{NS, MV, Diff} 
+const ANYRELAX = Union{NS, MV, Diff}
 
 
 const MC_ENV_MAX_INT = 100
@@ -397,7 +397,13 @@ $(TYPEDEF)
 `MCNoGrad <: Real` is a McCormick structure without RelaxType Tag or subgradients.
 This structure is used for source-code transformation approaches to constructing
 McCormick relaxations. Methods definitions and calls should specify the
-relaxation type used (i.e.) `+(::NS, x::MCNoGrad, y::MCNoGrad)...`
+relaxation type used (i.e.) `+(::NS, x::MCNoGrad, y::MCNoGrad)...`. Moreover,
+the kernel associated with this returns all intermediate calculations necessary
+to compute subgradient information whereas the overloading calculation simply
+returns the `MCNoGrad` object. For univariate calculations without
+tiepoints such as we `log2(::NS, x::MCNoGrad)::MCNoGrad` wheras
+`log2_kernel(::NS, x::MCNoGrad, ::Bool) = (::MCNoGrad, cv_id::Int, cc_id::Int, dcv, dcc)`
+.
 $(TYPEDFIELDS)
 """
 struct MCNoGrad <: Real
