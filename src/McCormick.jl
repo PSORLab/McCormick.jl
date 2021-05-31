@@ -401,8 +401,14 @@ relaxation type used (i.e.) `+(::NS, x::MCNoGrad, y::MCNoGrad)...`. Moreover,
 the kernel associated with this returns all intermediate calculations necessary
 to compute subgradient information whereas the overloading calculation simply
 returns the `MCNoGrad` object. For univariate calculations without
-tiepoints such as we `log2(::NS, x::MCNoGrad)::MCNoGrad` wheras
-`log2_kernel(::NS, x::MCNoGrad, ::Bool) = (::MCNoGrad, cv_id::Int, cc_id::Int, dcv, dcc)`
+tiepoints such as we `log2(::NS, x::MCNoGrad)::MCNoGrad` whereas
+`log2_kernel(::NS, x::MCNoGrad, ::Bool) = (::MCNoGrad, cv_id::Int, cc_id::Int, dcv, dcc)`.
+Univariate NS functions follow convention (MCNoGrad, cv_id, cc_id, dcv, dcc,
+tp1cv, tp1cc, .... tpncv, tpncc) where cv_id is the subgradient selected
+(1 = cv, 2 = cc, 3 = 0), dcv and dcc are derivatives (or elements of subdifferential)
+of the outside function evaluated per theorem at the point being evaluated and
+tpicv, tpicc are the ith tiepoints associated with computing the envelope
+of the outside function.
 .
 $(TYPEDFIELDS)
 """
