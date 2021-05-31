@@ -294,7 +294,7 @@ end
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = xlogx(xU) > xlogx(xL) ?  xU : xL
-    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
+    eps_min = in(1.0/exp(1.0), x) ? 1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
     cc, dcc = cc_xlogx(midcc, xL, xU)
@@ -308,7 +308,7 @@ end
     xL = x.Intv.lo
     xU = x.Intv.hi
     eps_max = xlogx(xU) > xlogx(xL) ?  xU : xL
-    eps_min = in(-1.0/exp(1.0), x) ? -1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
+    eps_min = in(1.0/exp(1.0), x) ? 1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
     midcc = mid3v(x.cv, x.cc, eps_max)
     midcv = mid3v(x.cv, x.cc, eps_min)
     cc, dcc = cc_xlogx(midcc, xL, xU)
@@ -574,7 +574,7 @@ The function `xabsx` is defined as `xabsx(x) = x*abs(x)`.
 """
 xabsx(x::Float64) = x*abs(x)
 xabsx_deriv(x::Float64) = 2*abs(x)
-xabsx_deriv2(x::Float64) = 2*abs(x)/x #BUT DOESN'T EXIST AT 0
+xabsx_deriv2(x::Float64) = 2*abs(x)/x
 @inline function cc_xabsx(x::Float64, xL::Float64, xU::Float64)
 	(xU <= 0.0) && (return xabsx(x), xabsx_deriv(x))
 	(0.0 <= xL) && (return dline_seg(xabsx, xabsx_deriv, x, xL, xU))
@@ -625,8 +625,8 @@ end
 @inline function xabsx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
 	xL = x.Intv.lo
 	xU = x.Intv.hi
-	eps_max = xU
 	eps_min = xL
+	eps_max = xU
 	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
 	midcv, cv_id = mid3(x.cc, x.cv, eps_min)
 	cc, dcc = cc_xabsx(midcc, xL, xU)

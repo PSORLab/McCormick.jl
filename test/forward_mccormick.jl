@@ -570,6 +570,23 @@ end
    @test check_vs_ref1(xabsx, x_xabsx_z1, yref_xabsx_d1_z1, mctol)
    @test check_vs_ref1(xabsx, x_xabsx_z2, yref_xabsx_d1_z2, mctol)
 
+   ##### Log Hyperbolic Cosine #####
+   x_logcosh_p = MC{2,Diff}(0.3, 0.3, Interval{Float64}(0.1,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_logcosh_n = MC{2,Diff}(-0.3, -0.3, Interval{Float64}(-0.7,-0.1), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_logcosh_z1 = MC{2,Diff}(0.2, 0.2, Interval{Float64}(-0.7,0.5), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+   x_logcosh_z2 = MC{2,Diff}(0.2, 0.2, Interval{Float64}(-0.5,0.7), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
+
+   yref_logcosh_d1_p = MC{2, Diff}(0.044340769925940306, 0.07908453566726616, Interval{Float64}(0.00499168, 0.227271), @SVector[0.2913126124515909, 0.0], @SVector[0.37046423422809865, 0.0], false)
+   yref_logcosh_d1_n = MC{2, Diff}(0.044340769925940306, 0.07908453566726616, Interval{Float64}(0.00499168, 0.227271), @SVector[-0.2913126124515909, -0.0], @SVector[-0.37046423422809865, -0.0], false)
+   yref_logcosh_d1_z1 = MC{2, Diff}(0.01986807184000736, 0.14690343755833452, Interval{Float64}(0, 0.227271), @SVector[0.197375320224904, 0.0], @SVector[-0.08929643533352348, -0.0], false)
+   yref_logcosh_d1_z2 = MC{2, Diff}(0.01986807184000736, 0.18262201169174389, Interval{Float64}(0, 0.227271), @SVector[0.197375320224904, 0.0], @SVector[0.08929643533352348, 0.0], false)
+
+   @test check_vs_ref1(logcosh, x_logcosh_p, yref_logcosh_d1_p, mctol)
+   @test check_vs_ref1(logcosh, x_logcosh_n, yref_logcosh_d1_n, mctol)
+   @test check_vs_ref1(logcosh, x_logcosh_z1, yref_logcosh_d1_z1, mctol)
+   @test check_vs_ref1(logcosh, x_logcosh_z2, yref_logcosh_d1_z2, mctol)
+
+
    # CONVERSION
    X = MC{2,NS}(4.5, 4.5, Interval{Float64}(-3.0,8.0), seed_gradient(1,Val(2)), seed_gradient(1,Val(2)), false)
    X1 = convert(MC{2,NS}, 1)

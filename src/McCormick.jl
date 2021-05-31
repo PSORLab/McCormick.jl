@@ -72,7 +72,7 @@ export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
        <, <=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax, trilinear,
-       xabsx
+       xabsx, logcosh
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
@@ -92,7 +92,7 @@ export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
        swish1_kernel, positive_kernel, negative_kernel, lower_bnd_kernel,
        upper_bnd_kernel, bnd_kernel, xlogx_kernel, fma_kernel, cbrt_kernel,
        abs2_kernel, sinpi_kernel, cospi_kernel, arh_kernel, xexpax_kernel,
-       trilinear_kernel
+       trilinear_kernel, xabsx_kernel, logcosh_kernel
 
 export seed_gradient, RelaxTag, NS, MV, Diff
 

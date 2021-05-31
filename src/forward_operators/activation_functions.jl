@@ -740,3 +740,51 @@ for expri in (:swish1, :gelu)
         return z
     end
 end
+
+"""
+logcosh
+
+The function `logcosh` is defined as `logcosh(x) = log(cosh(x))`.
+"""
+logcosh(x::Float64) = log(cosh(x))
+logcosh_deriv(x::Float64) = tanh(x)
+logcosh_deriv2(x::Float64) = sech(x)^2
+cc_logcosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(logcosh, logcosh_deriv, x, xL, xU)
+cv_logcosh(x::Float64, xL::Float64, xU::Float64) = logcosh(x), logcosh_deriv(x)
+function logcosh(x::Interval{Float64})
+    (abs(x.lo) < abs(x.hi)) ? (logcosh_xU = log(cosh(Interval(x.hi)))) : (logcosh_xU = log(cosh(Interval(x.lo))))
+    logcosh_xL = Interval(0.0)
+    (x.lo >= 0.0) && (logcosh_xL = log(cosh(Interval(x.lo))))
+    (x.hi <= 0.0) && (logcosh_xL = log(cosh(Interval(x.hi))))
+    Interval{Float64}(logcosh_xL.lo, logcosh_xU.hi)
+end
+@inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
+    eps_max = (abs(xL) < abs(xU)) ? xU : xL
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv = cv_logcosh(midcv, xL, xU)
+    cc, dcc = cc_logcosh(midcc, xL, xU)
+    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+@inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
+    eps_max = (abs(xL) < abs(xU)) ? xU : xL
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv = cv_logcosh(midcv, xL, xU)
+    cc, dcc = cc_logcosh(midcc, xL, xU)
+    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
+    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
+end
+function logcosh(x::MC{N,T}) where {N, T <: RelaxTag}
+	logcosh_kernel(x, logcosh(x.Intv))
+end
