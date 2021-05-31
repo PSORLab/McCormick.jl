@@ -58,7 +58,7 @@ end
 import Base.MathConstants.golden
 
 # Export forward operators
-export MC, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
+export MC, MCNoGrad, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, convert,
        one, zero, dist, real, eps, mid, exp, exp2, exp10, expm1, log, log2,
        log10, log1p, acosh, sqrt, sin, cos, tan, min, max, sec, csc, cot, ^,
        abs, step, sign, pow, in, isempty, intersect, length, mid3,
@@ -382,6 +382,81 @@ diam(x::MC) = diam(x.Intv)
 isthin(x::MC) = isthin(x.Intv)
 
 function isone(x::MC)
+    flag = true
+    flag &= (x.Intv.lo == 1.0)
+    flag &= (x.Intv.hi == 1.0)
+    flag &= x.cnst
+    return flag
+end
+
+"""
+$(TYPEDEF)
+
+`MCNoGrad <: Real` is a McCormick structure without RelaxType Tag or subgradients.
+This structure is used for source-code transformation approaches to constructing
+McCormick relaxations. Methods definitions and calls should specify the
+relaxation type used (i.e.) `+(::NS, x::MCNoGrad, y::MCNoGrad)...`
+$(TYPEDFIELDS)
+"""
+struct MCNoGrad <: Real
+    "Convex relaxation"
+    cv::Float64
+    "Concave relaxation"
+    cc::Float64
+    "Interval bounds"
+    Intv::Interval{Float64}
+    "Boolean indicating whether the relaxations are constant over the domain. True if bounding an interval/constant.
+     False, otherwise. This may change over the course of a calculation `cnst` for `zero(x)` is `true` even if `x.cnst`
+     is `false`."
+    cnst::Bool
+    function MCNoGrad(u::Float64, o::Float64, X::Interval{Float64}, b::Bool)
+        new(u, o, X, b)
+    end
+end
+
+"""
+MCNoGrad(y::Interval{Float64})
+
+Constructs McCormick relaxation with convex relaxation equal to `y.lo` and
+concave relaxation equal to `y.hi`.
+"""
+function MCNoGrad(y::Interval{Float64})
+    MCNoGrad(y.lo, y.hi, y, true)
+end
+
+"""
+MCNoGrad(y::Float64)
+
+Constructs McCormick relaxation with convex relaxation equal to `y` and
+concave relaxation equal to `y`.
+"""
+MCNoGrad(y::Float64) = MCNoGrad(Interval{Float64}(y))
+function MCNoGrad(y::Y) where Y <: AbstractIrrational
+    MCNoGrad(Interval{Float64}(y))
+end
+MCNoGrad(y::Q) where Q <: NumberNotRelax = MCNoGrad(Interval{Float64}(y))
+
+"""
+MCNoGrad(cv::Float64, cc::Float64)
+
+Constructs McCormick relaxation with convex relaxation equal to `cv` and
+concave relaxation equal to `cc`.
+"""
+function MCNoGrad(cv::Float64, cc::Float64)
+    MC{N,T}(cv, cc, Interval{Float64}(cv, cc), true)
+end
+
+Intv(x::MCNoGrad) = x.Intv
+lo(x::MCNoGrad) = x.Intv.lo
+hi(x::MCNoGrad) = x.Intv.hi
+cc(x::MCNoGrad) = x.cc
+cv(x::MCNoGrad) = x.cv
+cnst(x::MCNoGrad) = x.cnst
+
+diam(x::MCNoGrad) = diam(x.Intv)
+isthin(x::MCNoGrad) = isthin(x.Intv)
+
+function isone(x::MCNoGrad)
     flag = true
     flag &= (x.Intv.lo == 1.0)
     flag &= (x.Intv.hi == 1.0)
