@@ -115,6 +115,8 @@ abstract type RelaxTag end
 struct NS <: RelaxTag end
 struct MV <: RelaxTag end
 struct Diff <: RelaxTag end
+const ANYRELAX = Union{NS, MV, Diff} 
+
 
 const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10

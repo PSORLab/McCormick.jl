@@ -16,3 +16,5 @@ include("set_bounds.jl")
 include("comparison.jl")
 include("trilinear.jl")
 include("apriori_mult.jl")
+
+joinpath(@__DIR__, "no_gradient", "arithmetic.jl")
