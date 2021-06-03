@@ -16,3 +16,7 @@ include("set_bounds.jl")
 include("comparison.jl")
 include("trilinear.jl")
 include("apriori_mult.jl")
+
+joinpath(@__DIR__, "no_gradient", "arithmetic.jl")
+joinpath(@__DIR__, "no_gradient", "convex_increasing.jl")
+joinpath(@__DIR__, "no_gradient", "mixed_convexity.jl")
