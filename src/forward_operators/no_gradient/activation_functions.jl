@@ -30,11 +30,30 @@ function maxtanh_kernel(t::ANYRELAX, x::MCNoGrad, z::Interval{Float64})
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
     u = maxtanh(midcv)
     o = dcc*(midcc - xL) + xLc
-    return  MCNoGrad(u, o, z, x.cnst), cvi, cci, dcv, dcc
+    return MCNoGrad(u, o, z, x.cnst), cvi, cci, dcv, dcc
 end
 function maxtanh(t::ANYRELAX, x::MCNoGrad) 
     maxtanh_Intv = maxtanh(x.Intv)
     z, cvi, cci, dcv, dcc = maxtanh_kernel(t, x, maxtanh_Intv)
+    return z
+end
+
+function elu_kernel(t::ANYRELAX, x::MCNoGrad, α::Float64, z::Interval{Float64})
+    xLc = z.lo
+    xUc = z.hi
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    midcv, cvi = mid3(x.cc, x.cv, xL)
+    midcc, cci = mid3(x.cc, x.cv, xU)
+    dcv = elu_deriv(midcv, α)
+    dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
+    u = elu(midcv, α)
+    o = dcc*(midcc - xL) + xLc
+    return MCNoGrad(u, o, z, x.cnst), cvi, cci, dcv, dcc
+end
+function elu(t::ANYRELAX, x::MCNoGrad, α::Float64) 
+    elu_Intv = elu(x.Intv, α)
+    z, cvi, cci, dcv, dcc = elu_kernel(t, x, α, elu_Intv)
     return z
 end
 
@@ -162,22 +181,4 @@ function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,M
     return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
-
-
-function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
-    midcv, cv_id = mid3(x.cc, x.cv, xL)
-    midcc, cc_id = mid3(x.cc, x.cv, xU)
-    dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
-    convex = elu(midcv, α)
-    concave = dcc*(midcc - xL) + xLc
-    concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*elu_deriv(midcv, α)
-    convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
-    return MC{N,T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
-end
-elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
 =#
