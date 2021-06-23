@@ -57,6 +57,55 @@ function softplus(t::ANYRELAX, x::MCNoGrad)
     return z
 end
 
+# define kernel and operator for sigmoid, bisigmoid, softsign, gelu
+for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
+    expri_cv = Symbol("cv_"*String(expri))
+    expri_cc = Symbol("cc_"*String(expri))
+    expri_kernel = Symbol(String(expri)*"_kernel")
+    eps_min = :xL
+    eps_max = :xU
+    @eval @inline function ($expri_kernel)(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64}, cv_p::Float64, cc_p::Float64)
+        xL = x.Intv.lo
+        xU = x.Intv.hi
+        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
+        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
+        cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
+        cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
+        return MCNoGrad(cv, cc, y, x.cnst), cv_p, cc_p
+    end
+    @eval @inline function ($expri)(t::ANYRELAX, x::MCNoGrad)
+        z, tp1, tp2 = ($expri_kernel)(t, x, ($expri)(x.Intv), Inf, Inf)
+        return z
+    end
+end
+
+for expri in (:swish1, :gelu)
+    expri_cv = Symbol("cv_"*String(expri))
+    expri_cc = Symbol("cc_"*String(expri))
+    expri_kernel = Symbol(String(expri)*"_kernel")
+    if expri == swish1
+        eps_min = :(SWISH1_MIN < xL ? xL : (SWISH1_MIN > xU ? xU : SWISH1_MIN))
+        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
+    else
+        eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
+        eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
+    end
+    @eval @inline function ($expri_kernel)(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64},
+                            cv_p::Float64, cc_p::Float64, cv_p2::Float64, cc_p2::Float64)
+        xL = x.Intv.lo
+        xU = x.Intv.hi
+        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
+        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
+        cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
+        cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
+        return MCNoGrad(cv, cc, y, x.cnst), cv_p, cc_p, cv_p2, cc_p2
+    end
+    @eval @inline function (t::ANYRELAX, x::MCNoGrad)
+        z, tp1, tp2, tp3, tp4 = ($expri_kernel)(t, x, ($expri)(x.Intv), Inf, Inf, Inf, Inf)
+        return z
+    end
+end
+
 #=
 function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     @assert α >= 0.0
@@ -114,63 +163,6 @@ function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:
     return MC{N,T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
-
-# define kernel and operator for sigmoid, bisigmoid, softsign, gelu
-for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
-    expri_cv = Symbol("cv_"*String(expri))
-    expri_cc = Symbol("cc_"*String(expri))
-    expri_kernel = Symbol(String(expri)*"_kernel")
-    eps_min = :xL
-    eps_max = :xU
-    @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
-                            cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-        xL = x.Intv.lo
-        xU = x.Intv.hi
-        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
-        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
-        cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
-        cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
-        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
-        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
-        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-        return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
-    end
-    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
-        z, tp1, tp2 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf)
-        return z
-    end
-end
-
-for expri in (:swish1, :gelu)
-    expri_cv = Symbol("cv_"*String(expri))
-    expri_cc = Symbol("cc_"*String(expri))
-    expri_kernel = Symbol(String(expri)*"_kernel")
-    if expri == swish1
-        eps_min = :(SWISH1_MIN < xL ? xL : (SWISH1_MIN > xU ? xU : SWISH1_MIN))
-        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
-    else
-        eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
-        eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
-    end
-    @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
-                            cv_p::Float64, cc_p::Float64, cv_p2::Float64,
-                            cc_p2::Float64) where {N,T<:Union{NS,MV}}
-        xL = x.Intv.lo
-        xU = x.Intv.hi
-        midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
-        midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
-        cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
-        cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
-        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
-        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
-        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-        return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
-    end
-    @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
-        z, tp1, tp2, tp3, tp4 = ($expri_kernel)(x, ($expri)(x.Intv), Inf, Inf, Inf, Inf)
-        return z
-    end
-end
 
 @inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
     xL = x.Intv.lo
