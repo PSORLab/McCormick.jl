@@ -28,7 +28,7 @@ for T in (NS, Diff, MV)
                !iszero(allocs(@benchmark ($op)($a) samples = 1)) && println("0 in X $op Allocates")
                a = MC{5,T}(-0.5,(Interval{Float64}(-0.9,-0.1)),2)
                !iszero(allocs(@benchmark ($op)($a) samples = 1)) && println("Negative $op Allocates")
-              end
+           end
            for op in (min, max, *, -, +, /)
                x = MC{5,T}(0.4,(Interval{Float64}(0.1,0.9)),2)
                y = MC{5,T}(0.5,(Interval{Float64}(0.3,0.9)),2)
@@ -52,7 +52,6 @@ for T in (NS, Diff, MV)
            a = MC{5,T}(-0.5,Interval{Float64}(-0.9,-0.1),2); !iszero(allocs(@benchmark $a^(-2) samples = 1)) && println("a^-2 Neg Allocates")
            a = MC{5,T}(0.4,Interval{Float64}(0.1,0.9),2);    !iszero(allocs(@benchmark $a^(-3) samples = 1)) && println("a^-3 Pos Allocates")
            a = MC{5,T}(-0.5,Interval{Float64}(-0.9,-0.1),2); !iszero(allocs(@benchmark $a^(-3) samples = 1)) && println("a^-3 Neg Allocates")
-   end
 end
 
 println("Allocation Check Complete!")
