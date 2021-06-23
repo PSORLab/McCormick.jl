@@ -71,7 +71,7 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
-        return MCNoGrad(cv, cc, y, x.cnst), cv_p, cc_p
+        return MCNoGrad(cv, cc, y, x.cnst), cv_id, cc_id, cv_p, cc_p
     end
     @eval @inline function ($expri)(t::ANYRELAX, x::MCNoGrad)
         z, tp1, tp2 = ($expri_kernel)(t, x, ($expri)(x.Intv), Inf, Inf)
@@ -98,12 +98,29 @@ for expri in (:swish1, :gelu)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
         cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
-        return MCNoGrad(cv, cc, y, x.cnst), cv_p, cc_p, cv_p2, cc_p2
+        return MCNoGrad(cv, cc, y, x.cnst), cv_id, cc_id, cv_p, cc_p, cv_p, cc_p, cv_p2, cc_p2
     end
-    @eval @inline function (t::ANYRELAX, x::MCNoGrad)
-        z, tp1, tp2, tp3, tp4 = ($expri_kernel)(t, x, ($expri)(x.Intv), Inf, Inf, Inf, Inf)
+    @eval @inline function ($expri)(t::ANYRELAX, x::MCNoGrad)
+        z, cv_id, cc_id, dcv, dcc, tp1, tp2, tp3, tp4 = ($expri_kernel)(t, x, ($expri)(x.Intv), Inf, Inf, Inf, Inf)
         return z
     end
+end
+
+@inline function logcosh_kernel(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64})
+    xL = x.Intv.lo
+    xU = x.Intv.hi
+    eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
+    eps_max = (abs(xL) < abs(xU)) ? xU : xL
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv = cv_logcosh(midcv, xL, xU)
+    cc, dcc = cc_logcosh(midcc, xL, xU)
+    return MC{N,T}(cv, cc, y, x.cnst), cv_id, cc_id, dcv, dcc
+end
+function logcosh(t::ANYRELAX, x::MCNoGrad)
+    logcosh_Intv = logcosh(x.Intv)
+	z, cv_id, cc_id, dcv, dcc = logcosh_kernel(t, x, logcosh_Intv)
+    return z
 end
 
 #=
@@ -163,35 +180,4 @@ function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:
     return MC{N,T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
 end
 elu(x::MC{N,T}, α::Float64) where {N, T<:Union{NS,MV}} = elu_kernel(x, α, elu(x.Intv, α))
-
-@inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
-    eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
-    eps_max = (abs(xL) < abs(xU)) ? xU : xL
-    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
-    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
-    cv, dcv = cv_logcosh(midcv, xL, xU)
-    cc, dcc = cc_logcosh(midcc, xL, xU)
-    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
-end
-@inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
-    eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
-    eps_max = (abs(xL) < abs(xU)) ? xU : xL
-    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
-    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
-    cv, dcv = cv_logcosh(midcv, xL, xU)
-    cc, dcc = cc_logcosh(midcc, xL, xU)
-    cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-    cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
-end
-function logcosh(x::MC{N,T}) where {N, T <: RelaxTag}
-	logcosh_kernel(x, logcosh(x.Intv))
-end
 =#
