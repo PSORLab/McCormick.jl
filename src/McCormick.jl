@@ -25,7 +25,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
-             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
+             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, isfinite, empty,
              <, <=, ==, fma, cbrt, sinpi, cospi, union
 
 using IntervalArithmetic
@@ -67,7 +67,7 @@ export MC, MCNoGrad, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, 
        sind, cosd, tand, asind, acosd, atand, nan,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
-       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
+       secdh, cschd, cothd, asechd, acschd, acothd, isone, isfinite, isnan, interval_MC,
        relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
