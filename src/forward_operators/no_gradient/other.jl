@@ -78,6 +78,42 @@ function arh(x::MC{N,T}, k::Float64) where {N, T <: RelaxTag}
 	return yMC
 end
 
+function xexpax_kernel(t::Union{NS,MV}, x::Float64, a::MCNoGrad, z::Interval{Float64}, cv_p::Float64, cc_p::Float64)
+	# TODO...
+	v1 = *(t, a, x)
+	v2 = exp(t, v1)
+	v3 = x*v2
+	v3, 0, 0, 0.0, 0.0
+end
+function xexpax_kernel(t::Union{NS,MV}, x::MCNoGrad, a::Float64, z::Interval{Float64}, cv_p::Float64, cc_p::Float64)
+	if a == 0.0
+		return one(MCNoGrad), 0, 0, 0.0, 0.0
+	end
+	xL = x.Intv.lo
+    xU = x.Intv.hi
+	zpnt = -1.0/a
+	fxL = xexpax(xL, a)
+	fxU = xexpax(xU, a)
+	if a > 0.0
+		eps_min = (xL <= zpnt <= xU) ? zpnt : ((fxL <= fxU) ? xL : xU)
+		eps_max = (fxL >= fxU) ? xL : xU
+	else
+		eps_min = (fxL <= fxU) ? xL : xU
+		eps_max = (xL <= zpnt <= xU) ? zpnt : ((fxL >= fxU) ? xL : xU)
+	end
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv, cv_p = cv_xexpax(midcv, xL, xU, a, cv_p)
+    cc, dcc, cc_p = cc_xexpax(midcc, xL, xU, a, cc_p)
+    return MCNoGrad(cv, cc, z, x.cnst), cv_id, cc_id, cv_p, cc_p
+end
+xexpax(t::Union{NS,MV}, x::Float64, a::MCNoGrad) = x*exp(a*x)
+function xexpax(t::Union{NS,MV}, x::MCNoGrad, a::Float64)
+	intv_xexpax = xexpax(x.Intv, a)
+	yMC, _, _, _, _ = xexpax_kernel(t, x, a, intv_xexpax, Inf, Inf)
+	return yMC
+end
+
 #=
 ########### Defines sign
 @inline function correct_intersect(x::MC{N,T}, cv::Float64, cc::Float64, Intv::Interval{Float64}, cv_grad::SVector{N,Float64},
@@ -203,141 +239,7 @@ Form defined in Najman, Jaromił, Dominik Bongartz, and Alexander Mitsos.
 "Relaxations of thermodynamic property and costing models in process engineering."
 Computers & Chemical Engineering 130 (2019): 106571.
 """
-xexpax(x, a) = x*exp(a*x)
-xexpax(x::Float64, a::Float64) = x*exp(a*x)
-function xexpax(x::Interval{Float64}, a::Float64)
-	(a == 0.0) && return x
-	xL = x.lo
-	xU = x.hi
-	fxL = xexpax(Interval(xL), Interval(a)).lo
-	fxU = xexpax(Interval(xU), Interval(a)).hi
-	zpnt = -1.0/a
-	if a > 0.0
-		yL = (xL <= zpnt <= xU) ? xexpax(zpnt, a) : ((fxL <= fxU) ? fxL : fxU)
-		yU = (fxL >= fxU) ? fxL : fxU
-	else
-		yL = (fxL <= fxU) ? fxL : fxU
-		yU = (xL <= zpnt <= xU) ? xexpax(zpnt, a) : ((fxL >= fxU) ? fxL : fxU)
-	end
-	Interval(yL, yU)
-end
-xexpax_deriv(x::Float64, a::Float64) = exp(a*x)*(a*x + 1.0)
-function xexpax_grad(g, x::Float64, a::Float64)
-	g[1] = exp(a*x)*(a*x + 1.0)
-	g[2] = exp(a*x)*x^2
-	nothing
-end
-@inline function xexpax_env(x::Float64, y::Float64, a::Float64)
-    (y - x)*xexpax_deriv(x, a) - (xexpax(y, a) - xexpax(x, a))
-end
-@inline function xexpax_envm(x::Float64, y::Float64, a::Float64)
-    (x - y) - (xexpax(x, a) - xexpax(y, a))/xexpax_deriv(x, a)
-end
-function cv_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
-	if a > 0.0
-	    (xU <= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	    (xL >= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	    if p === Inf
-	        p, flag = secant(-2.0/a, xU, -2.0/a, xU, xexpax_env, xL, a)
-	        flag && (p = golden_section(-2.0/a, xU, xexpax_env, xL, a))
-	    end
-	    (x <= p) && (return dline_seg(xexpax, xexpax_deriv, x, p, xL, a)..., p)
-	    return xexpax(x, a), xexpax_deriv(x, a), p
-	end
-	(xL >= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	(xU <= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	if p === Inf
-		p, flag = secant(-2.0/a, xU, -2.0/a, xU, xexpax_env, xL, a)
-		flag && (p = golden_section(-2.0/a, xU, xexpax_env, xL, a))
-	end
-	(x >= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	return dline_seg(xexpax, xexpax_deriv, x, xL, p, a)..., p
-end
-function cc_xexpax(x::Float64, xL::Float64, xU::Float64, a::Float64, p::Float64)
-	if a > 0.0
-		(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-		(xU <= -2.0/a) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-		if p === Inf
-			p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_env, xU, a)
-			flag && (p = golden_section(xL, -2.0/a, xexpax_env, xU, a))
-		end
-		(x <= p) && (return xexpax(x,a), xexpax_deriv(x,a), p)
-		return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
-	end
-	(xL >= -2.0/a) && (return dline_seg(xexpax, xexpax_deriv, x, xL, xU, a)..., p)
-	(xU <= -2.0/a) && (return xexpax(x,a), xexpax_deriv(x,a), p)
-	if p === Inf
-		p, flag = secant(xL, -2.0/a, xL, -2.0/a, xexpax_envm, xU, a)
-		flag && (p = golden_section(xL, a/2.0, xexpax_envm, xU, a))
-	end
-	(x <= p) && (return xexpax(x, a), xexpax_deriv(x, a), p)
-	return dline_seg(xexpax, xexpax_deriv, x, p, xU, a)..., p
-end
-function xexpax_kernel(x::Float64, a::MC{N,T}, z::Interval{Float64},
-	                   cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-	x*exp(a*x), 0.0, 0.0
-end
-function xexpax_kernel(x::Float64, a::MC{N,Diff}, z::Interval{Float64},
-	                   cv_p::Float64, cc_p::Float64) where N
-	x*exp(a*x), 0.0, 0.0
-end
-function xexpax_kernel(x::MC{N,T}, a::Float64, z::Interval{Float64},
-	                   cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-	(a == 0.0) && return one(MC{N,T})
-	xL = x.Intv.lo
-    xU = x.Intv.hi
-	zpnt = -1.0/a
-	fxL = xexpax(xL, a)
-	fxU = xexpax(xU, a)
-	if a > 0.0
-		eps_min = (xL <= zpnt <= xU) ? zpnt : ((fxL <= fxU) ? xL : xU)
-		eps_max = (fxL >= fxU) ? xL : xU
-	else
-		eps_min = (fxL <= fxU) ? xL : xU
-		eps_max = (xL <= zpnt <= xU) ? zpnt : ((fxL >= fxU) ? xL : xU)
-	end
-    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
-    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
-    cv, dcv, cv_p = cv_xexpax(midcv, xL, xU, a, cv_p)
-    cc, dcc, cc_p = cc_xexpax(midcc, xL, xU, a, cc_p)
-    cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
-    cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
-    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
-    return MC{N, T}(cv, cc, z, cv_grad, cc_grad, x.cnst), cv_p, cc_p
-end
-function xexpax_kernel(x::MC{N,Diff}, a::Float64, z::Interval{Float64},
-	                   cv_p::Float64, cc_p::Float64) where N
-	(a == 0.0) && return one(MC{N,Diff})
-	xL = x.Intv.lo
-	xU = x.Intv.hi
-	zpnt = -1.0/a
-	fxL = xexpax(xL, a)
-	fxU = xexpax(xU, a)
-	if a > 0.0
-		eps_min = (xL <= zpnt <= xU) ? zpnt : ((fxL <= fxU) ? xL : xU)
-		eps_max = (fxL >= fxU) ? xL : xU
-	else
-		eps_min = (fxL <= fxU) ? xL : xU
-		eps_max = (xL <= zpnt <= xU) ? zpnt : ((fxL >= fxU) ? xL : xU)
-	end
-	midcv, cv_id = mid3(x.cv, x.cc, eps_min)
-	midcc, cc_id = mid3(x.cv, x.cc, eps_max)
-	cv, dcv, cv_p = cv_xexpax(midcv, xL, xU, a, cv_p)
-	cc, dcc, cc_p = cc_xexpax(midcc, xL, xU, a, cc_p)
-	gcv1, gdcv1, cv_p = cv_xexpax(x.cv, xL, xU, a, cv_p)
-	gcc1, gdcc1, cc_p = cc_xexpax(x.cv, xL, xU, a, cc_p)
-	gcv2, gdcv2, cv_p = cv_xexpax(x.cc, xL, xU, a, cv_p)
-	gcc2, gdcc2, cc_p = cc_xexpax(x.cc, xL, xU, a, cc_p)
-	cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
-	cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
-	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst), cv_p, cc_p
-end
-xexpax(x::Float64, a::MC) = x*exp(a*x)
-function xexpax(x::MC{N,T}, a::Float64) where {N, T <: RelaxTag}
-	intv_xexpax = xexpax(x.Intv, a)
-	yMC, tp1, tp2 = xexpax_kernel(x, a, intv_xexpax, Inf, Inf)
-	return yMC
-end
+
 
 """
 xabsx
