@@ -1437,6 +1437,7 @@ end
     z = x1.Intv*x2.Intv*x3.Intv
 	return trilinear_kernel(x1, x2, x3, z)
 end
+trilinear(x, y, z) = x*y*z
 
 #=
 *(a::MC{N,T}, b::MC{N,T}, c::MC{N,T}, d::MC{N,T}) where {N, T<:Union{NS,MV}} = *(*(a,b,c),d)
