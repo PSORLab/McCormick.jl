@@ -8,7 +8,7 @@
 # src/forward_operators/concave_increasing.jl
 # Contains definitions of commonly used activation functions:
 # relu, parametric relu, leaky relu, maxsig, elu, selu, gelu, sigmoid,
-# bisigmoid, swish1, maxtanh, pentanh, softsign, softplus.
+# bisigmoid, swish, maxtanh, pentanh, softsign, softplus.
 #############################################################################
 
 # RELU DEFINITION
@@ -140,13 +140,13 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
     end
 end
 
-for expri in (:swish1, :gelu)
+for expri in (:swish, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
-    if expri == swish1
+    if expri == swish
         eps_min = :(SWISH1_MIN < xL ? xL : (SWISH1_MIN > xU ? xU : SWISH1_MIN))
-        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
+        eps_max = :(NNLib.swish(xL) < NNLib.swish(xU) ? xU : xL)
     else
         eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
         eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
