@@ -28,7 +28,7 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, isfinite, empty,
              <, <=, ==, fma, cbrt, sinpi, cospi, union
 
-import NNLib: relu, selu, leakyrelu, sigmoid, swish, gelu, elu, softsign, logcosh, softplus
+import NNlib: relu, selu, leakyrelu, sigmoid, swish, gelu, elu, softsign, logcosh, softplus
 
 using IntervalArithmetic
 using IntervalArithmetic: @round
@@ -619,5 +619,6 @@ using Reexport
 @reexport using IntervalArithmetic
 @reexport using StaticArrays
 @reexport using SpecialFunctions
+@reexport using NNlib
 
 end

@@ -12,12 +12,11 @@
 #############################################################################
 
 # RELU DEFINITION
-"""
+#=
 relu
 
 The Rectified Linear Unit (ReLU) activation function `relu(x) = max(x, 0.0)`.
-"""
-relu(x) = max(x, 0.0)
+=#
 relu_deriv(x) = x > 0.0 ? 1.0 : 0.0
 relu_deriv2(x) =  0.0
 function relu_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
@@ -122,13 +121,11 @@ end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 
 # DEFINE ELU
-"""
+#=
 elu
 
 The Exponential Linear Unit (ELU) activation function  `elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)`.
-"""
-@inline elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)
-@inline elu(x::Float64, α::Float64) = x > 0 ? x : α*(exp(x) - 1.0)
+=#
 function elu(x::Interval{Float64}, α::Float64)
     xL = x.lo
     xU = x.hi
@@ -220,13 +217,11 @@ function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,
 end
 maxtanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxtanh_kernel(x, maxtanh(x.Intv))
 
-"""
+#=
 softplus
 
 The `softplus` activation function  `softplus(x) = log(1.0 + exp(x))`.
-"""
-@inline softplus(x) = log(1.0 + exp(x))
-@inline softplus(x::Float64) = log(1.0 + exp(x))
+=#
 @inline softplus(x::Interval{Float64}) = log(1.0 + exp(x))
 @inline softplus_deriv(x::Float64) = 1.0/(exp(-x) + 1.0)
 @inline softplus_deriv2(x::Float64) = exp(-x)/(exp(-x) + 1.0)^2
@@ -297,13 +292,11 @@ end
     return pentanh(x), pentanh_deriv(x), p
 end
 
-"""
+#=
 sigmoid
 
 The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
-"""
-@inline sigmoid(x) = 1.0/(1.0 + exp(-x))
-@inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
+=#
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
 @inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
 @inline sigmoid_deriv2(x::Float64) = 2.0*exp(-2.0*x)/sigmoid(x)^3 - exp(-x)/sigmoid(x)^2
@@ -376,13 +369,11 @@ end
     return bisigmoid(x), bisigmoid_deriv(x), p
 end
 
-"""
+#=
 softsign
 
 The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
-"""
-@inline softsign(x) = x/(1.0 + abs(x))
-@inline softsign(x::Float64) = x/(1.0 + abs(x))
+=#
 @inline function softsign(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
@@ -436,8 +427,6 @@ gelu
 
 The Gaussian Error Linear Unit `gelu` activation function `gelu(x) = x/(1.0 + abs(x))`.
 """
-@inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
-@inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline function gelu(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
@@ -499,7 +488,7 @@ end
                 flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xU, 0.0))
             end
             (x >= p1) && (return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2)
-            return swish(x), swish_deriv(x), p1, p2
+            return gelu(x), gelu_deriv(x), p1, p2
         else
             return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
         end
@@ -562,7 +551,7 @@ swish
 
 The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
 """
-@inline function NNLib.swish(x::Interval{Float64})
+@inline function swish(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
     xLc = xLintv/(1.0 + exp(-xLintv))
@@ -580,7 +569,7 @@ The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
     return Interval(xLcv, xUcv)
 end
 @inline function swish_deriv(x::Float64)
-    NNLib.sigmoid(x) + x*sigmoid_deriv(x)
+    sigmoid(x) + x*sigmoid_deriv(x)
 end
 @inline function swish_deriv2(x::Float64)
     frac1 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^3
@@ -588,18 +577,18 @@ end
     2.0*exp(-x)/(exp(-x) + 1.0)^2 + (frac1 - frac2)*x
 end
 @inline function swish_env(x::Float64, y::Float64, z::Float64)
-    swish_deriv(x)*(y - x) + NNLib.swish(x) - NNLib.swish(y)
+    swish_deriv(x)*(y - x) + swish(x) - swish(y)
 end
 @inline function swish_denv(x::Float64, y::Float64, z::Float64)
     swish_deriv2(x)*(y - x)
 end
 
 @inline function swish_envm(x::Float64, y::Float64, z::Float64)
-    swish_deriv(y)*(x - y) - (NNLib.swish(x) - NNLib.swish(y))
+    swish_deriv(y)*(x - y) - (swish(x) - swish(y))
 end
 
 @inline function swish_rt1(x::Float64, y::Float64, z::Float64)
-    swish_deriv(y)*(x - y) + NNLib.swish(y) - NNLib.swish(x)
+    swish_deriv(y)*(x - y) + swish(y) - swish(x)
 end
 @inline function swish_rt1_deriv(x::Float64, y::Float64, z::Float64)
     swish_deriv(y) - swish_deriv(x)
@@ -608,11 +597,11 @@ end
 @inline function cc_swish(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
     # Single convexity regions
     if xL >= SWISH1_2D_ROOT2
-        return NNLib.swish(x), swish_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     elseif xU <= SWISH1_2D_ROOT1
-        return NNLib.swish(x), swish_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     elseif (SWISH1_2D_ROOT1 <= xL) && (xU <= SWISH1_2D_ROOT2)
-        return dline_seg(NNLib.swish, swish_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     end
 
     if xL < SWISH1_2D_ROOT1
@@ -623,10 +612,10 @@ end
                 p1, flag = secant(xL, SWISH1_2D_ROOT1, xL, SWISH1_2D_ROOT1, swish_env, xU, 0.0)
                 flag && (p1 = golden_section(xL, SWISH1_2D_ROOT1, swish_env, xU, 0.0))
             end
-            (x >= p1) && (return dline_seg(NNLib.swish, swish_deriv, x, p1, xU)..., p1, p2)
-            return NNLib.swish(x), swish_deriv(x), p1, p2
+            (x >= p1) && (return dline_seg(swish, swish_deriv, x, p1, xU)..., p1, p2)
+            return swish(x), swish_deriv(x), p1, p2
         else
-            return dline_seg(NNLib.swish, swish_deriv, x, xL, xU)..., p1, p2
+            return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
         end
     end
 
@@ -638,10 +627,10 @@ end
                 p1, flag = secant(SWISH1_2D_ROOT2, xU, SWISH1_2D_ROOT2, xU, swish_env, xL, 0.0)
                 flag && (p1 = golden_section(SWISH1_2D_ROOT2, xU, swish_env, xL, 0.0))
             end
-            (x >= p1) && (return dline_seg(NNLib.swish, swish_deriv, x, p1, xU)..., p1, p2)
-            return NNLib.swish(x), swish_deriv(x), p1, p2
+            (x >= p1) && (return dline_seg(swish, swish_deriv, x, p1, xU)..., p1, p2)
+            return swish(x), swish_deriv(x), p1, p2
         else
-            return dline_seg(NNLib.swish, swish_deriv, x, xL, xU)..., p1, p2
+            return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
         end
     end
 end
@@ -649,11 +638,11 @@ end
 
     # Single convexity regions
     if xL >= SWISH1_2D_ROOT2
-        return dline_seg(NNLib.swish, swish_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     elseif xU <= SWISH1_2D_ROOT1
-        return dline_seg(NNLib.swish, swish_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     elseif (SWISH1_2D_ROOT1 <= xL) && (xU <= SWISH1_2D_ROOT2)
-        return NNLib.swish(x), swish_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     end
 
     if xL < SWISH1_2D_ROOT1
@@ -675,11 +664,11 @@ end
     end
 
     if x < p1
-        return dline_seg(NNLib.swish, swish_deriv, x, xL, p1)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, p1)..., p1, p2
     elseif x > p2
-        return dline_seg(NNLib.swish, swish_deriv, x, p2, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, p2, xU)..., p1, p2
     end
-    return NNLib.swish(x), swish_deriv(x), p1, p2
+    return swish(x), swish_deriv(x), p1, p2
 end
 
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
@@ -744,7 +733,6 @@ logcosh
 
 The function `logcosh` is defined as `logcosh(x) = log(cosh(x))`.
 """
-logcosh(x::Float64) = log(cosh(x))
 logcosh_deriv(x::Float64) = tanh(x)
 logcosh_deriv2(x::Float64) = sech(x)^2
 cc_logcosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(logcosh, logcosh_deriv, x, xL, xU)

@@ -146,7 +146,7 @@ for expri in (:swish, :gelu)
     expri_kernel = Symbol(String(expri)*"_kernel")
     if expri == swish
         eps_min = :(SWISH1_MIN < xL ? xL : (SWISH1_MIN > xU ? xU : SWISH1_MIN))
-        eps_max = :(NNLib.swish(xL) < NNLib.swish(xU) ? xU : xL)
+        eps_max = :(swish(xL) < swish(xU) ? xU : xL)
     else
         eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
         eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
@@ -176,7 +176,7 @@ end
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
     cv, dcv = cv_logcosh(midcv, xL, xU)
     cc, dcc = cc_logcosh(midcc, xL, xU)
-    return MC{N,T}(cv, cc, y, x.cnst), cv_id, cc_id, dcv, dcc
+    return MCNoGrad(cv, cc, y, x.cnst), cv_id, cc_id, dcv, dcc
 end
 function logcosh(t::ANYRELAX, x::MCNoGrad)
     logcosh_Intv = logcosh(x.Intv)
