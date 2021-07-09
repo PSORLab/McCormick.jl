@@ -64,11 +64,9 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
-        return MC{N, T}(cv, cc, y, x.cnst), dcv, dcc, cv_p, cc_p
+        return MCNoGrad(cv, cc, y, x.cnst), dcv, dcc, cv_p, cc_p
     end
-    #=
-    @eval @inline function ($expri_kernel)(x::MC{N, Diff}, y::Interval{Float64},
-                            cv_p::Float64, cc_p::Float64) where N
+    @eval @inline function ($expri_kernel)(t::Diff, x::MCNoGrad, y::Interval{Float64}, cv_p::Float64, cc_p::Float64)
         xL = x.Intv.lo
         xU = x.Intv.hi
         midcv, cv_id = mid3(x.cv, x.cc, $eps_min)
@@ -79,10 +77,12 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
         gcc1, gdcc1, cc_p = $(expri_cc)(x.cv, xL, xU, cc_p)
         gcv2, gdcv2, cv_p = $(expri_cv)(x.cc, xL, xU, cv_p)
         gcc2, gdcc2, cc_p = $(expri_cc)(x.cc, xL, xU, cc_p)
-        cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
-        cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
-        return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
-    en=#
+        c_cv1 = max(0.0, gdcv1)
+        c_cv2 = min(0.0, gdcv2)
+        c_cc1 = min(0.0, gdcc1)
+        c_cc2 = max(0.0, gdcc2)
+        return MCNoGrad(cv, cc, y, cv_grad, cc_grad, x.cnst), c_cv1, c_cv2, c_cc1, c_cc2
+    end
     @eval @inline function ($expri_name)(t::ANYRELAX, x::MCNoGrad)
         z, tp1, tp2 = ($expri_kernel)(t, x, ($expri_name)(x.Intv), Inf, Inf)
         return z
