@@ -23,6 +23,8 @@ end
 min9(args...) = findmin(args)
 max9(args...) = findmax(args)
 
+const APRIORI_DELTA = 0.0
+
 @inline function mult_apriori_kernel(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64},
                                     u1::Float64, u2::Float64, a1::Float64, a2::Float64,
                                     v1::Float64, v2::Float64, b1::Float64, b2::Float64,
@@ -34,37 +36,37 @@ max9(args...) = findmax(args)
     x1cv_grad = x1.cv_grad;  x1cc_grad = x1.cc_grad;
     x2cv_grad = x2.cv_grad;  x2cc_grad = x2.cc_grad
 
+    #@show x1
+    #@show x2
     w = x1*x2
     w0cv = w.cv
     w0cc = w.cc
 
     # additional constraints from underestimators (convex)
-    w1cv = (x2U - a2)*u1 + (x1U - a1)*u2 + min(a2*x1cv, a2*x1cc) + min(a1*x2cv, a1*x2cc) + a1*a2 - a1*x2U - a2*x1U # GOOD
-    w2cv = (x2U - x2L)*u1 + min(x2L*x1cv, x2L*x1cc) + min(a1*x2cv, a1*x2cc) - a1*x2U #BAD
-    w3cv = (x1U - x1L)*u2 + min(a2*x1cv, a2*x1cc) + min(x1L*x2cv, x1L*x2cc) - x1U*a2
-    w4cv = (a2 - x2L)*u1 + (a1 - x1L)*u2 + min(x2L*x1cv, x2L*x1cc) + min(x1L*x2cv, x1L*x2cc) - a1*a2
+    w1cv = (x2U - a2)*u1 + (x1U - a1)*u2 + min(a2*x1cv, a2*x1cc) + min(a1*x2cv, a1*x2cc) + a1*a2 - a1*x2U - a2*x1U - APRIORI_DELTA
+    w2cv = (x2U - x2L)*u1 + min(x2L*x1cv, x2L*x1cc) + min(a1*x2cv, a1*x2cc) - a1*x2U - APRIORI_DELTA
+    w3cv = (x1U - x1L)*u2 + min(a2*x1cv, a2*x1cc) + min(x1L*x2cv, x1L*x2cc) - x1U*a2 - APRIORI_DELTA
+    w4cv = (a2 - x2L)*u1 + (a1 - x1L)*u2 + min(x2L*x1cv, x2L*x1cc) + min(x1L*x2cv, x1L*x2cc) - a1*a2 - APRIORI_DELTA
 
     # additional constraints from underestimators (concave)
-    w1cc = (x2L - a2)*u1 + (a1 - x1U)*u2 + max(a2*x1cv, a2*x1cc) + max(x1U*x2cv, x1U*x2cc) - a1*x2L
-    w2cc = (x2L - x2U)*u1 + max(a1*x2cv, a1*x2cc) + max(x2U*x1cv, x2U*x1cc) - x2L*a1
-    w3cc = (x1L - x1U)*u2 + max(a2*x1cv, a2*x1cc) + max(x1U*x2cv, x1U*x2cc) - x1L*a2
-    w4cc = (a2 - x2U)*u1 + (x1L - a1)*u2 + max(x2U*x1cv, x2U*x1cc) + max(a1*x2cv, a1*x2cc) - x1L*a2
+    w1cc = (x2L - a2)*u1 + (a1 - x1U)*u2 + max(a2*x1cv, a2*x1cc) + max(x1U*x2cv, x1U*x2cc) - a1*x2L + APRIORI_DELTA
+    w2cc = (x2L - x2U)*u1 + max(a1*x2cv, a1*x2cc) + max(x2U*x1cv, x2U*x1cc) - x2L*a1 + APRIORI_DELTA
+    w3cc = (x1L - x1U)*u2 + max(a2*x1cv, a2*x1cc) + max(x1U*x2cv, x1U*x2cc) - x1L*a2 + APRIORI_DELTA
+    w4cc = (a2 - x2U)*u1 + (x1L - a1)*u2 + max(x2U*x1cv, x2U*x1cc) + max(a1*x2cv, a1*x2cc) - x1L*a2 + APRIORI_DELTA
 
     # additional constraints from overestimators (convex)
-    # 5 fails,
-    w5cv = (x2L - b2)*v1 + (x1L - b1)*v2 + min(b2*x1cv, b2*x1cc) + min(x1L*x2cv, x1L*x2cc) + b1*b2 - b1*x2L - x1L*b2
-    w6cv = (x2L - x2U)*v1 + min(x2U*x1cv, x2U*x1cc) + min(b1*x2cv, b1*x2cc) - b1*x2L
-    w7cv = (x1L - x1U)*v2 + min(b2*x1cv, b2*x1cc) + min(x1U*x2cv, x1U*x2cc) - b2*x1L
-    w8cv = (b2 - x2U)*v1 + (b1 - x1U)*v2 + min(x2U*x1cv, x2U*x1cc) + min(x1U*x2cv, x1U*x2cc) - b1*b2
+    w5cv = (x2L - b2)*v1 + (x1L - b1)*v2 + min(b2*x1cv, b2*x1cc) + min(x1L*x2cv, x1L*x2cc) + b1*b2 - b1*x2L - x1L*b2 - APRIORI_DELTA
+    w6cv = (x2L - x2U)*v1 + min(x2U*x1cv, x2U*x1cc) + min(b1*x2cv, b1*x2cc) - b1*x2L - APRIORI_DELTA
+    w7cv = (x1L - x1U)*v2 + min(b2*x1cv, b2*x1cc) + min(x1U*x2cv, x1U*x2cc) - b2*x1L - APRIORI_DELTA
+    w8cv = (b2 - x2U)*v1 + (b1 - x1U)*v2 + min(x2U*x1cv, x2U*x1cc) + min(x1U*x2cv, x1U*x2cc) - b1*b2 - APRIORI_DELTA
 
     # additional constraints from overestimators (concave)
-    w5cc = (x2U - b2)*v1 + (b1 - x1L)*v2 + max(b2*x1cv, b2*x1cc) + max(x1L*x2cv, x1L*x2cc) - b1*x2U
-    w6cc = (x2U - x2L)*v1 + max(b1*x2cv, b1*x2cc) + max(x2L*x1cv, x2L*x1cc) - x1U*b1
-    w7cc = (x1U - x1L)*v2 + max(b2*x1cv, b2*x1cc) + max(x1L*x2cv, x1L*x2cc) - x1U*b2
-    w8cc = (b2 - x2L)*v1 + (x1U - b1)*v2 + max(x2L*x1cv, x2L*x1cc) + max(b1*x2cv, b1*x2cc) - x1U*b2
+    w5cc = (x2U - b2)*v1 + (b1 - x1L)*v2 + max(b2*x1cv, b2*x1cc) + max(x1L*x2cv, x1L*x2cc) - b1*x2U  + APRIORI_DELTA
+    w6cc = (x2U - x2L)*v1 + max(b1*x2cv, b1*x2cc) + max(x2L*x1cv, x2L*x1cc) - x2U*b1  + APRIORI_DELTA
+    w7cc = (x1U - x1L)*v2 + max(b2*x1cv, b2*x1cc) + max(x1L*x2cv, x1L*x2cc) - x1U*b2 + APRIORI_DELTA
+    w8cc = (b2 - x2L)*v1 + (x1U - b1)*v2 + max(x2L*x1cv, x2L*x1cc) + max(b1*x2cv, b1*x2cc) - x1U*b2 + APRIORI_DELTA
 
-    cv, cvind = max9(w0cv, w1cv, w2cv, w3cv, w4cv, w6cv, w7cv, w8cv)
-    #cv, cvind = max9(w0cv, w1cv, w2cv, w3cv, w4cv, w5cv, w6cv, w7cv, w8cv)
+    cv, cvind = max9(w0cv, w1cv, w2cv, w3cv, w4cv, -Inf, -Inf, -Inf, -Inf)  # w5cc, w6cc, w7cc, w8cc)#, w5cv, w6cv, w7cv, w8cv)
 
     #cv = w8cv
     #cvind = 9
@@ -97,8 +99,26 @@ max9(args...) = findmax(args)
         cv_grad = (b2 - x2U)*v1grad + (b1 - x1U)*v2grad + grad_temp
     end
 
-    # w5cc
-    cc, ccind = min9(w0cc, w1cc, w2cc, w3cc, w4cc, w6cc, w7cc, w8cc)
+    cc, ccind = min9(w0cc, w1cc, w2cc, w3cc, w4cc, Inf, Inf, Inf, Inf) # w5cc, w6cc, w7cc, w8cc)
+
+    if cc < cv
+        println(" ")
+        println("BAD BAD LEMON BAD")
+        println("BAD BAD LEMON BAD")
+        println("BAD BAD LEMON BAD")
+        println(" ")
+        @show u1, a1 
+        @show u2, a2
+        @show v1, b1
+        @show v2, b2
+        @show x1
+        @show x2
+        @show cc - cv
+        @show cv
+        @show cc
+        @show w0cv, w1cv, w2cv, w3cv, w4cv, w5cv, w6cv, w7cv, w8cv
+        @show w0cc, w1cc, w2cc, w3cc, w4cc, w5cc, w6cc, w7cc, w8cc
+    end
 
     if ccind == 1
         cc_grad = w.cc_grad
