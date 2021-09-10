@@ -101,6 +101,17 @@ const APRIORI_DELTA = 0.0
 
     cc, ccind = min9(w0cc, w1cc, w2cc, w3cc, w4cc, Inf, Inf, Inf, Inf) # w5cc, w6cc, w7cc, w8cc)
 
+    ccflag = cc > w0cc
+    cvflag = cv < w0cv
+    @show w0cc, w1cc, w2cc, w3cc, w4cc, w5cc, w6cc, w7cc, w8cc
+    @show w0cv, w1cv, w2cv, w3cv, w4cv, w5cv, w6cv, w7cv, w8cv
+    if ccflag
+        println("cc improved")
+    end
+    if cvflag
+        println("cv improved")
+    end
+
     if cc < cv
         println(" ")
         println("BAD BAD LEMON BAD")

@@ -298,8 +298,8 @@ sigmoid
 The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
 =#
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
-@inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
-@inline sigmoid_deriv2(x::Float64) = 2.0*exp(-2.0*x)/sigmoid(x)^3 - exp(-x)/sigmoid(x)^2
+@inline sigmoid_deriv(x::Float64) = exp(-x)/(1.0 + exp(-x))^2
+@inline sigmoid_deriv2(x::Float64) = -2*(sinh(0.5*x)^4)*csch(x)^3
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
 end
@@ -569,12 +569,10 @@ The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
     return Interval(xLcv, xUcv)
 end
 @inline function swish_deriv(x::Float64)
-    sigmoid(x) + x*sigmoid_deriv(x)
+    (x - 1)/(exp(x) + 1) - x/(exp(x) + 1)^2 + 1
 end
 @inline function swish_deriv2(x::Float64)
-    frac1 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^3
-    frac2 = exp(-x)/(exp(-x) + 1.0)^2
-    2.0*exp(-x)/(exp(-x) + 1.0)^2 + (frac1 - frac2)*x
+    (2 - x)/(exp(x) + 1) - 2*x/(exp(x) + 1)^3 + (3*x - 2)/(exp(x) + 1)^2
 end
 @inline function swish_env(x::Float64, y::Float64, z::Float64)
     swish_deriv(x)*(y - x) + swish(x) - swish(y)
