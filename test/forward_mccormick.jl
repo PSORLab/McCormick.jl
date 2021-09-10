@@ -1807,7 +1807,7 @@ end
 
    @test isapprox(sigmoid(7), 0.9990889488055994, atol=1E-8)
    @test isapprox(sigmoid(0.75), 0.679178699175393, atol=1E-8)
-   @test isapprox(McCormick.sigmoid_deriv2(0.75), 0.4003874719875089, atol=1E-8)
+   @test isapprox(McCormick.sigmoid_deriv2(0.75), -0.07808428307814444, atol=1E-8)
 
    @test isapprox(y1.cv, 0.5084495314200309, atol=1E-8)
    @test isapprox(y1.cc, 0.5357111749761996, atol=1E-8)
