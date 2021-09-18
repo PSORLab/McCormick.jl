@@ -23,7 +23,7 @@ end
 min9(args...) = findmin(args)
 max9(args...) = findmax(args)
 
-const APRIORI_DELTA = 0.0
+const APRIORI_DELTA = 1E-12
 
 @inline function mult_apriori_kernel(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64},
                                     u1::Float64, u2::Float64, a1::Float64, a2::Float64,
@@ -66,7 +66,7 @@ const APRIORI_DELTA = 0.0
     w7cc = (x1U - x1L)*v2 + max(b2*x1cv, b2*x1cc) + max(x1L*x2cv, x1L*x2cc) - x1U*b2 + APRIORI_DELTA
     w8cc = (b2 - x2L)*v1 + (x1U - b1)*v2 + max(x2L*x1cv, x2L*x1cc) + max(b1*x2cv, b1*x2cc) - x1U*b2 + APRIORI_DELTA
 
-    cv, cvind = max9(w0cv, w1cv, w2cv, w3cv, w4cv, -Inf, -Inf, -Inf, -Inf)  # w5cc, w6cc, w7cc, w8cc)#, w5cv, w6cv, w7cv, w8cv)
+    cv, cvind = max9(w0cv, w1cv, w2cv, w3cv, w4cv,  w5cc, w6cc, w7cc, w8cc)
 
     #cv = w8cv
     #cvind = 9
@@ -99,25 +99,26 @@ const APRIORI_DELTA = 0.0
         cv_grad = (b2 - x2U)*v1grad + (b1 - x1U)*v2grad + grad_temp
     end
 
-    cc, ccind = min9(w0cc, w1cc, w2cc, w3cc, w4cc, Inf, Inf, Inf, Inf) # w5cc, w6cc, w7cc, w8cc)
+    cc, ccind = min9(w0cc, w1cc, w2cc, w3cc, w4cc, w5cc, w6cc, w7cc, w8cc)
 
+    #=
     ccflag = cc > w0cc
     cvflag = cv < w0cv
     @show w0cc, w1cc, w2cc, w3cc, w4cc, w5cc, w6cc, w7cc, w8cc
     @show w0cv, w1cv, w2cv, w3cv, w4cv, w5cv, w6cv, w7cv, w8cv
     if ccflag
-        println("cc improved")
+        #println("cc improved")
     end
     if cvflag
-        println("cv improved")
+        #println("cv improved")
     end
 
     if cc < cv
-        println(" ")
-        println("BAD BAD LEMON BAD")
-        println("BAD BAD LEMON BAD")
-        println("BAD BAD LEMON BAD")
-        println(" ")
+        #println(" ")
+        #println("BAD")
+        #println("BAD")
+        #println("BAD")
+        #println(" ")
         @show u1, a1 
         @show u2, a2
         @show v1, b1
@@ -130,6 +131,7 @@ const APRIORI_DELTA = 0.0
         @show w0cv, w1cv, w2cv, w3cv, w4cv, w5cv, w6cv, w7cv, w8cv
         @show w0cc, w1cc, w2cc, w3cc, w4cc, w5cc, w6cc, w7cc, w8cc
     end
+    =#
 
     if ccind == 1
         cc_grad = w.cc_grad
