@@ -299,9 +299,9 @@ The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
 =#
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
 @inline sigmoid_deriv(x::Float64) = exp(-x)/(1.0 + exp(-x))^2
-@inline sigmoid_deriv2(x::Float64) = -2*(sinh(0.5*x)^4)*csch(x)^3
+@inline sigmoid_deriv2(x::Float64) = -exp(x)*(exp(x) - 1.0)/(exp(x) + 1.0)^3
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
-    (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
+    (x - y)*sigmoid_deriv(x) - (sigmoid(x) - sigmoid(y))
 end
 @inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
@@ -382,16 +382,9 @@ The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
     return Interval(xLc.hi, xUc.hi)
 end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
-@inline function softsign_deriv2(x::Float64)
-    if x >= 0.0
-        xp1 = 1.0 + x
-        return 2.0*(x*xp1^(-3) - xp1^(-2))
-    end
-    xm1 = 1.0 - x
-    return 2.0*(x*xm1^(-3) + xm1^(-2))
-end
+@inline softsign_deriv2(x::Float64) = -2.0*x/(abs(x)*(1.0 + abs(x))^(3))
 @inline function softsign_env(x::Float64, y::Float64, z::Float64)
-    (x - y) - (softsign(x) - softsign(y))/softsign_deriv(x)
+    (x - y)*softsign_deriv(x) - (softsign(x) - softsign(y))
 end
 @inline function cv_softsign(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(softsign, softsign_deriv, x, xL, xU)..., p)
