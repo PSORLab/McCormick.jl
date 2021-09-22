@@ -48,9 +48,6 @@ erfinv(x, r::RoundingMode{:Up}) = _erfinv(x).hi
 erfcinv(x, r::RoundingMode{:Down}) = _erfcinv(x).hi
 erfcinv(x, r::RoundingMode{:Up}) = _erfcinv(x).lo
 
-erfinv(a::BigFloat) = mid(_erfinv(a))
-erfcinv(a::BigFloat) = mid(_erfcinv(a))
-
 function _erfinv(a::T) where T
     domain = Interval{T}(-1, 1)
     a ∉ domain && return DomainError("$a is not in [-1, 1]")
