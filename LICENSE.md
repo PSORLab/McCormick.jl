@@ -1,3 +1,5 @@
+MIT License
+
 McCormick.jl is licensed under the MIT License:
 
 > Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
