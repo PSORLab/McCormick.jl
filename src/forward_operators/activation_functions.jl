@@ -8,16 +8,15 @@
 # src/forward_operators/concave_increasing.jl
 # Contains definitions of commonly used activation functions:
 # relu, parametric relu, leaky relu, maxsig, elu, selu, gelu, sigmoid,
-# bisigmoid, swish1, maxtanh, pentanh, softsign, softplus.
+# bisigmoid, swish, maxtanh, pentanh, softsign, softplus.
 #############################################################################
 
 # RELU DEFINITION
-"""
+#=
 relu
 
 The Rectified Linear Unit (ReLU) activation function `relu(x) = max(x, 0.0)`.
-"""
-relu(x) = max(x, 0.0)
+=#
 relu_deriv(x) = x > 0.0 ? 1.0 : 0.0
 relu_deriv2(x) =  0.0
 function relu_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
@@ -122,13 +121,11 @@ end
 maxsig(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxsig_kernel(x, maxsig(x.Intv))
 
 # DEFINE ELU
-"""
+#=
 elu
 
 The Exponential Linear Unit (ELU) activation function  `elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)`.
-"""
-@inline elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)
-@inline elu(x::Float64, α::Float64) = x > 0 ? x : α*(exp(x) - 1.0)
+=#
 function elu(x::Interval{Float64}, α::Float64)
     xL = x.lo
     xU = x.hi
@@ -220,13 +217,11 @@ function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,
 end
 maxtanh(x::MC{N,T}) where {N, T<:Union{NS,MV}} = maxtanh_kernel(x, maxtanh(x.Intv))
 
-"""
+#=
 softplus
 
 The `softplus` activation function  `softplus(x) = log(1.0 + exp(x))`.
-"""
-@inline softplus(x) = log(1.0 + exp(x))
-@inline softplus(x::Float64) = log(1.0 + exp(x))
+=#
 @inline softplus(x::Interval{Float64}) = log(1.0 + exp(x))
 @inline softplus_deriv(x::Float64) = 1.0/(exp(-x) + 1.0)
 @inline softplus_deriv2(x::Float64) = exp(-x)/(exp(-x) + 1.0)^2
@@ -297,18 +292,16 @@ end
     return pentanh(x), pentanh_deriv(x), p
 end
 
-"""
+#=
 sigmoid
 
 The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
-"""
-@inline sigmoid(x) = 1.0/(1.0 + exp(-x))
-@inline sigmoid(x::Float64) = 1.0/(1.0 + exp(-x))
+=#
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
-@inline sigmoid_deriv(x::Float64) = sigmoid(x)*(1.0 - sigmoid(x))
-@inline sigmoid_deriv2(x::Float64) = 2.0*exp(-2.0*x)/sigmoid(x)^3 - exp(-x)/sigmoid(x)^2
+@inline sigmoid_deriv(x::Float64) = exp(-x)/(1.0 + exp(-x))^2
+@inline sigmoid_deriv2(x::Float64) = -exp(x)*(exp(x) - 1.0)/(exp(x) + 1.0)^3
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
-    (x - y) - (sigmoid(x) - sigmoid(y))/sigmoid_deriv(x)
+    (x - y)*sigmoid_deriv(x) - (sigmoid(x) - sigmoid(y))
 end
 @inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
@@ -376,13 +369,11 @@ end
     return bisigmoid(x), bisigmoid_deriv(x), p
 end
 
-"""
+#=
 softsign
 
 The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
-"""
-@inline softsign(x) = x/(1.0 + abs(x))
-@inline softsign(x::Float64) = x/(1.0 + abs(x))
+=#
 @inline function softsign(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
@@ -391,16 +382,9 @@ The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
     return Interval(xLc.hi, xUc.hi)
 end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
-@inline function softsign_deriv2(x::Float64)
-    if x >= 0.0
-        xp1 = 1.0 + x
-        return 2.0*(x*xp1^(-3) - xp1^(-2))
-    end
-    xm1 = 1.0 - x
-    return 2.0*(x*xm1^(-3) + xm1^(-2))
-end
+@inline softsign_deriv2(x::Float64) = -2.0*x/(abs(x)*(1.0 + abs(x))^(3))
 @inline function softsign_env(x::Float64, y::Float64, z::Float64)
-    (x - y) - (softsign(x) - softsign(y))/softsign_deriv(x)
+    (x - y)*softsign_deriv(x) - (softsign(x) - softsign(y))
 end
 @inline function cv_softsign(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(softsign, softsign_deriv, x, xL, xU)..., p)
@@ -436,8 +420,6 @@ gelu
 
 The Gaussian Error Linear Unit `gelu` activation function `gelu(x) = x/(1.0 + abs(x))`.
 """
-@inline gelu(x) = x*(1.0 + erf(x/sqrt(2)))/2.0
-@inline gelu(x::Float64) = x*(1.0 + erf(x/sqrt(2)))/2.0
 @inline function gelu(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
@@ -499,7 +481,7 @@ end
                 flag && (p1 = golden_section(xL, GELU_2D_ROOT1, gelu_env, xU, 0.0))
             end
             (x >= p1) && (return dline_seg(gelu, gelu_deriv, x, p1, xU)..., p1, p2)
-            return swish1(x), swish1_deriv(x), p1, p2
+            return gelu(x), gelu_deriv(x), p1, p2
         else
             return dline_seg(gelu, gelu_deriv, x, xL, xU)..., p1, p2
         end
@@ -558,13 +540,11 @@ end
 end
 
 """
-swish1
+swish
 
-The Swish-1 activation function `swish1(x) = x/(1.0 + exp(-x))`.
+The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
 """
-@inline swish1(x) = x/(1.0 + exp(-x))
-@inline swish1(x::Float64) = x/(1.0 + exp(-x))
-@inline function swish1(x::Interval{Float64})
+@inline function swish(x::Interval{Float64})
     xLintv = Interval(x.lo)
     xUintv = Interval(x.hi)
     xLc = xLintv/(1.0 + exp(-xLintv))
@@ -581,40 +561,38 @@ The Swish-1 activation function `swish1(x) = x/(1.0 + exp(-x))`.
     end
     return Interval(xLcv, xUcv)
 end
-@inline function swish1_deriv(x::Float64)
-    sigmoid(x) + x*sigmoid_deriv(x)
+@inline function swish_deriv(x::Float64)
+    (x - 1)/(exp(x) + 1) - x/(exp(x) + 1)^2 + 1
 end
-@inline function swish1_deriv2(x::Float64)
-    frac1 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^3
-    frac2 = exp(-x)/(exp(-x) + 1.0)^2
-    2.0*exp(-x)/(exp(-x) + 1.0)^2 + (frac1 - frac2)*x
+@inline function swish_deriv2(x::Float64)
+    (2 - x)/(exp(x) + 1) - 2*x/(exp(x) + 1)^3 + (3*x - 2)/(exp(x) + 1)^2
 end
-@inline function swish1_env(x::Float64, y::Float64, z::Float64)
-    swish1_deriv(x)*(y - x) + swish1(x) - swish1(y)
+@inline function swish_env(x::Float64, y::Float64, z::Float64)
+    swish_deriv(x)*(y - x) + swish(x) - swish(y)
 end
-@inline function swish1_denv(x::Float64, y::Float64, z::Float64)
-    swish1_deriv2(x)*(y - x)
+@inline function swish_denv(x::Float64, y::Float64, z::Float64)
+    swish_deriv2(x)*(y - x)
 end
 
-@inline function swish1_envm(x::Float64, y::Float64, z::Float64)
-    swish1_deriv(y)*(x - y) - (swish1(x) - swish1(y))
+@inline function swish_envm(x::Float64, y::Float64, z::Float64)
+    swish_deriv(y)*(x - y) - (swish(x) - swish(y))
 end
 
 @inline function swish_rt1(x::Float64, y::Float64, z::Float64)
-    swish1_deriv(y)*(x - y) + swish1(y) - swish1(x)
+    swish_deriv(y)*(x - y) + swish(y) - swish(x)
 end
 @inline function swish_rt1_deriv(x::Float64, y::Float64, z::Float64)
-    swish1_deriv(y) - swish1_deriv(x)
+    swish_deriv(y) - swish_deriv(x)
 end
 
-@inline function cc_swish1(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+@inline function cc_swish(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
     # Single convexity regions
     if xL >= SWISH1_2D_ROOT2
-        return swish1(x), swish1_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     elseif xU <= SWISH1_2D_ROOT1
-        return swish1(x), swish1_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     elseif (SWISH1_2D_ROOT1 <= xL) && (xU <= SWISH1_2D_ROOT2)
-        return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     end
 
     if xL < SWISH1_2D_ROOT1
@@ -622,13 +600,13 @@ end
         flag && (p2 = golden_section(SWISH1_2D_ROOT1, 0.0, swish_rt1, xL, 0.0))
         if p2 > xU
             if p1 === Inf
-                p1, flag = secant(xL, SWISH1_2D_ROOT1, xL, SWISH1_2D_ROOT1, swish1_env, xU, 0.0)
-                flag && (p1 = golden_section(xL, SWISH1_2D_ROOT1, swish1_env, xU, 0.0))
+                p1, flag = secant(xL, SWISH1_2D_ROOT1, xL, SWISH1_2D_ROOT1, swish_env, xU, 0.0)
+                flag && (p1 = golden_section(xL, SWISH1_2D_ROOT1, swish_env, xU, 0.0))
             end
-            (x >= p1) && (return dline_seg(swish1, swish1_deriv, x, p1, xU)..., p1, p2)
-            return swish1(x), swish1_deriv(x), p1, p2
+            (x >= p1) && (return dline_seg(swish, swish_deriv, x, p1, xU)..., p1, p2)
+            return swish(x), swish_deriv(x), p1, p2
         else
-            return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+            return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
         end
     end
 
@@ -637,31 +615,31 @@ end
         flag && (p2 = golden_section(SWISH1_MIN, SWISH1_2D_ROOT2, swish_rt1, xU, 0.0))
         if p2 < xL
             if p1 === Inf
-                p1, flag = secant(SWISH1_2D_ROOT2, xU, SWISH1_2D_ROOT2, xU, swish1_env, xL, 0.0)
-                flag && (p1 = golden_section(SWISH1_2D_ROOT2, xU, swish1_env, xL, 0.0))
+                p1, flag = secant(SWISH1_2D_ROOT2, xU, SWISH1_2D_ROOT2, xU, swish_env, xL, 0.0)
+                flag && (p1 = golden_section(SWISH1_2D_ROOT2, xU, swish_env, xL, 0.0))
             end
-            (x >= p1) && (return dline_seg(swish1, swish1_deriv, x, p1, xU)..., p1, p2)
-            return swish1(x), swish1_deriv(x), p1, p2
+            (x >= p1) && (return dline_seg(swish, swish_deriv, x, p1, xU)..., p1, p2)
+            return swish(x), swish_deriv(x), p1, p2
         else
-            return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+            return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
         end
     end
 end
-@inline function cv_swish1(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
+@inline function cv_swish(x::Float64, xL::Float64, xU::Float64, p1::Float64, p2::Float64)
 
     # Single convexity regions
     if xL >= SWISH1_2D_ROOT2
-        return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     elseif xU <= SWISH1_2D_ROOT1
-        return dline_seg(swish1, swish1_deriv, x, xL, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, xU)..., p1, p2
     elseif (SWISH1_2D_ROOT1 <= xL) && (xU <= SWISH1_2D_ROOT2)
-        return swish1(x), swish1_deriv(x), p1, p2
+        return swish(x), swish_deriv(x), p1, p2
     end
 
     if xL < SWISH1_2D_ROOT1
         if p1 === Inf
-            p1, flag = newton(0.5*(SWISH1_2D_ROOT1 + SWISH1_MIN), SWISH1_2D_ROOT1, SWISH1_MIN, swish1_env, swish1_denv, xL, 0.0)
-            flag && (p1 = golden_section(SWISH1_2D_ROOT1, SWISH1_MIN, swish1_env, xL, 0.0))
+            p1, flag = newton(0.5*(SWISH1_2D_ROOT1 + SWISH1_MIN), SWISH1_2D_ROOT1, SWISH1_MIN, swish_env, swish_denv, xL, 0.0)
+            flag && (p1 = golden_section(SWISH1_2D_ROOT1, SWISH1_MIN, swish_env, xL, 0.0))
         end
     else
         p1 = -Inf
@@ -669,19 +647,19 @@ end
 
     if xU > SWISH1_2D_ROOT2
         if p2 === Inf
-            p2, flag = newton(0.5*(SWISH1_MIN + SWISH1_2D_ROOT2), SWISH1_MIN, SWISH1_2D_ROOT2, swish1_env, swish1_denv, xU, 0.0)
-            flag && (p2 = golden_section(SWISH1_MIN, SWISH1_2D_ROOT2, swish1_env, xU, 0.0))
+            p2, flag = newton(0.5*(SWISH1_MIN + SWISH1_2D_ROOT2), SWISH1_MIN, SWISH1_2D_ROOT2, swish_env, swish_denv, xU, 0.0)
+            flag && (p2 = golden_section(SWISH1_MIN, SWISH1_2D_ROOT2, swish_env, xU, 0.0))
         end
     else
         p2 = Inf
     end
 
     if x < p1
-        return dline_seg(swish1, swish1_deriv, x, xL, p1)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, xL, p1)..., p1, p2
     elseif x > p2
-        return dline_seg(swish1, swish1_deriv, x, p2, xU)..., p1, p2
+        return dline_seg(swish, swish_deriv, x, p2, xU)..., p1, p2
     end
-    return swish1(x), swish1_deriv(x), p1, p2
+    return swish(x), swish_deriv(x), p1, p2
 end
 
 # define kernel and operator for sigmoid, bisigmoid, softsign, gelu
@@ -710,13 +688,13 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
     end
 end
 
-for expri in (:swish1, :gelu)
+for expri in (:swish, :gelu)
     expri_cv = Symbol("cv_"*String(expri))
     expri_cc = Symbol("cc_"*String(expri))
     expri_kernel = Symbol(String(expri)*"_kernel")
-    if expri == swish1
+    if expri == swish
         eps_min = :(SWISH1_MIN < xL ? xL : (SWISH1_MIN > xU ? xU : SWISH1_MIN))
-        eps_max = :(swish1(xL) < swish1(xU) ? xU : xL)
+        eps_max = :(swish(xL) < swish(xU) ? xU : xL)
     else
         eps_min = :(GELU_MIN > xU ? xU : (GELU_MIN < xL ? xL : GELU_MIN))
         eps_max = :(gelu(xL) < gelu(xU) ? xU : xL)
@@ -746,7 +724,6 @@ logcosh
 
 The function `logcosh` is defined as `logcosh(x) = log(cosh(x))`.
 """
-logcosh(x::Float64) = log(cosh(x))
 logcosh_deriv(x::Float64) = tanh(x)
 logcosh_deriv2(x::Float64) = sech(x)^2
 cc_logcosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(logcosh, logcosh_deriv, x, xL, xU)

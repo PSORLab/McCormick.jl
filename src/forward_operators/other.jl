@@ -17,6 +17,7 @@ end
 interval_MC(x::MC{S,T}) where {S, T<:RelaxTag} = MC{S,T}(x.Intv)
 
 @inline isnan(x::MC) = isnan(x.cc) || isnan(x.cv)
+@inline isfinite(x::MC) = isfinite(x.cc) && isfinite(x.cv) && isfinite(x.Intv)
 
 ########### Defines differentiable step relaxations
 @inline function cv_step(x::Float64, xL::Float64, xU::Float64)

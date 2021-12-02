@@ -12,10 +12,17 @@
 # defines square operator
 @inline sqr(x::Float64) = x*x
 @inline cv_sqr_NS(x::Float64, xL::Float64, xU::Float64) = x*x
+
 @inline dcv_sqr_NS(x::Float64, xL::Float64, xU::Float64) = 2.0*x
 @inline function cc_sqr(x::Float64, xL::Float64, xU::Float64)
 	if (xU > xL)
-		cc = xL^2 + (xL + xU)*(x - xL)
+		if x == xL
+			cc = xL^2
+		elseif x == xU
+			cc = xU^2
+		else
+			cc = (xL + xU)*x - xU*xL
+		end
 	else
 		cc = xU^2
 	end

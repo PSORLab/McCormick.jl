@@ -25,8 +25,10 @@ import Base: +, -, *, /, convert, in, isempty, one, zero, real, eps, max, min,
              cos, tan, min, max, sec, csc, cot, ^, step, sign, intersect,
              promote_rule, asinh, atanh, tanh, atan, asin, cosh, acos,
              sind, cosd, tand, asind, acosd, atand,
-             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, empty,
+             secd, cscd, cotd, asecd, acscd, acotd, isone, isnan, isfinite, empty,
              <, <=, ==, fma, cbrt, sinpi, cospi, union
+
+import NNlib: relu, selu, leakyrelu, sigmoid, swish, gelu, elu, softsign, logcosh, softplus
 
 using IntervalArithmetic
 using IntervalArithmetic: @round
@@ -49,12 +51,8 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
                            setrounding, diam, isthin, abs2
 
-if ~(VERSION < v"1.1-")
-    import SpecialFunctions: erf, erfc, erfinv, erfcinv
-    export erf, erfinv, erfc, erfcinv, erf_kernel,
-           erfinv_kernel, erfc_kernel, erfcinv_kernel
-end
-
+import SpecialFunctions: erf, erfc, erfinv, erfcinv
+export erf, erfinv, erfc, erfcinv, erf_kernel, erfinv_kernel, erfc_kernel, erfcinv_kernel
 import Base.MathConstants.golden
 
 # Export forward operators
@@ -67,7 +65,7 @@ export MC, MCNoGrad, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, 
        sind, cosd, tand, asind, acosd, atand, nan,
        sinhd, coshd, tanhd, asinhd, acoshd, atanhd,
        secd, cscd, cotd, asecd, acscd, acotd,
-       secdh, cschd, cothd, asechd, acschd, acothd, isone, isnan, interval_MC,
+       secdh, cschd, cothd, asechd, acschd, acothd, isone, isfinite, isnan, interval_MC,
        relu, param_relu, leaky_relu, maxsig, maxtanh, softplus, pentanh,
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
@@ -617,5 +615,6 @@ using Reexport
 @reexport using IntervalArithmetic
 @reexport using StaticArrays
 @reexport using SpecialFunctions
+@reexport using NNlib
 
 end

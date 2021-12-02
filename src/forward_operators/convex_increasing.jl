@@ -21,9 +21,14 @@ for opMC in (:exp, :exp2, :exp10, :expm1)
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
               concave = xUc
-              (xUc > xLc) && (concave = (xLc*(xU - midcc) + xUc*(midcc - xL))/del)
+              if xUc - xLc > 3.0*eps(Float64)
+                  concave = (xLc*(xU - midcc) + xUc*(midcc - xL))/del
+                  concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*(xUc - xLc)/del
+              else
+                  concave = xUc
+                  concave_grad = mid_grad(x.cc_grad, x.cv_grad, 3)
+              end
               convex = ($opMC)(midcv)
-              concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*(xUc - xLc)/del
               convex_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*$dop
               convex, concave, convex_grad, concave_grad = cut(xLc, xUc, convex, concave, convex_grad, concave_grad)
               return MC{N, T}(convex, concave, z, convex_grad, concave_grad, x.cnst)
