@@ -32,13 +32,8 @@ import NNlib: relu, selu, leakyrelu, sigmoid, swish, gelu, elu, softsign, logcos
 
 using IntervalArithmetic
 using IntervalArithmetic: @round
-if isdefined(IntervalArithmetic, :big53)
-    big_val(x) = IntervalArithmetic.big53(x)
-else
-    big_val(x) = IntervalArithmetic.bigequiv(x)
-end
+big_val(x) = IntervalArithmetic.big53(x)
 
-using IntervalRootFinding
 import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            one, zero, real, eps, max, min, abs, exp,
                            expm1, log, log2, log10, log1p, sqrt, ^,
