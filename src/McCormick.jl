@@ -51,15 +51,8 @@ import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
                            secd, cscd, cotd, asecd, acscd, acotd, half_pi,
                            setrounding, diam, isthin, abs2
 
-if ~(VERSION < v"1.3-")
-    import SpecialFunctions: erf, erfc, erfinv, erfcinv
-    export erf, erfinv, erfc, erfcinv, erf_kernel,
-           erfinv_kernel, erfc_kernel, erfcinv_kernel
-else
-    erfinv(a::BigFloat) = mid(_erfinv(a))
-    erfcinv(a::BigFloat) = mid(_erfcinv(a))
-end
-
+import SpecialFunctions: erf, erfc, erfinv, erfcinv
+export erf, erfinv, erfc, erfcinv, erf_kernel, erfinv_kernel, erfc_kernel, erfcinv_kernel
 import Base.MathConstants.golden
 
 # Export forward operators

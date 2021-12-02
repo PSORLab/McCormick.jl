@@ -194,7 +194,7 @@ end
     return dline_seg(NaNMath.atanh, atanh_deriv, x, p, xU)..., p
 end
 
-@inline tanh_deriv(x::Float64, y::Float64, z::Float64) = sech(x)^2
+@inline tanh_deriv(x::Float64) = sech(x)^2
 @inline tanh_env(x::Float64, y::Float64, z::Float64) = (x - y) - (tanh(x) - tanh(y))/(1.0 - tanh(x)^2)
 @inline tanh_envd(x::Float64, y::Float64, z::Float64)= 2.0*tanh(x)/(1.0 - tanh(x)^2)*(tanh(x) - tanh(y))
 @inline function cv_tanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
@@ -218,7 +218,7 @@ end
     return tanh(x), sech(x)^2, p
 end
 
-@inline atan_deriv(x::Float64, y::Float64, z::Float64) = 1.0/(1.0 + x^2)
+@inline atan_deriv(x::Float64) = 1.0/(1.0 + x^2)
 @inline atan_env(x::Float64, y::Float64, z::Float64) = (x - y) - (1.0 + sqr(x))*(atan(x) - atan(y))
 @inline function cv_atan(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(atan, atan_deriv, x, xL, xU)..., p)
@@ -241,7 +241,7 @@ end
     return atan(x), 1.0/(1.0+x^2), p
 end
 
-@inline asin_deriv(x::Float64, y::Float64, z::Float64) = 1.0/NaNMath.sqrt(1.0 - x^2)
+@inline asin_deriv(x::Float64) = 1.0/NaNMath.sqrt(1.0 - x^2)
 @inline function asin_env(x::Float64, y::Float64, z::Float64)
     return (NaNMath.asin(x) - NaNMath.asin(y))*NaNMath.sqrt(1.0-x^2) - x + y
 end
@@ -266,7 +266,7 @@ end
     return dline_seg(NaNMath.asin, asin_deriv, x, p, xU)..., p
 end
 
-@inline tan_deriv(x::Float64, y::Float64, z::Float64) = sec(x)^2
+@inline tan_deriv(x::Float64) = sec(x)^2
 @inline function tan_env(x::Float64, y::Float64, z::Float64)
     return (x - y) - (NaNMath.tan(x) - NaNMath.tan(y))/(1.0 + NaNMath.tan(x)^2)
 end
@@ -294,7 +294,7 @@ end
     return dline_seg(NaNMath.tan, tan_deriv, x, p, xU)..., p
 end
 
-@inline acos_deriv(x::Float64, y::Float64, z::Float64) = -1.0/NaNMath.sqrt(1.0-x^2)
+@inline acos_deriv(x::Float64) = -1.0/NaNMath.sqrt(1.0-x^2)
 @inline acos_env(x::Float64, y::Float64, z::Float64) = -(NaNMath.acos(x) - NaNMath.acos(y))*NaNMath.sqrt(1-x^2) - x + y
 @inline function cc_acos(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(NaNMath.acos, acos_deriv, x, xL, xU)..., p)
@@ -317,7 +317,7 @@ end
     return dline_seg(acos, acos_deriv, x, p, xU)..., p
 end
 
-@inline asinh_deriv(x::Float64, y::Float64, z::Float64) = 1.0/sqrt(1.0 + x^2)
+@inline asinh_deriv(x::Float64) = 1.0/sqrt(1.0 + x^2)
 @inline asinh_env(x::Float64, y::Float64, z::Float64) = (x - y) - sqrt(1.0 + sqr(x))*(asinh(x) - asinh(y))
 @inline function cv_asinh(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(asinh, asinh_deriv, x, xL, xU)..., p)
