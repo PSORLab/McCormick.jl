@@ -70,7 +70,7 @@ export MC, MCNoGrad, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, 
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
        <, <=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax, trilinear,
-       xabsx, logcosh
+       xabsx, logcosh, mm
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
