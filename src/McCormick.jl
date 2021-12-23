@@ -251,6 +251,16 @@ end
         return (yL*(xU - x) + yU*(x - xL))/delta, (yU - yL)/delta
     end
 end
+@inline function dline_seg(f::Function, df::Function, x::Float64, xL::Float64, xU::Float64, v::Float64, k::Float64)
+    delta = xU - xL
+    if delta == 0.0
+        return f(x, v, k), df(x, v, k)
+    else
+        yL = f(xL, v, k)
+        yU = f(xU, v, k)
+        return (yL*(xU - x) + yU*(x - xL))/delta, (yU - yL)/delta
+    end
+end
 
 """
 $(TYPEDSIGNATURES)

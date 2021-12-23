@@ -680,7 +680,7 @@ function cc_mm(x, xL, xU, v, K)
 end
 mm_kernel(x::Float64, v, K, z::Interval{Float64}) where {N,T<:RelaxTag} = mm(x,v,K)
 
-function mm_kernel(x::MC{N,T}, a::Float64, z::Interval{Float64}) where {N,T<:Union{NS,MV}}
+function mm_kernel(x::MC{N,T}, v::Float64, K::Float64, z::Interval{Float64}) where {N,T<:Union{NS,MV}}
 	xL = x.Intv.lo
     xU = x.Intv.hi
 	eps_min = xL
@@ -694,20 +694,19 @@ function mm_kernel(x::MC{N,T}, a::Float64, z::Interval{Float64}) where {N,T<:Uni
     cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
     return MC{N, T}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
-function mm_kernel(x::MC{N,Diff}, a::Float64, z::Interval{Float64},
-	                   cv_p::Float64, cc_p::Float64) where N
+function mm_kernel(x::MC{N,Diff}, v::Float64, K::Float64, z::Interval{Float64}) where N
 	xL = x.Intv.lo
 	xU = x.Intv.hi
 	eps_min = xL
 	eps_max = xU
 	midcv, cv_id = mid3(x.cv, x.cc, eps_min)
 	midcc, cc_id = mid3(x.cv, x.cc, eps_max)
-	cv, dcv = cv_xexpax(midcv, xL, xU, a, cv_p)
-	cc, dcc = cc_xexpax(midcc, xL, xU, a, cc_p)
-	gcv1, gdcv1 = cv_xexpax(x.cv, xL, xU, a, cv_p)
-	gcc1, gdcc1 = cc_xexpax(x.cv, xL, xU, a, cc_p)
-	gcv2, gdcv2 = cv_xexpax(x.cc, xL, xU, a, cv_p)
-	gcc2, gdcc2 = cc_xexpax(x.cc, xL, xU, a, cc_p)
+	cv, dcv = cv_mm(midcv, xL, xU, v, K)
+	cc, dcc = cc_mm(midcc, xL, xU, v, K)
+	gcv1, gdcv1 = cv_mm(x.cv, xL, xU, v, K)
+	gcc1, gdcc1 = cc_mm(x.cv, xL, xU, v, K)
+	gcv2, gdcv2 = cv_mm(x.cc, xL, xU, v, K)
+	gcc2, gdcc2 = cc_mm(x.cc, xL, xU, v, K)
 	cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
 	cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
 	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst)
