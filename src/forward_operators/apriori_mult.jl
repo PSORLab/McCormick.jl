@@ -35,7 +35,7 @@ function mult_apriori_kernel(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64},
     a1i = Interval(a1); a2i = Interval(a2)
     x1cv = x1.cv
     x1cc = x1.cc
-    x2cv = x2.cv 
+    x2cv = x2.cv
     x2cc = x2.cc
     x1i = Interval(x1.cv, x1.cc)
     x2i = Interval(x2.cv, x2.cc)

@@ -274,7 +274,7 @@ end
 @inline function cv_pentanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(pentanh, pentanh_deriv, x, xL, xU)..., p)
     (xU <= 0.0) && (return pentanh(x), pentanh_deriv(x), p)
-    if p === Inf
+    if p == Inf
         p, flag = secant(xL, 0.0, xL, 0.0, pentanh_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, pentanh_env, xU, 0.0))
     end
@@ -284,7 +284,7 @@ end
 @inline function cc_pentanh(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return pentanh(x), pentanh_deriv(x), p)
     (xU <= 0.0) && (return dline_seg(pentanh, pentanh_deriv, x, xL, xU)..., p)
-    if p === Inf
+    if p == Inf
         p, flag = secant(0.0, xU, 0.0, xU, pentanh_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, pentanh_env, xL, 0.0))
     end
@@ -306,7 +306,7 @@ end
 @inline function cv_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
     (xU <= 0.0) && (return sigmoid(x), sigmoid_deriv(x), p)
-    if p === Inf
+    if p == Inf
         p, flag = secant(xL, 0.0, xL, 0.0, sigmoid_env, xU, 0.0)
         flag && (p = golden_section(xL, 0.0, sigmoid_env, xU, 0.0))
     end
@@ -316,7 +316,7 @@ end
 @inline function cc_sigmoid(x::Float64, xL::Float64, xU::Float64, p::Float64)
     (xL >= 0.0) && (return sigmoid(x), sigmoid_deriv(x), p)
     (xU <= 0.0) && (return dline_seg(sigmoid, sigmoid_deriv, x, xL, xU)..., p)
-    if p === Inf
+    if p == Inf
         p, flag = secant(0.0, xU, 0.0, xU, sigmoid_env, xL, 0.0)
         flag && (p = golden_section(0.0, xU, sigmoid_env, xL, 0.0))
     end
@@ -556,16 +556,21 @@ The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
         xLcv = xLc.lo
         xUcv = xUc.hi
     else
-        xLcv = SWISH1_MIN
+        xmin = Interval(SWISH1_MIN)
+        xminI = xmin/(1.0 + exp(-xmin))
+        xLcv = xminI.lo
         xUcv = max(xLc.hi, xUc.hi)
     end
     return Interval(xLcv, xUcv)
 end
 @inline function swish_deriv(x::Float64)
-    (x - 1)/(exp(x) + 1) - x/(exp(x) + 1)^2 + 1
+    z = 1.0/(1.0 + exp(-x))
+    swish(x) + z*(1-swish(x))
 end
 @inline function swish_deriv2(x::Float64)
-    (2 - x)/(exp(x) + 1) - 2*x/(exp(x) + 1)^3 + (3*x - 2)/(exp(x) + 1)^2
+    z = 1.0/(1.0 + exp(-x))
+    dz = exp(-x)/(1.0 + exp(-x))^2
+    swish_deriv(x) + dz*(1.0 - swish(x)) - z*swish_deriv(x)
 end
 @inline function swish_env(x::Float64, y::Float64, z::Float64)
     swish_deriv(x)*(y - x) + swish(x) - swish(y)
@@ -677,8 +682,8 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
-        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
-        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+        cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+        cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
@@ -708,9 +713,10 @@ for expri in (:swish, :gelu)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
         cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
-        cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
-        cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+        cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
+        cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        @show dcv, cv_id
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
