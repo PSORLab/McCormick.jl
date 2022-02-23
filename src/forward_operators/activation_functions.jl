@@ -716,7 +716,6 @@ for expri in (:swish, :gelu)
         cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
         cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
-        @show dcv, cv_id
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
