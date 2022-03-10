@@ -118,7 +118,7 @@ $(TYPEDSIGNATURES)
 
 Applies the componentwise variant of the Krawczyk type contractor.
 """
-function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, b::Bool, k::Int) where {FH <: Function,
+function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH <: Function,
                                                                          FJ <: Function,
                                                                          C, PRE, N,
                                                                          T<:RelaxTag}
