@@ -5,7 +5,7 @@ A Forward McCormick Operator Library
 |:-----------------------------------------------------:|:-------------------------------------------------------:|:-------------------------------------------------------:|
 | [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
 
-McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) in the form of Jupyter notebooks.
+McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included in [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) as Jupyter notebooks.
 
 ## McCormick operator variants
 
@@ -15,7 +15,7 @@ and `Diff` for differentiable relaxations ([Khan2016](https://link.springer.com/
 
 ## **Supported Operators**
 
-In addition, to supporting the implicit relaxation routines of ([Stuber 2015](https://www.tandfonline.com/doi/abs/10.1080/10556788.2014.924514?journalCode=goms20)). This package
+In addition to supporting the implicit relaxation routines of ([Stuber 2015](https://www.tandfonline.com/doi/abs/10.1080/10556788.2014.924514?journalCode=goms20)), this package
 supports the computation of convex/concave relaxations (and associated subgradients) for
 expressions containing the following operations:
 
@@ -41,9 +41,9 @@ expressions containing the following operations:
 Differentiable relaxations (`Diff <: RelaxTag`) are supported for the functions given in [Khan2016](https://link.springer.com/article/10.1007/s10898-016-0440-6), [Khan2018](https://link.springer.com/article/10.1007/s10898-017-0601-2), [Khan2019](https://www.tandfonline.com/doi/abs/10.1080/02331934.2018.1534108). However, differentiable relaxations for other nonsmooth terms listed above have yet to be developed and as such have been omitted.
 
 ## **Bounding a function via McCormick operators**
-In order to bound a function using a McCormick relaxation. You first construct
-structure that bounds the input variables then you construct pass these variables
-two a function.
+In order to bound a function using a McCormick relaxation, you first construct a
+structure that bounds the input variables and then you pass these variables
+to a function.
 
 In the example below, convex/concave relaxations of the function `f(x) = sin(2x) + exp(x) - x`
 are calculated at `x = 1` on the interval `[-2,3]`.
@@ -73,7 +73,7 @@ ccgrad = fMC.cc_grad     # subgradient/gradient of concave relaxation
 Iv = fMC.Intv           # retrieve interval bounds of f(x) on Intv
 ```
 
-The plotting the results we can easily generate visual the convex and concave
+Plotting the results, we can easily visualize the convex and concave
 relaxations, interval bounds, and affine bounds constructed using the subgradient
 at the middle of X.
 
