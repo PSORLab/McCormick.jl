@@ -35,8 +35,4 @@
    @test dense.YInterval == zeros(Interval{Float64},1)
    @test dense.nx == nx
    @test dense.np == np
-
-   t = KrawczykCW()
-   dmc = MCCallback(h!, hj!, nx, np, KrawczykCW())
-   McCormick.contract!(t, dmc)
 end

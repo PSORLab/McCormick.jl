@@ -639,3 +639,81 @@ end
 function xabsx(x::MC{N,T}) where {N, T <: RelaxTag}
 	xabsx_kernel(x, xabsx(x.Intv))
 end
+
+"""
+    mm(X,v,K) = v*X / (X + K)
+
+A Michaelis-Menten rate function.
+"""
+mm(x,v,K) = v*x/ (x + K)
+mm_deriv(x,v,K) = (v*K)/(x + K)^2
+function mm_grad(g, x::Float64, v::Float64, K::Float64)
+	g[1] = (v*K)/(x + K)^2
+	g[2] = x/(x+K)
+	g[3] = -v*x/(x + k)^2
+	nothing
+end
+function mm(x::Interval{Float64}, v::Float64, K::Float64)
+	if x.lo > -K
+		lo_Interval = mm(Interval(x.lo), Interval(v), Interval(K))
+		hi_Interval = mm(Interval(x.hi), Interval(v), Interval(K))
+		return v*Interval{Float64}(lo_Interval.lo, hi_Interval.hi)
+	elseif x.hi < -K
+		lo_Interval = mm(Interval(x.hi), Interval(v), Interval(K))
+		hi_Interval = mm(Interval(x.lo), Interval(v), Interval(K))
+		return v*Interval{Float64}(lo_Interval.lo, hi_Interval.hi)
+	end
+	Interval{Float64}(-Inf, Inf)
+end
+
+function cv_mm(x, xL, xU, v, K)
+	if xL > -K
+		return dline_seg(mm, mm_deriv, x, xL, xU, v, K)
+	end
+	return mm(x, v, K), mm_deriv(x, v, K)
+end
+function cc_mm(x, xL, xU, v, K)
+	if xL > -K
+		mm(x, v, K), mm_deriv(x, v, K)
+	end
+	return dline_seg(mm, mm_deriv, x, xL, xU, v, K)
+end
+mm_kernel(x::Float64, v, K, z::Interval{Float64}) where {N,T<:RelaxTag} = mm(x,v,K)
+
+function mm_kernel(x::MC{N,T}, v::Float64, K::Float64, z::Interval{Float64}) where {N,T<:Union{NS,MV}}
+	xL = x.Intv.lo
+    xU = x.Intv.hi
+	eps_min = xL
+	eps_max = xU
+    midcv, cv_id = mid3(x.cc, x.cv, eps_min)
+    midcc, cc_id = mid3(x.cc, x.cv, eps_max)
+    cv, dcv = cv_mm(midcv, xL, xU, v, K)
+    cc, dcc = cc_mm(midcc, xL, xU, v, K)
+    cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
+    cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
+    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    return MC{N, T}(cv, cc, z, cv_grad, cc_grad, x.cnst)
+end
+function mm_kernel(x::MC{N,Diff}, v::Float64, K::Float64, z::Interval{Float64}) where N
+	xL = x.Intv.lo
+	xU = x.Intv.hi
+	eps_min = xL
+	eps_max = xU
+	midcv, cv_id = mid3(x.cv, x.cc, eps_min)
+	midcc, cc_id = mid3(x.cv, x.cc, eps_max)
+	cv, dcv = cv_mm(midcv, xL, xU, v, K)
+	cc, dcc = cc_mm(midcc, xL, xU, v, K)
+	gcv1, gdcv1 = cv_mm(x.cv, xL, xU, v, K)
+	gcc1, gdcc1 = cc_mm(x.cv, xL, xU, v, K)
+	gcv2, gdcv2 = cv_mm(x.cc, xL, xU, v, K)
+	gcc2, gdcc2 = cc_mm(x.cc, xL, xU, v, K)
+	cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
+	cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
+	return MC{N,Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst)
+end
+
+function mm(x::MC{N,T}, v::Float64, K::Float64) where {N, T <: RelaxTag}
+	intv_xexpax = mm(x.Intv, v, K)
+	yMC = mm_kernel(x, v, K, intv_xexpax)
+	return yMC
+end

@@ -102,6 +102,8 @@ struct MCCallback{FH <: Function, FJ <: Function, C <: AbstractContractorMC,
     H::Vector{MC{N,T}}
     ""
     J::AMAT
+    J0::Vector{AMAT}
+    xz0::Vector{AMAT}
     xmid::Vector{Float64}
     X::Vector{Interval{Float64}}
     P::Vector{Interval{Float64}}
@@ -130,6 +132,7 @@ struct MCCallback{FH <: Function, FJ <: Function, C <: AbstractContractorMC,
     "Boolean indicating that the preconditioner should be applied"
     apply_precond::Bool
     param::Vector{Vector{MC{N,T}}}
+    use_apriori::Bool
 end
 function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int,
                     contractor::S = NewtonGS(),
@@ -157,14 +160,22 @@ function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int,
     contractor = NewtonGS()
     preconditioner = preconditioner(h!, hj!, nx, np)
     J = preconditioner_storage(preconditioner, relax_tag)
+    J0 = Matrix{MC{np, TAG}}[]
+    for i = 1:kmax
+        push!(J0, preconditioner_storage(preconditioner, relax_tag))
+    end
+    xz0 = Matrix{MC{np, TAG}}[]
+    for i = 1:kmax
+        push!(J0, preconditioner_storage(preconditioner, relax_tag))
+    end
     apply_precond = true
     param = fill(zeros(MC{np,TAG}, (nx, )), (kmax,))
-
-    return MCCallback{FH, FJ, NewtonGS, DenseMidInv, np, TAG, typeof(J)}(h!, hj!, H, J, xmid, X, P, nx, np,
+    use_apriori = false
+    return MCCallback{FH, FJ, NewtonGS, DenseMidInv, np, TAG, typeof(J)}(h!, hj!, H, J, J0, xz0, xmid, X, P, nx, np,
                                                                          lambda, eps, kmax, p_ref, p_mc, x0_mc, x_mc,
                                                                          xa_mc, xA_mc, aff_mc, z_mc,
                                                                          contractor, preconditioner,
-                                                                         apply_precond, param)
+                                                                         apply_precond, param, use_apriori)
 end
 function (d::MCCallback)()
     d.h!(d.H, d.z_mc, d.p_mc)
@@ -236,17 +247,17 @@ include("contract.jl")
 """
 $(SIGNATURES)
 """
-function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}) where {FH <: Function,
-                                                                              FJ <: Function,
-                                                                              C <: AbstractContractorMC,
-                                                                              PRE <: AbstractPreconditionerMC,
-                                                                              N, T<:RelaxTag}
+function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH <: Function,
+                                                                                       FJ <: Function,
+                                                                                       C <: AbstractContractorMC,
+                                                                                       PRE <: AbstractPreconditionerMC,
+                                                                                       N, T<:RelaxTag}
     @. callback!.aff_mc = MC{N,T}(cv(callback!.xa_mc), cc(callback!.xA_mc))
     callback!()
     if callback!.apply_precond
         precondition!(callback!.preconditioner, callback!.H, callback!.J)
     end
-    contract!(callback!.contractor, callback!)
+    contract!(callback!.contractor, callback!, k, b)
     return
 end
 
@@ -280,7 +291,7 @@ function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where 
     populate_affine!(d, interval_bnds)
     @. d.param[1] = d.x_mc
     for k = 2:d.kmax
-        precond_and_contract!(d)
+        precond_and_contract!(d, k, true)
         affine_exp!(d.x_mc, d.pref_mc, d)
         correct_exp!(d)
         @. d.param[k] = d.x_mc
@@ -297,7 +308,7 @@ function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, 
     populate_affine!(d, interval_bnds)
     for k = 1:d.kmax
         affine_exp!(d.param[k], d.p_mc, d)
-        precond_and_contract!(d)
+        precond_and_contract!(d, k, false)
     end
     return
 end

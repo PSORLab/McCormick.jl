@@ -70,7 +70,7 @@ export MC, MCNoGrad, cc, cv, Intv, lo, hi,  cc_grad, cv_grad, cnst, +, -, *, /, 
        sigmoid, bisigmoid, softsign, gelu, elu, selu, swish1,
        positive, negative, lower_bnd, upper_bnd, bnd, xlogx,
        <, <=, ==, fma, cbrt, abs2, sinpi, cospi, arh, xexpax, trilinear,
-       xabsx, logcosh
+       xabsx, logcosh, mm
 
 # Export kernel operators
 export plus_kernel, minus_kernel, mult_kernel, div_kernel, max_kernel,
@@ -120,7 +120,7 @@ const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10
 
 const MC_INTERSECT_NOOP_FALLBACK = true
-const MC_INTERSECT_TOL = 1E-13
+const MC_INTERSECT_TOL = 1E-8
 
 
 const MC_DIFF_MU = 1
@@ -248,6 +248,16 @@ end
     else
         yL = f(xL, c)
         yU = f(xU, c)
+        return (yL*(xU - x) + yU*(x - xL))/delta, (yU - yL)/delta
+    end
+end
+@inline function dline_seg(f::Function, df::Function, x::Float64, xL::Float64, xU::Float64, v::Float64, k::Float64)
+    delta = xU - xL
+    if delta == 0.0
+        return f(x, v, k), df(x, v, k)
+    else
+        yL = f(xL, v, k)
+        yU = f(xU, v, k)
         return (yL*(xU - x) + yU*(x - xL))/delta, (yU - yL)/delta
     end
 end
