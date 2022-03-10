@@ -84,7 +84,7 @@ function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool)
                 xv = @inbounds d.J[i,j]
                 yv = @inbounds d.x_mc[j] - d.z_mc[j]
                 zv = xv*yv
-                if d.apriori
+                if d.use_apriori
                     if b
                         d.J0[k][i,j] = xv
                         d.xz0[k][i,j] = yv
@@ -130,7 +130,7 @@ function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, b::Bool, k::In
             xv = (i !== j) ? -d.J[i,j] : (one(MC{N,T}) - d.J[i,j])
             yv = @inbounds d.x_mc[j] - d.z_mc[j]
             zv = xv*yv
-            if d.apriori
+            if d.use_apriori
                 if b
                     d.J0[k][i,j] = xv
                     d.xz0[k][i,j] = yv

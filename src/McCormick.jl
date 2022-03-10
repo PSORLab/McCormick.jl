@@ -120,7 +120,7 @@ const MC_ENV_MAX_INT = 100
 const MC_ENV_TOL = 1E-10
 
 const MC_INTERSECT_NOOP_FALLBACK = true
-const MC_INTERSECT_TOL = 1E-13
+const MC_INTERSECT_TOL = 1E-8
 
 
 const MC_DIFF_MU = 1

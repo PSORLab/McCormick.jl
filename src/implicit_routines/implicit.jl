@@ -247,7 +247,7 @@ include("contract.jl")
 """
 $(SIGNATURES)
 """
-function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}, b::Bool) where {FH <: Function,
+function precond_and_contract!(callback!::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH <: Function,
                                                                                        FJ <: Function,
                                                                                        C <: AbstractContractorMC,
                                                                                        PRE <: AbstractPreconditionerMC,
