@@ -13,7 +13,7 @@ __precompile__()
 
 module McCormick
 
-using DocStringExtensions, LinearAlgebra
+using DocStringExtensions, LinearAlgebra, UnPack
 using DiffRules: diffrule
 using StaticArrays: @SVector, SVector, zeros, ones
 using ForwardDiff: Dual, Partials
@@ -616,6 +616,14 @@ function check_relaxation_error!(x::MC{N,T}) where {N, T<:RelaxTag}
                 so we may address this error in the future."
     end
     return nothing
+end
+
+function create_vec_of_mutable(::Type{T}, f, k::Int) where T
+    z = T[]
+    for i = 1:k
+        push!(z, f())
+    end
+    z
 end
 
 include("forward_operators/forward.jl")

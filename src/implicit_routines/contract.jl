@@ -71,35 +71,34 @@ $(TYPEDSIGNATURES)
 
 Applies the Gauss-Siedel variant of the Newton type contractor.
 """
-function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH <: Function,
-                                                                                        FJ <: Function,
-                                                                                        C, PRE, N,
-                                                                                        T<:RelaxTag}
+function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH, FJ, C, PRE, N, T<:RelaxTag}
+    @unpack H, J0, J, p_mc, pref_mc, nx, x0_mc, x_mc, xz0, z_mc, use_apriori = d
+
     S = zero(MC{N,T})
-    @. d.x0_mc = d.x_mc
-    for i = 1:d.nx
+    @. x0_mc = x_mc
+    for i = 1:nx
         S = zero(MC{N,T})
-        for j = 1:d.nx
-            if (i !== j)
-                xv = @inbounds d.J[i,j]
-                yv = @inbounds d.x_mc[j] - d.z_mc[j]
+        for j = 1:nx
+            if i != j
+                xv = @inbounds J[i,j]
+                yv = @inbounds x_mc[j] - z_mc[j]
                 zv = xv*yv
-                if d.use_apriori
+                if use_apriori
                     if b
-                        d.J0[k][i,j] = xv
-                        d.xz0[k][i,j] = yv
+                        J0[k][i,j] = xv
+                        xz0[k][i,j] = yv
                     end
-                    xr = d.J0[k][i,j]
-                    yr = d.xz0[k][i,j]
-                    u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, d.p_ref)
+                    xr = J0[k][i,j]
+                    yr = xz0[k][i,j]
+                    u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, p_ref)
                     wIntv = zv.Intv
                     if (u1max < xv.Intv.hi) || (u2max < yv.Intv.hi)
-                        u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, d.p_mc, d.p_ref)
+                        u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, p_mc, p_ref)
                         za_l = mult_apriori_kernel(xv, yv, wIntv, u1cv, u2cv, u1max, u2max, u1cvg, u2cvg)
                         zv = zv ∩ za_l
                     end
                     if (v1nmax > -xv.Intv.lo) || (v2nmax > -yv.Intv.lo)
-                        v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, d.p_mc, d.p_ref)
+                        v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, p_mc, p_ref)
                         za_u = mult_apriori_kernel(-xv, -yv, wIntv, v1ccn, v2ccn, v1nmax, v2nmax, v1ccgn, v2ccgn)
                         zv = zv ∩ za_u
                     end
@@ -107,8 +106,8 @@ function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool)
                 S += zv
             end
         end
-        @inbounds d.x_mc[i] = d.z_mc[i] - (d.H[i] + S)*McCormick.inv1(d.J[i,i], 1.0/d.J[i,i].Intv)
-        @inbounds d.x_mc[i] = final_cut(d.x_mc[i], d.x0_mc[i])
+        @inbounds x_mc[i] = z_mc[i] - (H[i] + S)*McCormick.inv1(J[i,i], 1.0/J[i,i].Intv)
+        @inbounds x_mc[i] = final_cut(x_mc[i], x0_mc[i])
     end
     return
 end
@@ -118,42 +117,41 @@ $(TYPEDSIGNATURES)
 
 Applies the componentwise variant of the Krawczyk type contractor.
 """
-function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH <: Function,
-                                                                         FJ <: Function,
-                                                                         C, PRE, N,
-                                                                         T<:RelaxTag}
-    S::MC{N,T} = zero(MC{N,T})
-    @. d.x0_mc = d.x_mc
-    for i=1:d.nx
+function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool) where {FH, FJ, C, PRE, N, T<:RelaxTag}
+    @unpack H, J0, J, p_mc, pref_mc, nx, x0_mc, x_mc, xz0, z_mc, use_apriori = d
+
+    S = zero(MC{N,T})
+    @. x0_mc = x_mc
+    for i = 1:nx
         S = zero(MC{N,T})
-        for j=1:d.nx
-            xv = (i !== j) ? -d.J[i,j] : (one(MC{N,T}) - d.J[i,j])
-            yv = @inbounds d.x_mc[j] - d.z_mc[j]
+        for j = 1:d.nx
+            xv = (i != j) ? -J[i,j] : (one(MC{N,T}) - J[i,j])
+            yv = @inbounds x_mc[j] - z_mc[j]
             zv = xv*yv
-            if d.use_apriori
+            if use_apriori
                 if b
-                    d.J0[k][i,j] = xv
-                    d.xz0[k][i,j] = yv
+                    J0[k][i,j] = xv
+                    xz0[k][i,j] = yv
                 end
-                xr = d.J0[k][i,j]
-                yr = d.xz0[k][i,j]
-                u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, d.p_ref)
+                xr = J0[k][i,j]
+                yr = xz0[k][i,j]
+                u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, p_ref)
                 wIntv = zv.Intv
                 if (u1max < xv.Intv.hi) || (u2max < yv.Intv.hi)
-                    u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, d.p_mc, d.p_ref)
+                    u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, p_mc, p_ref)
                     za_l = mult_apriori_kernel(xv, yv, wIntv, u1cv, u2cv, u1max, u2max, u1cvg, u2cvg)
                     zv = zv ∩ za_l
                 end
                 if (v1nmax > -xv.Intv.lo) || (v2nmax > -yv.Intv.lo)
-                    v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, d.p_mc, d.p_ref)
+                    v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, p_mc, p_ref)
                     za_u = mult_apriori_kernel(-xv, -yv, wIntv, v1ccn, v2ccn, v1nmax, v2nmax, v1ccgn, v2ccgn)
                     zv = zv ∩ za_u
                 end
             end
             S += zv
         end
-        @inbounds d.x_mc[i] = d.z_mc[i] - d.H[i] + S
-        @inbounds d.x_mc[i] = final_cut(d.x_mc[i], d.x0_mc[i])
+        @inbounds x_mc[i] = z_mc[i] - H[i] + S
+        @inbounds x_mc[i] = final_cut(x_mc[i], x0_mc[i])
     end
     return
 end
