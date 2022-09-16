@@ -118,6 +118,8 @@ Base.@kwdef mutable struct MCCallback{FH, FJ, C<:AbstractContractorMC, PRE<:Abst
     pref_mc::Vector{MC{N,T}}
     "Decision point at which relaxation is evaluated."
     p_mc::Vector{MC{N,T}}
+    "Vector used to temporarily store p in gen_expansion_params! routine."
+    p_temp_mc::Vector{MC{N,T}}
     x0_mc::Vector{MC{N,T}}
     x_mc::Vector{MC{N,T}}
     xa_mc::Vector{MC{N,T}}
@@ -138,7 +140,6 @@ end
 function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int, contractor::S = NewtonGS(),
                     preconditioner::T = DenseMidInv(zeros(Float64,1,1), zeros(Interval{Float64},1), 1, 1),
                     tag::TAG = NS(), kmax::Int = 2) where {FH, FJ, S <: AbstractContractorMC, T, TAG <: RelaxTag}
-    
     J = preconditioner_storage(preconditioner, tag)
     return MCCallback{FH,FJ,NewtonGS,DenseMidInv,np,TAG,typeof(J)}(h! = h!,  hj! = hj!, 
                 H = zeros(MC{np,TAG}, (nx,)), 
@@ -150,7 +151,8 @@ function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int, contractor::S = NewtonGS(
                 P = zeros(Interval{Float64}, (np,)), 
                 nx = nx, np = np,
                 pref_mc = zeros(MC{np,TAG}, (np,)), 
-                p_mc = zeros(MC{np,TAG}, (np,)), 
+                p_mc = zeros(MC{np,TAG}, (np,)),
+                p_temp_mc = zeros(MC{np,TAG}, (np,)),
                 x0_mc = zeros(MC{np,TAG}, (nx,)), 
                 x_mc = zeros(MC{np,TAG}, (nx,)),
                 xa_mc = zeros(MC{np,TAG}, (nx,)), 
@@ -270,9 +272,10 @@ $(SIGNATURES)
 Constructs parameters need to compute relaxations of `h`.
 """
 function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
-    @unpack kmax, param, p_mc, pref_mc, x_mc = d
+    @unpack kmax, param, p_mc, p_temp_mc, pref_mc, x_mc = d
 
     populate_affine!(d, interval_bnds)
+    @. p_temp_mc = p_mc 
     @. p_mc = pref_mc
     @. param[1] = x_mc
     for k = 2:kmax
@@ -281,6 +284,7 @@ function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where 
         correct_exp!(d)
         @. param[k] = x_mc
     end
+    @. p_mc = p_temp_mc 
     return
 end
 
@@ -290,9 +294,11 @@ $(SIGNATURES)
 Compute relaxations of `x(p)` defined by `h(x,p) = 0` where `h` is specifed as `h(out, x, p)`.
 """
 function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
+    @unpack kmax, param, p_mc = d
+    
     populate_affine!(d, interval_bnds)
-    for k = 1:d.kmax
-        affine_exp!(d.param[k], d.p_mc, d)
+    for k = 1:kmax
+        affine_exp!(param[k], p_mc, d)
         precond_and_contract!(d, k, false)
     end
     return

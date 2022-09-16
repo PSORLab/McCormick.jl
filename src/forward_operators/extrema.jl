@@ -210,6 +210,6 @@ end
 @inline function union(x::MC{N,T}, y::MC{N,T}) where {N, T <: RelaxTag}
     cv_MC = min(x, y)
     cc_MC = max(x, y)
-    return MC{N, NS}(cv_MC.cv, cc_MC.cc, Interval(cv.Intv.lo, cc.Intv.hi),
+    return MC{N, NS}(cv_MC.cv, cc_MC.cc, Interval(cv_MC.Intv.lo, cc_MC.Intv.hi),
                      cv_MC.cv_grad, cc_MC.cc_grad, x.cnst && y.cnst)
 end
