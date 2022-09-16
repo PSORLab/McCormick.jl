@@ -621,7 +621,8 @@ end
 function create_vec_of_mutable(::Type{T}, f, k::Int) where T
     z = T[]
     for i = 1:k
-        push!(z, f())
+        t = f()
+        push!(z, t)
     end
     z
 end
