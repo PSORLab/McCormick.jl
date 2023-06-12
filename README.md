@@ -45,13 +45,13 @@ In order to bound a function using a McCormick relaxation, you first construct a
 structure that bounds the input variables and then you pass these variables
 to a function.
 
-In the example below, convex/concave relaxations of the function `f(x) = sin(2x) + exp(x) - x`
-are calculated at `x = 1` on the interval `[-2,3]`.
+In the example below, convex/concave relaxations of the function `f(x) = x * (x-5.0) * sin(x)`
+are calculated at `x = 2` on the interval `[1,4]`.
 
 ```julia
 using McCormick
 
-# create MC object for x = 2.0 on [1.0,3.0] for relaxing
+# create MC object for x = 2.0 on [1.0,4.0] for relaxing
 # a function f(x) on the interval Intv
 
 f(x) = x*(x-5.0)*sin(x)
