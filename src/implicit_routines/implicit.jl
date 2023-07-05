@@ -138,7 +138,7 @@ Base.@kwdef mutable struct MCCallback{FH, FJ, C<:AbstractContractorMC, PRE<:Abst
     use_apriori::Bool = false
 end
 function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int, contractor::S = NewtonGS(),
-                    preconditioner::T = DenseMidInv(zeros(Float64,1,1), zeros(Interval{Float64},1), 1, 1),
+                    preconditioner::T = DenseMidInv(zeros(Float64,nx,nx), zeros(Interval{Float64},1), nx, np),
                     tag::TAG = NS(), kmax::Int = 2) where {FH, FJ, S <: AbstractContractorMC, T, TAG <: RelaxTag}
     J = preconditioner_storage(preconditioner, tag)
     return MCCallback{FH,FJ,NewtonGS,DenseMidInv,np,TAG,typeof(J)}(h! = h!,  hj! = hj!, 
