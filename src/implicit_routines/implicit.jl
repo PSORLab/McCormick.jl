@@ -271,7 +271,7 @@ $(SIGNATURES)
 
 Constructs parameters need to compute relaxations of `h`.
 """
-function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
+function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true)
     @unpack kmax, param, p_mc, p_temp_mc, pref_mc, x_mc = d
 
     populate_affine!(d, interval_bnds)
@@ -293,7 +293,7 @@ $(SIGNATURES)
 
 Compute relaxations of `x(p)` defined by `h(x,p) = 0` where `h` is specifed as `h(out, x, p)`.
 """
-function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
+function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true)
     @unpack kmax, param, p_mc = d
     
     populate_affine!(d, interval_bnds)
