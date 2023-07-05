@@ -678,7 +678,7 @@ function cc_mm(x, xL, xU, v, K)
 	end
 	return dline_seg(mm, mm_deriv, x, xL, xU, v, K)
 end
-mm_kernel(x::Float64, v, K, z::Interval{Float64}) where {N,T<:RelaxTag} = mm(x,v,K)
+mm_kernel(x::Float64, v, K, z::Interval{Float64}) = mm(x,v,K)
 
 function mm_kernel(x::MC{N,T}, v::Float64, K::Float64, z::Interval{Float64}) where {N,T<:Union{NS,MV}}
 	xL = x.Intv.lo

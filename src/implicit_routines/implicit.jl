@@ -138,7 +138,7 @@ Base.@kwdef mutable struct MCCallback{FH, FJ, C<:AbstractContractorMC, PRE<:Abst
     use_apriori::Bool = false
 end
 function MCCallback(h!::FH, hj!::FJ, nx::Int, np::Int, contractor::S = NewtonGS(),
-                    preconditioner::T = DenseMidInv(zeros(Float64,1,1), zeros(Interval{Float64},1), 1, 1),
+                    preconditioner::T = DenseMidInv(zeros(Float64,nx,nx), zeros(Interval{Float64},1), nx, np),
                     tag::TAG = NS(), kmax::Int = 2) where {FH, FJ, S <: AbstractContractorMC, T, TAG <: RelaxTag}
     J = preconditioner_storage(preconditioner, tag)
     return MCCallback{FH,FJ,NewtonGS,DenseMidInv,np,TAG,typeof(J)}(h! = h!,  hj! = hj!, 
@@ -271,7 +271,7 @@ $(SIGNATURES)
 
 Constructs parameters need to compute relaxations of `h`.
 """
-function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
+function gen_expansion_params!(d::MCCallback, interval_bnds::Bool = true)
     @unpack kmax, param, p_mc, p_temp_mc, pref_mc, x_mc = d
 
     populate_affine!(d, interval_bnds)
@@ -293,7 +293,7 @@ $(SIGNATURES)
 
 Compute relaxations of `x(p)` defined by `h(x,p) = 0` where `h` is specifed as `h(out, x, p)`.
 """
-function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true) where {N, T<:RelaxTag}
+function implicit_relax_h!(d::MCCallback, interval_bnds::Bool = true)
     @unpack kmax, param, p_mc = d
     
     populate_affine!(d, interval_bnds)

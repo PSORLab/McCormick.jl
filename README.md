@@ -2,9 +2,9 @@
 
 A Forward McCormick Operator Library
 
-| **Linux/Windows**                                                        |          **Coverage**                                                         |           **Persistent DOI**                       |                                              
-|:-----------------------------------------------------:|:-------------------------------------------------------:|:-------------------------------------------------------:|
-| [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI)  | [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
+| **PSOR Lab** | **Build Status**                                                        | **Persistent DOI**                       |                                              
+|:------------:|:-----------------------------------------------------------------------:|:----------------------------------------:|
+| [![](https://img.shields.io/badge/Developed_by-PSOR_Lab-342674)](https://psor.uconn.edu/) | [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
 
 McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included in [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) as Jupyter Notebooks.
 
@@ -39,30 +39,27 @@ expressions containing the following operations:
 
 Differentiable relaxations (`Diff <: RelaxTag`) are supported for the functions given in [Khan2016](https://link.springer.com/article/10.1007/s10898-016-0440-6), [Khan2018](https://link.springer.com/article/10.1007/s10898-017-0601-2), [Khan2019](https://www.tandfonline.com/doi/abs/10.1080/02331934.2018.1534108). However, differentiable relaxations for other nonsmooth terms listed above have yet to be developed and as such have been omitted.
 
-## Bounding a Function via McCormick Operators
+## Bounding a Univariate Function
 
-In order to bound a function using a McCormick relaxation, you first construct a
-McCormick object (`x::MC`) that bounds the input variables, and then you pass these
-variables to the desired function.
+In order to bound a function using a McCormick relaxation, you first construct a McCormick object (`x::MC`) that bounds the input variables, and then you pass these variables to the desired function.
 
-In the example below, convex/concave relaxations of the function `f(x) = x(x-5)sin(x)`
-are calculated at `x = 2` on the interval `[1,4]`.
+In the example below, convex/concave relaxations of the function $f(x) = x (x - 5) \sin(x)$ are calculated at $x = 2$ on the interval $[1, 4]$.
 
 ```julia
 using McCormick
 
-# Create MC object for x = 2.0 on [1.0,4.0] for relaxing
+# Create MC object for x = 2.0 on [1.0, 4.0] for relaxing
 # a function f(x) on the interval Intv
 
-f(x) = x*(x-5.0)*sin(x)
+f(x) = x*(x - 5.0)*sin(x)
 
 x = 2.0                          # Value of independent variable x
-Intv = Interval(1.0,4.0)         # Define interval to relax over
+Intv = Interval(1.0, 4.0)        # Define interval to relax over
                                  # Note that McCormick.jl reexports IntervalArithmetic.jl
                                  # and StaticArrays. So no using statement for these is
                                  # necessary.
 # Create McCormick object
-xMC = MC{1,NS}(x,Intv,1)
+xMC = MC{1,NS}(x, Intv, 1)
 
 fMC = f(xMC)             # Relax the function
 
@@ -73,34 +70,36 @@ ccgrad = fMC.cc_grad     # Subgradient/gradient of concave relaxation
 Iv = fMC.Intv            # Retrieve interval bounds of f(x) on Intv
 ```
 
-Plotting the results, we can easily visualize the convex and concave
-relaxations, interval bounds, and affine bounds constructed using the subgradient
-at the middle of *X*.
+Plotting the results, we can easily visualize the convex and concave relaxations, interval bounds, and affine bounds constructed using the subgradient at the middle of $X$.
 
 ![Figure_1](Figure_1.png)
 
-This can readily be extended to multivariate functions, for example, `f(x,y) = (4 - 2.1x^2 + (x^4)/6)x^2 + xy + (-4 + 4y^2)y^2`:
+## Bounding a Multivariate Function
+
+This can readily be extended to multivariate functions, for example: 
+
+$$f(x, y) = \big(4 - 2.1 x^{2} + \frac{x^{4}}{6} \big) x^{2} + x y + (-4 + 4 y^{2}) y^{2}$$
 
 ```julia
 using McCormick
 
 # Define function
-f(x,y) = (4.0 - 2.1*x^2 + (x^4)/6.0)*x^2 + x*y + (-4.0 + 4.0*y^2)*y^2
+f(x, y) = (4.0 - 2.1*x^2 + (x^4)/6.0)*x^2 + x*y + (-4.0 + 4.0*y^2)*y^2
 
 # Define intervals for independent variables
 n = 30
 X = Interval{Float64}(-2,0)
-Y = Interval{Float64}(-0.5,0.5)
-xrange = range(X.lo,stop=X.hi,length=n)
-yrange = range(Y.lo,stop=Y.hi,length=n)
+Y = Interval{Float64}(-0.5, 0.5)
+xrange = range(X.lo, stop=X.hi, length=n)
+yrange = range(Y.lo, stop=Y.hi, length=n)
 
 # Calculate differentiable McCormick relaxation
 for (i,x) in enumerate(xrange)
     for (j,y) in enumerate(yrange)
-        z = f(x,y)                  # Calculate function values
-        xMC = MC{1,Diff}(x,X,1)     # Differentiable relaxation for x
-        yMC = MC{1,Diff}(y,Y,2)     # Differentiable relaxation for y
-        fMC = f(xMC,yMC)            # Relax the function
+        z = f(x, y)                 # Calculate function values
+        xMC = MC{1,Diff}(x, X, 1)   # Differentiable relaxation for x
+        yMC = MC{1,Diff}(y, Y, 2)   # Differentiable relaxation for y
+        fMC = f(xMC, yMC)           # Relax the function
         cv = fMC.cv                 # Convex relaxation
         cc = fMC.cc                 # Concave relaxation
     end
