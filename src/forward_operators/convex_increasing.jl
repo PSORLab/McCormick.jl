@@ -21,7 +21,7 @@ for opMC in (:exp, :exp2, :exp10, :expm1)
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
               concave = xUc
-              if xUc - xLc > 3.0*eps(Float64)
+              if del != 0
                   concave = (xLc*(xU - midcc) + xUc*(midcc - xL))/del
                   concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*(xUc - xLc)/del
               else
