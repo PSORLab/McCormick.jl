@@ -2,9 +2,13 @@
 
 A Forward McCormick Operator Library
 
-| **PSOR Lab** | **Build Status**                                                        | **Persistent DOI**                       |                                              
-|:------------:|:-----------------------------------------------------------------------:|:----------------------------------------:|
-| [![](https://img.shields.io/badge/Developed_by-PSOR_Lab-342674)](https://psor.uconn.edu/) | [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
+| **PSOR Lab**   | **Build Status**                                                        |                                            
+|:--------------:|:-----------------------------------------------------------------------:|
+| [![](https://img.shields.io/badge/Developed_by-PSOR_Lab-342674)](https://psor.uconn.edu/) | [![Build Status](https://github.com/PSORLab/McCormick.jl/workflows/CI/badge.svg?branch=master)](https://github.com/PSORLab/McCormick.jl/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PSORLab/McCormick.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PSORLab/McCormick.jl) |
+
+| **Documentation**                                                  | **Persistent DOI**                                                                             |
+|:------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------:|
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://PSORLab.github.io/EAGO.jl/stable/mccormick/overview/) [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://psorlab.github.io/EAGO.jl/dev/mccormick/overview/) | [![DOI](https://zenodo.org/badge/245830962.svg)](https://zenodo.org/badge/latestdoi/245830962) |
 
 McCormick.jl is a component package in the EAGO ecosystem and is reexported by [EAGO.jl](https://github.com/PSORLab/EAGO.jl). It contains a library of forward McCormick operators (both nonsmooth and differentiable). Documentation for this is included in the [EAGO.jl](https://github.com/PSORLab/EAGO.jl) package and additional usage examples are included in [EAGO-notebooks](https://github.com/PSORLab/EAGO-notebooks) as Jupyter Notebooks.
 
@@ -76,7 +80,9 @@ Iv = fMC.Intv            # Retrieve interval bounds of f(x) on Intv
 
 Plotting the results, we can easily visualize the convex and concave relaxations, interval bounds, and affine bounds constructed using the subgradient at the middle of $X$.
 
-![Figure_1](Figure_1.png)
+<p align="center">
+    <img src="https://github.com/PSORLab/McCormick.jl/blob/master/Figure_1.png">
+</p>
 
 ## Bounding a Multivariate Function
 
@@ -84,8 +90,7 @@ This can readily be extended to multivariate functions, for example:
 
 $$
 \begin{aligned}
-& f(x, y) = \big(4 - 2.1 x^{2} + \frac{x^{4}}{6} \big) x^{2}\\
-& \qquad \qquad + \\; x y + (-4 + 4 y^{2}) y^{2}\\
+& f(x, y) = \big(4 - 2.1 x^{2} + \frac{x^{4}}{6} \big) x^{2} + x y + (-4 + 4 y^{2}) y^{2}\\
 & X = [-2, 0]\\
 & Y = [-0.5, 0.5]
 \end{aligned}
@@ -117,7 +122,9 @@ for (i,x) in enumerate(xrange)
 end
 ```
 
-![Figure_3](Figure_3.png)
+<p align="center">
+    <img src="https://github.com/PSORLab/McCormick.jl/blob/master/Figure_3.png">
+</p>
 
 ## Citing McCormick.jl
 
