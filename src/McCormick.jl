@@ -333,7 +333,7 @@ end
 """
 MC{N,T}(y::Interval{Float64})
 
-Constructs McCormick relaxation with convex relaxation equal to `y.lo` and
+Constructs a McCormick relaxation with the convex relaxation equal to `y.lo` and
 concave relaxation equal to `y.hi`.
 """
 function MC{N,T}(y::Interval{Float64}) where {N, T <: RelaxTag}
@@ -344,7 +344,7 @@ end
 """
 MC{N,T}(y::Float64)
 
-Constructs McCormick relaxation with convex relaxation equal to `y` and
+Constructs a McCormick relaxation with the convex relaxation equal to `y` and
 concave relaxation equal to `y`.
 """
 MC{N,T}(y::Float64) where {N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(y))
@@ -356,20 +356,31 @@ MC{N,T}(y::Q) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(Interval{F
 """
 MC{N,T}(cv::Float64, cc::Float64)
 
-Constructs McCormick relaxation with convex relaxation equal to `cv` and
+Constructs a McCormick relaxation with the convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
     MC{N,T}(cv, cc, Interval{Float64}(cv, cc), zero(SVector{N,Float64}),
-            zero(SVector{N,Float64}), true)
+                                               zero(SVector{N,Float64}), true)
+end
+
+"""
+MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64})
+
+Constructs a McCormick relaxation with the convex relaxation equal to `cv`,
+concave relaxation equal to `cc`, and interval bounds of `Intv`.
+"""
+function MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64}) where {N, T <: RelaxTag}
+    MC{N,T}(cv, cc, Intv, zero(SVector{N,Float64}),
+                          zero(SVector{N,Float64}), true)
 end
 
 """
 MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64)
 
-Constructs McCormick relaxation with convex relaxation equal to `val`,
+Constructs a McCormick relaxation with the convex relaxation equal to `val`,
 concave relaxation equal to `val`, interval bounds of `Intv`, and a unit subgradient
-with nonzero's ith dimension of length N.
+with a nonzero ith dimension of length N.
 """
 function MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64) where {N, T <: RelaxTag}
     MC{N,T}(val, val, Intv, seed_gradient(i, Val{N}()), seed_gradient(i, Val{N}()), false)
