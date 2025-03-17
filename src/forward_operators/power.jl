@@ -193,7 +193,7 @@ end
     (0.0 <= xL) && (return x^n, n*x^(n - 1))
 	
 	root_f(x::Float64, xL::Float64, xU::Float64) = (x^n - xL^n) - (x-xL)*(n)*(x^(n-1));
-	root_df(x::Float64, xL::Float64, xU::Float64) = n*x^(n-1) + xL*n*(n-1)*x - n*x^(n-1) - n*(n-1)*x^(n-1);
+	root_df(x::Float64, xL::Float64, xU::Float64) = (n-1)*n*x^(n-2)*(xL-x);
 	inflection, flag = newton(xU, 0.0, xU, root_f, root_df, xL, xU)
 	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
 	if x <= inflection
@@ -207,7 +207,7 @@ end
     (0.0 <= xL) && (return dline_seg(^, pow_deriv, x, xL, xU, n))
 
 	root_f(x::Float64, xL::Float64, xU::Float64) = (xU^n-x^n) - (xU-x)*(n)*(x^(n-1));
-	root_df(x::Float64, xL::Float64, xU::Float64) = -n*x^(n-1) - xU*n*(n-1)*x + n*x^(n-1) + n*(n-1)*x^(n-1);
+	root_df(x::Float64, xL::Float64, xU::Float64) = -n^2*xU*x^(n-2) + n^2*x^(n-1) + n*xU*x^(n-2) - n*x^(n-1);
 	inflection, flag = newton(xL, xL, 0.0, root_f, root_df, xL, xU)
 	flag && (inflection = golden_section(xL, xU, root_f, xL, xU))
 	if x <= inflection
