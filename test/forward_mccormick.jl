@@ -1295,6 +1295,18 @@ end
     @test isapprox(out.Intv.lo,-1.33333333,atol=1E-6)
     @test isapprox(out.Intv.hi,-0.39999999999999997,atol=1E-6)
 
+    X = MC{2,NS}(3.0,3.0,Interval{Float64}(2.0,4.0), seed_gradient(1,Val(2)),seed_gradient(1,Val(2)),false)
+    Y = MC{2,NS}(-5.0,-3.0,Interval{Float64}(-5.0,-3.0), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
+    out = X/Y
+    @test isapprox(out.cc, -0.6000000000000001,atol=1E-6)
+    @test isapprox(out.cv, -0.9999999999999998, atol=1E-6)
+    @test isapprox(out.cc_grad[1], -0.19999999999999998, atol=1E-6)
+    @test isapprox(out.cc_grad[2], -0.08,atol=1E-6)
+    @test isapprox(out.cv_grad[1], -0.33333333333333337, atol=1E-6)
+    @test isapprox(out.cv_grad[2], -0.13333333333333333, atol=1E-6)
+    @test isapprox(out.Intv.lo, -1.3333333333333335,atol=1E-6)
+    @test isapprox(out.Intv.hi, -0.39999999999999997,atol=1E-6)
+
     x1a = MC{2,MV}(1.1, 2.3, Interval(0.1,3.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
     x2a = MC{2,MV}(2.1, 3.3, Interval(1.1,4.3), seed_gradient(2,Val(2)), seed_gradient(2,Val(2)),false)
 
