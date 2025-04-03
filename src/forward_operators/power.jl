@@ -260,7 +260,7 @@ end
 	return MC{N,Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 
-# neg_powneg_odd computes the McComrick relaxation of x^c where x < 0.0 and c is even
+# neg_powneg_even computes the McComrick relaxation of x^c where x < 0.0 and c is even
 @inline function neg_powneg_even(x::MC{N,T}, c::Z, y::Interval{Float64}) where {N, Z<:Integer, T<:Union{NS,MV}}
 	xL = x.Intv.lo
 	xU = x.Intv.hi
@@ -429,7 +429,7 @@ end
 		return nan(MC{N,T})
 	end
 	if x.Intv.hi < 0.0
-		x = pos_odd(x, -1, y)
+		x = -inv1(-x, -y)
   	else x.Intv.lo > 0.0
 		x = inv1(x, y)
 	end
