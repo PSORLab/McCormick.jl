@@ -314,7 +314,7 @@ end
         flag && (p = golden_section(xL, 0.0, acos_env, xU, 0.0))
     end
     (x <= p) && (return NaNMath.acos(x), -1.0/NaNMath.sqrt(1.0-x^2), p)
-    return dline_seg(acos, acos_deriv, x, p, xU)..., p
+    return dline_seg(NaNMath.acos, acos_deriv, x, p, xU)..., p
 end
 
 @inline asinh_deriv(x::Float64) = 1.0/sqrt(1.0 + x^2)
