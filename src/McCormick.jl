@@ -202,8 +202,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Takes the concave relaxation gradient 'cc_grad', the convex relaxation gradient
-'cv_grad', and the index of the midpoint returned 'id' and outputs the appropriate
+Takes the concave relaxation gradient `cc_grad`, the convex relaxation gradient
+`cv_grad`, and the index of the midpoint returned `id` and outputs the appropriate
 gradient according to McCormick relaxation rules.
 """
 function mid_grad(cc_grad::SVector{N,Float64}, cv_grad::SVector{N,Float64}, id::Int64) where N
@@ -218,8 +218,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Calculates the value of the slope line segment between `(xL, f(xL))` and `(xU, f(xU))`
-defaults to evaluating the derivative of the function if the interval is tight.
+Calculates the value and the slope of the line segment between `(xL, f(xL))` and `(xU, f(xU))`.
+Defaults to evaluating the derivative of the function if the interval is tight.
 """
 @inline function dline_seg(f::Function, df::Function, x::Float64, xL::Float64, xU::Float64)
     delta = xU - xL
@@ -266,7 +266,7 @@ end
 $(TYPEDSIGNATURES)
 
 Refines convex/concave relaxations `cv` and `cc` with associated subgradients
-`cv_grad` and `cc_grad` by intersecting them with the interval boudns `xL`
+`cv_grad` and `cc_grad` by intersecting them with the interval bounds `xL`
 and `xU`.
 """
 function cut(xL::Float64, xU::Float64, cv::Float64, cc::Float64,
