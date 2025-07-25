@@ -298,7 +298,13 @@ sigmoid
 The `sigmoid` activation function `sigmoid(x) = 1.0/(1.0 + exp(-x))`.
 =#
 @inline sigmoid(x::Interval{Float64}) = 1.0/(1.0 + exp(-x))
-@inline sigmoid_deriv(x::Float64) = exp(-x)/(1.0 + exp(-x))^2
+@inline function sigmoid_deriv(x::Float64)
+    if isinf(exp(-x))
+        return 0.0
+    else
+        return exp(-x)/(1.0 + exp(-x))^2
+    end
+end
 @inline sigmoid_deriv2(x::Float64) = -exp(x)*(exp(x) - 1.0)/(exp(x) + 1.0)^3
 @inline function sigmoid_env(x::Float64, y::Float64, z::Float64)
     (x - y)*sigmoid_deriv(x) - (sigmoid(x) - sigmoid(y))
@@ -338,7 +344,13 @@ The `bisigmoid` activation function `bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-
     xUc = (1.0 - exp(-xUintv))/(1.0 + exp(-xUintv))
     return Interval(xLc.hi, xUc.hi)
 end
-@inline bisigmoid_deriv(x::Float64) = 2.0*exp(x)/(exp(x) + 1.0)^2
+@inline function bisigmoid_deriv(x::Float64)
+    if isinf(exp(-x))
+        return 0.0
+    else
+        return 2.0*exp(x)/(exp(x) + 1.0)^2
+    end
+end
 @inline function bisigmoid_deriv2(x::Float64)
     term1 = exp(-x)/(exp(-x) + 1.0)
     term2 = 2.0*exp(-2.0*x)/(exp(-x) + 1.0)^2
