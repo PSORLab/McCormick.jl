@@ -97,14 +97,14 @@ end
 
 @inline function sqrt_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS, MV}}
      isempty(x) && (return empty(x))
-     (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return nan(MC{N,T}))
+     (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), x.cnst))
      xLc = z.lo
      xUc = z.hi
      xL = x.Intv.lo
      xU = x.Intv.hi
      midcc, cc_id = mid3(x.cc, x.cv, xU)
      midcv, cv_id = mid3(x.cc, x.cv, xL)
-     dcv = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
+     dcv = (xUc > xLc && !isinf(xUc)) ? (xUc - xLc)/(xU - xL) : 0.0
      convex = dcv*(midcv - xL) + xLc
      concave = NaNMath.sqrt(midcc)
      concave_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*(0.5/NaNMath.sqrt(x.cv))

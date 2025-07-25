@@ -363,6 +363,7 @@ function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
     MC{N,T}(cv, cc, Interval{Float64}(cv, cc), zero(SVector{N,Float64}),
                                                zero(SVector{N,Float64}), true)
 end
+MC{N,T}(cv::Q, cc::R) where {N, T <: RelaxTag, Q <: NumberNotRelax, R <: NumberNotRelax} = MC{N,T}(Float64(cv), Float64(cc))
 
 """
 MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64})
@@ -374,6 +375,7 @@ function MC{N,T}(cv::Float64, cc::Float64, Intv::Interval{Float64}) where {N, T 
     MC{N,T}(cv, cc, Intv, zero(SVector{N,Float64}),
                           zero(SVector{N,Float64}), true)
 end
+MC{N,T}(cv::Q, cc::R, Intv::Interval{Float64}) where {N, T <: RelaxTag, Q <: NumberNotRelax, R <: NumberNotRelax} = MC{N,T}(Float64(cv), Float64(cc), Intv)
 
 """
 MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64)
@@ -385,6 +387,7 @@ with a nonzero ith dimension of length N.
 function MC{N,T}(val::Float64, Intv::Interval{Float64}, i::Int64) where {N, T <: RelaxTag}
     MC{N,T}(val, val, Intv, seed_gradient(i, Val{N}()), seed_gradient(i, Val{N}()), false)
 end
+MC{N,T}(val::Q, Intv::Interval{Float64}, i::Int64) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(Float64(val), Intv, i)
 function MC{N,T}(x::MC{N,T}) where {N, T <: RelaxTag}
     MC{N,T}(x.cv, x.cc, x.Intv, x.cv_grad, x.cc_grad, x.cnst)
 end
