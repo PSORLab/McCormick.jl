@@ -30,15 +30,15 @@ function mult_apriori_kernel(x1::MC{N,T}, x2::MC{N,T}, z::Interval{Float64},
                              u1grad::SVector{N,Float64}, u2grad::SVector{N,Float64}) where {N, T<:Union{NS, MV}}
 
     x1L = lo(x1);  x1U = hi(x1);  x2L = lo(x2);  x2U = hi(x2)
-    x1Li = Interval(lo(x1));  x1Ui = Interval(hi(x1));  x2Li = Interval(lo(x2));  x2Ui = Interval(hi(x2))
-    u1i = Interval(u1); u2i = Interval(u2)
-    a1i = Interval(a1); a2i = Interval(a2)
+    x1Li = interval(lo(x1));  x1Ui = interval(hi(x1));  x2Li = interval(lo(x2));  x2Ui = interval(hi(x2))
+    u1i = interval(u1); u2i = interval(u2)
+    a1i = interval(a1); a2i = interval(a2)
     x1cv = x1.cv
     x1cc = x1.cc
     x2cv = x2.cv
     x2cc = x2.cc
-    x1i = Interval(x1.cv, x1.cc)
-    x2i = Interval(x2.cv, x2.cc)
+    x1i = interval(x1.cv, x1.cc)
+    x2i = interval(x2.cv, x2.cc)
     x1cv_grad = x1.cv_grad;  x1cc_grad = x1.cc_grad;
     x2cv_grad = x2.cv_grad;  x2cc_grad = x2.cc_grad
 

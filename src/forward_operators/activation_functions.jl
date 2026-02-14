@@ -34,11 +34,11 @@ The parametric Rectified Linear Unit activation function `param_relu(x, α) = (m
 """
 param_relu(x, α) = x > 0.0 ? x : α*x
 function param_relu(x::Interval{Float64}, α::Float64)
-    xL = x.lo
-    xU = x.hi
+    xL = x.bareinterval.lo
+    xU = x.bareinterval.hi
     (xL < 0.0) && (xL *= α)
     (xU < 0.0) && (xU *= α)
-    return Interval{Float64}(xL, xU)
+    return interval(xL, xU)
 end
 param_relu(x::Float64, α::Float64) = x > 0.0 ? x : α*x
 param_relu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α
@@ -54,10 +54,10 @@ function param_relu_grad(g, x::Float64, α::Float64)
 end
 function param_relu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     @assert α >= 0.0
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -104,10 +104,10 @@ end
     return exp(x)*(1.0 - exp(x))/(exp(x) + 1.0)^3 #
 end
 function maxsig_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -127,15 +127,15 @@ elu
 The Exponential Linear Unit (ELU) activation function  `elu(x, α) = x > 0 ? x : α*(exp(x) - 1.0)`.
 =#
 function elu(x::Interval{Float64}, α::Float64)
-    xL = x.lo
-    xU = x.hi
+    xL = x.bareinterval.lo
+    xU = x.bareinterval.hi
     if xU < 0.0
         return α*(exp(x) - 1.0)
     elseif xL > 0.0
         return x
     end
     xLIntv = α*(exp(x) - 1.0)
-    Interval(xLIntv.lo, x.hi)
+    interval(xLIntv.bareinterval.lo, x.bareinterval.hi)
 end
 @inline elu_deriv(x::Float64, α::Float64) = x > 0.0 ? 1.0 : α*exp(x)
 function elu_grad(g, x::Float64, α::Float64)
@@ -144,10 +144,10 @@ function elu_grad(g, x::Float64, α::Float64)
     nothing
 end
 function elu_kernel(x::MC{N,T}, α::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -182,11 +182,11 @@ The `maxtanh` activation function  `maxtanh(x) = max(x, tanh(x))`.
 @inline maxtanh(x) = max(x, tanh(x))
 @inline maxtanh(x::Float64) = max(x, tanh(x))
 @inline function maxtanh(x::Interval{Float64})
-    xLintv = Interval(x.lo)
-    xUintv = Interval(x.hi)
+    xLintv = interval(x.bareinterval.lo)
+    xUintv = interval(x.bareinterval.hi)
     xLc = max(xLintv, tanh(xLintv))
     xUc = max(xUintv, tanh(xUintv))
-    Interval(xLc.lo, xUc.hi)
+    interval(xLc.bareinterval.lo, xUc.bareinterval.hi)
 end
 @inline function maxtanh_deriv(x::Float64)
     if x > tanh(x)
@@ -201,10 +201,10 @@ end
     return -2.0*tanh(x)*sech(x)^2
 end
 function maxtanh_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -226,10 +226,10 @@ The `softplus` activation function  `softplus(x) = log(1.0 + exp(x))`.
 @inline softplus_deriv(x::Float64) = 1.0/(exp(-x) + 1.0)
 @inline softplus_deriv2(x::Float64) = exp(-x)/(exp(-x) + 1.0)^2
 function softplus_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcc = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -250,11 +250,11 @@ The `pentanh` activation function `pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 @inline pentanh(x) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 @inline pentanh(x::Float64) = x > 0.0 ? tanh(x) : tanh(0.25*x)
 function pentanh(x::Interval{Float64})
-    (x.lo >= 0.0) && return tanh(x)
-    (x.hi <= 0.0) && return tanh(0.25*x)
+    (x.bareinterval.lo >= 0.0) && return tanh(x)
+    (x.bareinterval.hi <= 0.0) && return tanh(0.25*x)
     lo_part = tanh(0.25*x)
     hi_part = tanh(x)
-    Interval(lo_part.lo, hi_part.hi)
+    interval(lo_part.bareinterval.lo, hi_part.bareinterval.hi)
 end
 function pentanh_deriv(x::Float64)
     if x > 0.0
@@ -338,11 +338,11 @@ The `bisigmoid` activation function `bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-
 @inline bisigmoid(x) = (1.0 - exp(-x))/(1.0 + exp(-x))
 @inline bisigmoid(x::Float64) = (1.0 - exp(-x))/(1.0 + exp(-x))
 @inline function bisigmoid(x::Interval{Float64})
-    xLintv = Interval(x.lo)
-    xUintv = Interval(x.hi)
+    xLintv = interval(x.bareinterval.lo)
+    xUintv = interval(x.bareinterval.hi)
     xLc = (1.0 - exp(-xLintv))/(1.0 + exp(-xLintv))
     xUc = (1.0 - exp(-xUintv))/(1.0 + exp(-xUintv))
-    return Interval(xLc.hi, xUc.hi)
+    return interval(xLc.bareinterval.hi, xUc.bareinterval.hi)
 end
 @inline function bisigmoid_deriv(x::Float64)
     if isinf(exp(-x))
@@ -387,11 +387,11 @@ softsign
 The `softsign` activation function `softsign(x) = x/(1.0 + abs(x))`.
 =#
 @inline function softsign(x::Interval{Float64})
-    xLintv = Interval(x.lo)
-    xUintv = Interval(x.hi)
+    xLintv = interval(x.bareinterval.lo)
+    xUintv = interval(x.bareinterval.hi)
     xLc = xLintv/(1.0 + abs(xLintv))
     xUc = xUintv/(1.0 + abs(xUintv))
-    return Interval(xLc.hi, xUc.hi)
+    return interval(xLc.bareinterval.hi, xUc.bareinterval.hi)
 end
 @inline softsign_deriv(x::Float64) = 1.0/(1.0 + abs(x))^2
 @inline softsign_deriv2(x::Float64) = -2.0*x/(abs(x)*(1.0 + abs(x))^(3))
@@ -433,21 +433,21 @@ gelu
 The Gaussian Error Linear Unit `gelu` activation function `gelu(x) = x/(1.0 + abs(x))`.
 """
 @inline function gelu(x::Interval{Float64})
-    xLintv = Interval(x.lo)
-    xUintv = Interval(x.hi)
+    xLintv = interval(x.bareinterval.lo)
+    xUintv = interval(x.bareinterval.hi)
     xLc = xLintv*(1.0 + erf(xLintv/sqrt(2)))/2.0
     xUc = xUintv*(1.0 + erf(xUintv/sqrt(2)))/2.0
-    if x.hi < GELU_MIN
-        xLcv = xUc.lo
-        xUcv = xLc.hi
-    elseif GELU_MIN < x.lo
-        xLcv = xLc.lo
-        xUcv = xUc.hi
+    if x.bareinterval.hi < GELU_MIN
+        xLcv = xUc.bareinterval.lo
+        xUcv = xLc.bareinterval.hi
+    elseif GELU_MIN < x.bareinterval.lo
+        xLcv = xLc.bareinterval.lo
+        xUcv = xUc.bareinterval.hi
     else
         xLcv = GELU_MIN
-        xUcv = max(xLc.hi, xUc.hi)
+        xUcv = max(xLc.bareinterval.hi, xUc.bareinterval.hi)
     end
-    return Interval(xLcv, xUcv)
+    return interval(xLcv, xUcv)
 end
 function gelu_deriv(x::Float64)
     0.5*(1.0 + erf(x/sqrt(2))) + (x/sqrt(2*pi))*exp((-x^2)/2.0)
@@ -557,23 +557,23 @@ swish
 The Swish-1 activation function `swish(x) = x/(1.0 + exp(-x))`.
 """
 @inline function swish(x::Interval{Float64})
-    xLintv = Interval(x.lo)
-    xUintv = Interval(x.hi)
+    xLintv = interval(x.bareinterval.lo)
+    xUintv = interval(x.bareinterval.hi)
     xLc = xLintv/(1.0 + exp(-xLintv))
     xUc = xUintv/(1.0 + exp(-xUintv))
-    if x.hi < SWISH1_MIN
-        xLcv = xUc.lo
-        xUcv = xLc.hi
-    elseif SWISH1_MIN < x.lo
-        xLcv = xLc.lo
-        xUcv = xUc.hi
+    if x.bareinterval.hi < SWISH1_MIN
+        xLcv = xUc.bareinterval.lo
+        xUcv = xLc.bareinterval.hi
+    elseif SWISH1_MIN < x.bareinterval.lo
+        xLcv = xLc.bareinterval.lo
+        xUcv = xUc.bareinterval.hi
     else
-        xmin = Interval(SWISH1_MIN)
+        xmin = interval(SWISH1_MIN)
         xminI = xmin/(1.0 + exp(-xmin))
-        xLcv = xminI.lo
-        xUcv = max(xLc.hi, xUc.hi)
+        xLcv = xminI.bareinterval.lo
+        xUcv = max(xLc.bareinterval.hi, xUc.bareinterval.hi)
     end
-    return Interval(xLcv, xUcv)
+    return interval(xLcv, xUcv)
 end
 @inline function swish_deriv(x::Float64)
     z = 1.0/(1.0 + exp(-x))
@@ -688,15 +688,15 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
     eps_max = :xU
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
         cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
@@ -719,15 +719,15 @@ for expri in (:swish, :gelu)
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64, cv_p2::Float64,
                             cc_p2::Float64) where {N,T<:Union{NS,MV}}
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
         cc, dcc, cc_p, cc_p2 = $(expri_cc)(midcc, xL, xU, cc_p, cc_p2)
         cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p, cv_p2, cc_p2
     end
     @eval @inline function ($expri)(x::MC{N,T}) where {N, T<:RelaxTag}
@@ -746,15 +746,15 @@ logcosh_deriv2(x::Float64) = sech(x)^2
 cc_logcosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(logcosh, logcosh_deriv, x, xL, xU)
 cv_logcosh(x::Float64, xL::Float64, xU::Float64) = logcosh(x), logcosh_deriv(x)
 function logcosh(x::Interval{Float64})
-    (abs(x.lo) < abs(x.hi)) ? (logcosh_xU = log(cosh(Interval(x.hi)))) : (logcosh_xU = log(cosh(Interval(x.lo))))
-    logcosh_xL = Interval(0.0)
-    (x.lo >= 0.0) && (logcosh_xL = log(cosh(Interval(x.lo))))
-    (x.hi <= 0.0) && (logcosh_xL = log(cosh(Interval(x.hi))))
-    Interval{Float64}(logcosh_xL.lo, logcosh_xU.hi)
+    (abs(x.bareinterval.lo) < abs(x.bareinterval.hi)) ? (logcosh_xU = log(cosh(interval(x.bareinterval.hi)))) : (logcosh_xU = log(cosh(interval(x.bareinterval.lo))))
+    logcosh_xL = interval(0.0)
+    (x.bareinterval.lo >= 0.0) && (logcosh_xL = log(cosh(interval(x.bareinterval.lo))))
+    (x.bareinterval.hi <= 0.0) && (logcosh_xL = log(cosh(interval(x.bareinterval.hi))))
+    interval(logcosh_xL.bareinterval.lo, logcosh_xU.bareinterval.hi)
 end
 @inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
     eps_max = (abs(xL) < abs(xU)) ? xU : xL
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
@@ -763,12 +763,12 @@ end
     cc, dcc = cc_logcosh(midcc, xL, xU)
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
-    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline function logcosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
     eps_max = (abs(xL) < abs(xU)) ? xU : xL
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)

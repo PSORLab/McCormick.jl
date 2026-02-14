@@ -1,7 +1,7 @@
 name = "McCormick"
 uuid = "53c679d3-6890-5091-8386-c291e8c8aaa1"
 authors = ["Matthew Wilhelm <matthew.wilhelm@uconn.edu>"]
-version = "0.13.11"
+version = "0.14.0"
 
 [deps]
 DiffRules = "b552c78f-8df3-52c6-915a-8e097449b14b"
@@ -20,16 +20,16 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 [compat]
 DiffRules = "1.5"
 DocStringExtensions = "~0.8, ~0.9"
-ForwardDiff = "~0.10"
-IntervalArithmetic = "~0.20"
-IntervalRootFinding = "~0.5"
+ForwardDiff = "1"
+IntervalArithmetic = "1"
+IntervalRootFinding = "~0.6"
 NaNMath = "0.3.5, 1.0"
 NNlib = "~0.8, ~0.9"
 Reexport = "~0.2, ~1"
 StaticArrays = "~1"
 SpecialFunctions = "~1, ~2"
 UnPack = "~1"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -13,10 +13,10 @@ for opMC in (:log, :log2, :log10, :log1p)
    opMC_kernel = Symbol(String(opMC)*"_kernel")
    dop = diffrule(:Base, opMC, :midcc)
    MCexp = quote
-              xLc = z.lo
-              xUc = z.hi
-              xL = x.Intv.lo
-              xU = x.Intv.hi
+              xLc = z.bareinterval.lo
+              xUc = z.bareinterval.hi
+              xL = x.Intv.bareinterval.lo
+              xU = x.Intv.bareinterval.hi
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
               dcv = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -29,10 +29,10 @@ for opMC in (:log, :log2, :log10, :log1p)
         end
     dop = diffrule(:Base, opMC, :(x.cv))
     dMCexp = quote
-               xLc = z.lo
-               xUc = z.hi
-               xL = x.Intv.lo
-               xU = x.Intv.hi
+               xLc = z.bareinterval.lo
+               xUc = z.bareinterval.hi
+               xL = x.Intv.bareinterval.lo
+               xU = x.Intv.bareinterval.hi
                midcc = mid3v(x.cv, x.cc, xU)
                midcv = mid3v(x.cv, x.cc, xL)
                deltaX = (xU - xL)
@@ -56,11 +56,11 @@ end
 
 @inline function acosh_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS, MV}}
      isempty(x) && (return empty(x))
-     (x.Intv.lo < 1.0 || x.Intv.hi < 1.0) && (return nan(MC{N,T}))
-     xLc = z.lo
-     xUc = z.hi
-     xL = x.Intv.lo
-     xU = x.Intv.hi
+     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return nan(MC{N,T}))
+     xLc = z.bareinterval.lo
+     xUc = z.bareinterval.hi
+     xL = x.Intv.bareinterval.lo
+     xU = x.Intv.bareinterval.hi
      midcc, cc_id = mid3(x.cc, x.cv, xU)
      midcv, cv_id = mid3(x.cc, x.cv, xL)
      dcv = (xUc > xLc) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -73,11 +73,11 @@ end
 end
 @inline function acosh_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
      isempty(x) && (return empty(x))
-     (x.Intv.lo < 1.0 || x.Intv.hi < 1.0) && (return nan(MC{N,Diff}))
-     xLc = z.lo
-     xUc = z.hi
-     xL = x.Intv.lo
-     xU = x.Intv.hi
+     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return nan(MC{N,Diff}))
+     xLc = z.bareinterval.lo
+     xUc = z.bareinterval.hi
+     xL = x.Intv.bareinterval.lo
+     xU = x.Intv.bareinterval.hi
      midcc = mid3v(x.cv, x.cc, xU)
      midcv = mid3v(x.cv, x.cc, xL)
      deltaX = (xU - xL)
@@ -97,11 +97,11 @@ end
 
 @inline function sqrt_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS, MV}}
      isempty(x) && (return empty(x))
-     (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), x.cnst))
-     xLc = z.lo
-     xUc = z.hi
-     xL = x.Intv.lo
-     xU = x.Intv.hi
+     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), x.cnst))
+     xLc = z.bareinterval.lo
+     xUc = z.bareinterval.hi
+     xL = x.Intv.bareinterval.lo
+     xU = x.Intv.bareinterval.hi
      midcc, cc_id = mid3(x.cc, x.cv, xU)
      midcv, cv_id = mid3(x.cc, x.cv, xL)
      dcv = (xUc > xLc && !isinf(xUc)) ? (xUc - xLc)/(xU - xL) : 0.0
@@ -114,11 +114,11 @@ end
 end
 @inline function sqrt_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
      isempty(x) && (return empty(x))
-     (x.Intv.lo < 0.0 || x.Intv.hi < 0.0) && (return nan(MC{N,Diff}))
-     xLc = z.lo
-     xUc = z.hi
-     xL = x.Intv.lo
-     xU = x.Intv.hi
+     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return nan(MC{N,Diff}))
+     xLc = z.bareinterval.lo
+     xUc = z.bareinterval.hi
+     xL = x.Intv.bareinterval.lo
+     xU = x.Intv.bareinterval.hi
      midcc = mid3v(x.cv, x.cc, xU)
      midcv = mid3v(x.cv, x.cc, xL)
      deltaX = (xU - xL)

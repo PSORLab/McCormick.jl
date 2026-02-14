@@ -9,8 +9,8 @@ function chk_ref_kernel(y::MC{N,T}, yref::MC{N,T}, mctol::Float64) where {N, T<:
     descr = "Failing Components: ("
     ~isapprox(y.cv, yref.cv; atol = mctol) && (descr = descr*" cv = $(y.cv)"; pass_flag = false)
     ~isapprox(y.cc, yref.cc; atol = mctol) && (descr = descr*" cc = $(y.cc) "; pass_flag = false)
-    ~isapprox(y.Intv.lo, yref.Intv.lo; atol = mctol) && (descr = descr*" Intv.lo = $(y.Intv.lo) "; pass_flag = false)
-    ~isapprox(y.Intv.hi, yref.Intv.hi; atol = mctol) && (descr = descr*" Intv.hi = $(y.Intv.hi) "; pass_flag = false)
+    ~isapprox(y.Intv.bareinterval.lo, yref.Intv.bareinterval.lo; atol = mctol) && (descr = descr*" Intv.bareinterval.lo = $(y.Intv.bareinterval.lo) "; pass_flag = false)
+    ~isapprox(y.Intv.bareinterval.hi, yref.Intv.bareinterval.hi; atol = mctol) && (descr = descr*" Intv.bareinterval.hi = $(y.Intv.bareinterval.hi) "; pass_flag = false)
     ~isapprox(y.cv_grad[1], yref.cv_grad[1]; atol = mctol) && (descr = descr*" cv_grad[1] = $(y.cv_grad[1]) "; pass_flag = false)
     ~isapprox(y.cv_grad[2], yref.cv_grad[2]; atol = mctol) && (descr = descr*" cv_grad[2] = $(y.cv_grad[2]) "; pass_flag = false)
     ~isapprox(y.cc_grad[1], yref.cc_grad[1]; atol = mctol) && (descr = descr*" cc_grad[1] = $(y.cc_grad[1]) "; pass_flag = false)

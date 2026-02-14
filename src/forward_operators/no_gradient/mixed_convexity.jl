@@ -1,6 +1,6 @@
 @inline function cos_kernel(::Union{NS,MV}, x::MCNoGrad, z::Interval{Float64},
                             cv_tp1::Float64, cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64)
-    xL = x.Intv.lo;    xU = x.Intv.hi;    zL = z.lo;    zU = z.hi
+    xL = x.Intv.bareinterval.lo;    xU = x.Intv.bareinterval.hi;    zL = z.bareinterval.lo;    zU = z.bareinterval.hi
     eps_min, eps_max = cos_arg(xL, xU)
     mcc, cci = mid3(x.cc, x.cv, eps_max)
     mcv, cvi = mid3(x.cc, x.cv, eps_min)
@@ -58,8 +58,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
     eps_min = eps_min_dict[expri_sym]
     eps_max = eps_max_dict[expri_sym]
     @eval @inline function ($expri_kernel)(t::Union{NS,MV}, x::MCNoGrad, y::Interval{Float64}, cv_p::Float64, cc_p::Float64)
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
@@ -67,8 +67,8 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
         return MCNoGrad(cv, cc, y, x.cnst), dcv, dcc, cv_p, cc_p
     end
     @eval @inline function ($expri_kernel)(t::Diff, x::MCNoGrad, y::Interval{Float64}, cv_p::Float64, cc_p::Float64)
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cv, x.cc, $eps_min)
         midcc, cc_id = mid3(x.cv, x.cc, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)

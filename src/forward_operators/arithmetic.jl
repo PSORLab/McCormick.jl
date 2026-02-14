@@ -10,21 +10,19 @@
 #############################################################################
 
 # Defines functions required for linear algebra packages
-@inline nan(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN),
+@inline nan(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, emptyinterval(),
                                                                 fill(NaN, SVector{N,Float64}),
 																fill(NaN, SVector{N,Float64}), true)
-@inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, Interval{Float64}(NaN),
+@inline nan(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(NaN, NaN, emptyinterval(),
                                                            fill(NaN, SVector{N,Float64}),
 														   fill(NaN, SVector{N,Float64}), true)
 
-@inline one(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}),
+@inline one(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval),
                                                                 zero(SVector{N,Float64}),
 																zero(SVector{N,Float64}), true)
-@inline one(x::MC{N,T}) where {N, T <: RelaxTag} = MC{N,T}(1.0, 1.0, one(Interval{Float64}),
-                                                           zero(SVector{N,Float64}),
-														   zero(SVector{N,Float64}), true)
+@inline one(x::MC{N,T}) where {N, T <: RelaxTag} = one(MC{N,T})
 
-@inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval{Float64}),
+@inline zero(::Type{MC{N,T}}) where {N, T <: RelaxTag} = MC{N,T}(0.0, 0.0, zero(Interval),
                                                                  zero(SVector{N,Float64}),
 																 zero(SVector{N,Float64}), true)
 @inline zero(x::MC{N,T}) where {N, T <: RelaxTag} = zero(MC{N,T})
@@ -156,7 +154,6 @@ end
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:NumberNotRelax, N, T <: RelaxTag} = MC{N,T}
 promote_rule(::Type{MC{N,T}}, ::Type{S}) where {S<:Real, N, T <: RelaxTag} = MC{N,T}
 
-convert(::Type{MC{N,T}}, x::S) where {S<:NumberNotRelax, N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(x))
-convert(::Type{MC{N,T}}, x::S) where {S<:AbstractInterval, N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(x.lo, x.hi))
-Interval(x::MC{N,T}) where {N,T<:RelaxTag} = x.Intv
-Interval{Float64}(x::MC{N,T}) where {N,T<:RelaxTag} = x.Intv
+convert(::Type{MC{N,T}}, x::S) where {S<:NumberNotRelax, N, T <: RelaxTag} = MC{N,T}(interval(x))
+convert(::Type{MC{N,T}}, x::S) where {S<:Interval, N, T <: RelaxTag} = MC{N,T}(interval(x.bareinterval.lo, x.bareinterval.hi))
+interval(x::MC{N,T}) where {N,T<:RelaxTag} = x.Intv

@@ -74,9 +74,9 @@ end
 
 macro unpack_trilinear_bnd()
     esc(quote
-            xL = x.Intv.lo;     xU = x.Intv.hi
-            yL = y.Intv.lo;     yU = y.Intv.hi
-            zL = z.Intv.lo;     zU = z.Intv.hi
+            xL = x.Intv.bareinterval.lo;     xU = x.Intv.bareinterval.hi
+            yL = y.Intv.bareinterval.lo;     yU = y.Intv.bareinterval.hi
+            zL = z.Intv.bareinterval.lo;     zU = z.Intv.bareinterval.hi
             xyLL = xL*yL;       xyLU = xL*yU;
             xyUL = xU*yL;       xyUU = xU*yU
             xzLL = xL*zL;       xzLU = xL*zU;
@@ -352,9 +352,9 @@ trilinear_case_3
 Case 3.3 + Case 4.3 of Meyer-Floudas 2004
 =#
 function trilinear_case_3(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float64}) where {N,T<:RelaxTag}
-    xL = x.Intv.lo;     xU = x.Intv.hi
-    yL = y.Intv.lo;     yU = y.Intv.hi
-    zL = z.Intv.lo;     zU = z.Intv.hi
+    xL = x.Intv.bareinterval.lo;     xU = x.Intv.bareinterval.hi
+    yL = y.Intv.bareinterval.lo;     yU = y.Intv.bareinterval.hi
+    zL = z.Intv.bareinterval.lo;     zU = z.Intv.bareinterval.hi
 
     if @is_pos(x) && @is_mix(y) && @is_mix(z)
         if trilinear_case3_chk_cv(x,y,z)
@@ -775,7 +775,7 @@ function trilinear_case_4(x::MC{N,T}, y::MC{N,T}, z::MC{N,T}, q::Interval{Float6
         cc, cc_grad = trilinear_case4_cc3(z,y,x)
     end
 
-    cvc, ccc, cvc_grad, ccc_grad = cut(q.lo, q.hi, cv, cc, cv_grad, cc_grad)
+    cvc, ccc, cvc_grad, ccc_grad = cut(q.bareinterval.lo, q.bareinterval.hi, cv, cc, cv_grad, cc_grad)
 
     MC{N,T}(cvc, ccc, q, cvc_grad, ccc_grad, x.cnst && y.cnst && z.cnst)
 end

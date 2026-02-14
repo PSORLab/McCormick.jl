@@ -30,29 +30,29 @@ for f in (:erf, :erfc)
         end
     end
 
-    @eval ($f)(a::Interval{Float64}) = convert(Interval{Float64}, ($f)(big_val(a)))
+    @eval ($f)(a::Interval{Float64}) = convert(Interval{Float64}, ($f)(atomic(BigFloat, a)))
 end
 
 function erf(a::Interval{T}) where T
-    isempty(a) && return a
-    @round( erf(a.lo), erf(a.hi) )
+    isempty_interval(a) && return a
+    convert(Interval{Float64}, interval(erf(a.bareinterval.lo), erf(a.bareinterval.hi)))
 end
 
 function erfc(a::Interval{T}) where T
-    isempty(a) && return a
-    @round( erfc(a.hi), erfc(a.lo) )
+    isempty_interval(a) && return a
+    convert(Interval{Float64}, interval(erfc(a.bareinterval.hi), erfc(a.bareinterval.lo)))
 end
 
-erfinv(x, r::RoundingMode{:Down}) = _erfinv(x).lo
-erfinv(x, r::RoundingMode{:Up}) = _erfinv(x).hi
-erfcinv(x, r::RoundingMode{:Down}) = _erfcinv(x).hi
-erfcinv(x, r::RoundingMode{:Up}) = _erfcinv(x).lo
+erfinv(x, r::RoundingMode{:Down}) = _erfinv(x).bareinterval.lo
+erfinv(x, r::RoundingMode{:Up}) = _erfinv(x).bareinterval.hi
+erfcinv(x, r::RoundingMode{:Down}) = _erfcinv(x).bareinterval.hi
+erfcinv(x, r::RoundingMode{:Up}) = _erfcinv(x).bareinterval.lo
 
 function _erfinv(a::T) where T
-    domain = Interval{T}(-1, 1)
+    domain = convert(Interval{T}, interval(-1.0, 1.0))
     a ∉ domain && return DomainError("$a is not in [-1, 1]")
     f = x -> erf(x) - a
-    fp = x->2/sqrt(Interval(pi)) * exp(-x^2)
+    fp = x->2/sqrt(interval(pi)) * exp(-x^2)
     rts = roots(f, fp, Interval{T}(-Inf, Inf))
     @assert length(rts) == 1 # && rts[1].status == :unique
 
@@ -60,28 +60,29 @@ function _erfinv(a::T) where T
 end
 
 function erfinv(a::Interval{T}) where T
-    domain = Interval{T}(-1, 1)
-    a = a ∩ domain
+    domain = convert(Interval{T}, interval(-1.0, 1.0))
+    a = intersect_interval(a, domain)
 
-    isempty(a) && return a
-    @round(erfinv(a.lo), erfinv(a.hi))
+    isempty_interval(a) && return a
+    convert(Interval{Float64}, interval(erfinv(a.bareinterval.lo), erfinv(a.bareinterval.hi)))
 end
 
 function _erfcinv(a::T) where T
-    domain = Interval{T}(0, 2)
+    domain = convert(Interval{T}, interval(0.0, 2.0))
     a ∉ domain && return DomainError("$a is not in [0, 2]")
     f = x -> erfc(x) - a
-    fp = x -> -2/sqrt(Interval(pi)) * exp(-x^2)
-    rts = roots(f, fp, Interval{T}(-Inf, Inf))
+    fp = x -> -2/sqrt(interval(pi)) * exp(-x^2)
+    rts = roots(f, fp, interval(-Inf, Inf))
     @assert length(rts) == 1 # && rts[1].status == :unique
 
     rts[1].interval
 end
 
 function erfcinv(a::Interval{T}) where T
-    domain = Interval{T}(0, 2)
-    a = a ∩ domain
+    domain = convert(Interval{T}, interval(0.0, 2.0))
+    a = intersect_interval(a, domain)
 
-    isempty(a) && return a
-    @round(erfcinv(a.hi), erfcinv(a.lo))
+    isempty_interval(a) && return a
+    
+    convert(Interval{Float64}, interval(erfcinv(a.bareinterval.hi), erfcinv(a.bareinterval.lo)))
 end

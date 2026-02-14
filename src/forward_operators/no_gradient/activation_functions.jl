@@ -24,10 +24,10 @@ end
 
 function param_relu_kernel(t::ANYRELAX, x::MCNoGrad, α::Float64, z::Interval{Float64})
     @assert α >= 0.0
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cvi = mid3(x.cc, x.cv, xL)
     midcc, cci = mid3(x.cc, x.cv, xU)
     dcv = param_relu_deriv(midcv, α)
@@ -43,10 +43,10 @@ function param_relu(t::ANYRELAX, x::MCNoGrad, α::Float64)
 end
 
 function maxtanh_kernel(t::ANYRELAX, x::MCNoGrad, z::Interval{Float64})
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cvi = mid3(x.cc, x.cv, xL)
     midcc, cci = mid3(x.cc, x.cv, xU)
     dcv = maxtanh_deriv(midcv)
@@ -62,10 +62,10 @@ function maxtanh(t::ANYRELAX, x::MCNoGrad)
 end
 
 function elu_kernel(t::ANYRELAX, x::MCNoGrad, α::Float64, z::Interval{Float64})
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cvi = mid3(x.cc, x.cv, xL)
     midcc, cci = mid3(x.cc, x.cv, xU)
     dcv = elu_deriv(midcv, α)
@@ -81,10 +81,10 @@ function elu(t::ANYRELAX, x::MCNoGrad, α::Float64)
 end
 
 function softplus_kernel(t::ANYRELAX, x::MCNoGrad, z::Interval{Float64})
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcv = softplus_deriv(midcv)
@@ -100,10 +100,10 @@ function softplus(t::ANYRELAX, x::MCNoGrad)
 end
 
 function maxsig_kernel(t::ANYRELAX, x::MCNoGrad, z::Interval{Float64})
-    xLc = z.lo
-    xUc = z.hi
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xLc = z.bareinterval.lo
+    xUc = z.bareinterval.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     midcv, cv_id = mid3(x.cc, x.cv, xL)
     midcc, cc_id = mid3(x.cc, x.cv, xU)
     dcv = maxsig_deriv(midcv)
@@ -126,8 +126,8 @@ for expri in (:pentanh, :sigmoid, :bisigmoid, :softsign)
     eps_min = :xL
     eps_max = :xU
     @eval @inline function ($expri_kernel)(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64}, cv_p::Float64, cc_p::Float64)
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
@@ -153,8 +153,8 @@ for expri in (:swish, :gelu)
     end
     @eval @inline function ($expri_kernel)(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64, cv_p2::Float64, cc_p2::Float64)
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p, cv_p2 = $(expri_cv)(midcv, xL, xU, cv_p, cv_p2)
@@ -168,8 +168,8 @@ for expri in (:swish, :gelu)
 end
 
 @inline function logcosh_kernel(t::ANYRELAX, x::MCNoGrad, y::Interval{Float64})
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_min = in(0.0, x) ? 0.0 : (xU <= 0.0 ? xU : xL)
     eps_max = (abs(xL) < abs(xU)) ? xU : xL
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)

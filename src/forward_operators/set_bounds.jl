@@ -12,8 +12,8 @@
 #############################################################################
 
 function cut_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    zL = z.lo
-    zU = z.hi
+    zL = z.bareinterval.lo
+    zU = z.bareinterval.hi
     cvv, ccv, cv_grad, cc_grad = cut(zL, zU, x.cv, x.cc, x.cv_grad, x.cc_grad)
     return MC{N, T}(cvv, ccv, z, cv_grad, cc_grad, x.cnst)
 end
@@ -27,8 +27,8 @@ Sets the lower interval bound and the convex relaxation of `x` to a value of
 at least `McCormick.MC_DOMAIN_TOL`. (Sub)gradients are adjusted appropriately.
 """
 positive(x) = x
-function positive(x::Interval)
-     x ∩ Interval(MC_DOMAIN_TOL, Inf)
+function positive(x::Interval{Float64})
+    intersect_interval(x, interval(MC_DOMAIN_TOL, Inf))
 end
 function positive_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     cut_kernel(x, z)
@@ -40,8 +40,8 @@ end
 
 
 negative(x) = x
-function negative(x::Interval)
-     x ∩ Interval(-Inf, -MC_DOMAIN_TOL)
+function negative(x::Interval{Float64})
+    intersect_interval(x, interval(-Inf, -MC_DOMAIN_TOL))
 end
 function negative_kernel(x::MC{N,T}, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     cut_kernel(x, z)
@@ -61,7 +61,7 @@ end
 
 lower_bnd(x, lb) = x
 function lower_bnd(x::Interval{Float64}, lb::Float64)
-     x ∩ Interval(lb, Inf)
+    intersect_interval(x, interval(lb, Inf))
 end
 function lower_bnd_kernel(x::MC{N,T}, lb::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     cut_kernel(x, z)
@@ -80,7 +80,7 @@ end
 
 upper_bnd(x, lb) = x
 function upper_bnd(x::Interval{Float64}, ub::Float64)
-     x ∩ Interval(-Inf, ub)
+    intersect_interval(x, interval(-Inf, ub))
 end
 function upper_bnd_kernel(x::MC{N,T}, ub::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     cut_kernel(x, z)
@@ -98,7 +98,7 @@ end
 
 bnd(x, lb, ub) = x
 function bnd(x::Interval{Float64}, lb::Float64, ub::Float64)
-     x ∩ Interval(lb, ub)
+    intersect_interval(x, interval(lb, ub))
 end
 function bnd_kernel(x::MC{N,T}, lb::Float64, ub::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
     cut_kernel(x, z)
