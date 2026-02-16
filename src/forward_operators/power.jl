@@ -309,7 +309,6 @@ end
 	if (x.Intv.bareinterval.lo <= 0.0 <= x.Intv.bareinterval.hi) && (c < 0)
 		return nan(MC{N,T})
 	end
-	(c < 0) && pow_kernel(x, c, inv(pown(x.Intv,-c)))
 	return pow_kernel(x, c, pown(x.Intv,c))
 end
 @inline (^)(x::MC, c::Z) where {Z <: Integer} = pow(x,c)
