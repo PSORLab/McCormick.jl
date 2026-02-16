@@ -20,13 +20,13 @@ function <(::ANYRELAX, c::Float64, y::MCNoGrad) where {N, T<:RelaxTag}
 end
 
 function <=(::ANYRELAX, x::MCNoGrad, y::MCNoGrad) where {N, T<:RelaxTag}
-    (x.cv <= y.cv) && (x.cc <= y.cc) && (isstrictless(x.Intv, y.Intv) || isequal_interval(x.Intv, y.Intv))
+    (x.cv <= y.cv) && (x.cc <= y.cc) && (isweakless(x.Intv, y.Intv))
 end
 function <=(::ANYRELAX, x::MCNoGrad, c::Float64) where {N, T<:RelaxTag}
-    (x.cv <= c) && (x.cc <= c) && (isstrictless(x.Intv, interval(c)) || isequal_interval(x.Intv, interval(c)))
+    (x.cv <= c) && (x.cc <= c) && (isweakless(x.Intv, interval(c)))
 end
 function <=(::ANYRELAX, c::Float64, y::MCNoGrad) where {N, T<:RelaxTag}
-    (c <= y.cv) && (c <= y.cc) && (isstrictless(interval(c), y.Intv) || isequal_interval(interval(c), y.Intv))
+    (c <= y.cv) && (c <= y.cc) && (isweakless(interval(c), y.Intv))
 end
 
 function ==(::ANYRELAX, x::MCNoGrad, y::MCNoGrad)
