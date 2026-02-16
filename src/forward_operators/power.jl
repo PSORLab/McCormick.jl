@@ -369,7 +369,7 @@ end
 
 # Define powers of float to MC
 @inline function pow(b::Float64, x::MC{N,T}) where {N,T<:RelaxTag}
-	(b <= 0.0) && (return MC{N,T}(NaN, NaN, exp(x.Intv*log(b)), fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
+	(b <= 0.0) && (return MC{N,T}(NaN, NaN, b^x.Intv, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
 	exp(x*log(b))
 end
 @inline ^(b::Float64, x::MC) = pow(b, x) # DONE (no kernel)
