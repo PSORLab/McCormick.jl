@@ -90,5 +90,5 @@ end
 
 @inline function /(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
     0.0 ∉ y && (return div_kernel(x, y, x.Intv/y.Intv))
-    return nan(MC{N,T})
+    return MC{N,T}(NaN, NaN, x.Intv/y.Intv, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true)
 end

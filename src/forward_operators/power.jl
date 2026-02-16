@@ -307,7 +307,7 @@ end
 
 @inline function pow(x::MC{N,T}, c::Z) where {Z<:Integer, N, T<:RelaxTag}
 	if (x.Intv.bareinterval.lo <= 0.0 <= x.Intv.bareinterval.hi) && (c < 0)
-		return nan(MC{N,T})
+		return MC{N,T}(NaN, NaN, pown(x.Intv,c), fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true)
 	end
 	return pow_kernel(x, c, pown(x.Intv,c))
 end
@@ -342,7 +342,7 @@ end
 
 @inline function (^)(x::MC{N,T}, c::Float64, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	if (x.Intv.bareinterval.lo <= 0.0 <= x.Intv.bareinterval.hi) && (c < 0)
-		return nan(MC{N,T})
+		return MC{N,T}(NaN, NaN, y, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true)
 	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.bareinterval.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
@@ -351,7 +351,7 @@ end
 end
 @inline function (^)(x::MC{N,Diff}, c::Float64, y::Interval{Float64}) where N
 	if (x.Intv.bareinterval.lo <= 0.0 <= x.Intv.bareinterval.hi) && (c < 0)
-		return nan(MC{N, Diff})
+		return MC{N,Diff}(NaN, NaN, y, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true)
 	end
     isinteger(c) && (return pow_kernel(x, Int(c), y))
     ((x.Intv.bareinterval.lo >= 0) && (0.0 < c < 1.0)) && (return flt_pow_1(x, c, y))
@@ -367,9 +367,9 @@ end
 @inline (^)(x::MC, c::MC) = exp(c*log(x))
 @inline pow(x::MC, c::F) where {F <: AbstractFloat} = x^c
 
-# Define powers to MC of floating point number
+# Define powers of float to MC
 @inline function pow(b::Float64, x::MC{N,T}) where {N,T<:RelaxTag}
-	(b <= 0.0) && (return nan(MC{N,T}))
+	(b <= 0.0) && (return MC{N,T}(NaN, NaN, exp(x.Intv*log(b)), fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
 	exp(x*log(b))
 end
 @inline ^(b::Float64, x::MC) = pow(b, x) # DONE (no kernel)
@@ -415,7 +415,7 @@ end
 end
 @inline function inv_kernel(x::MC{N,T}, y::Interval{Float64}) where {N,T<:RelaxTag}
 	if x.Intv.bareinterval.lo <= 0.0 <= x.Intv.bareinterval.hi
-		return MC{N,T}(NaN, NaN, y, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), x.cnst)
+		return MC{N,T}(NaN, NaN, y, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true)
 	end
 	if x.Intv.bareinterval.hi < 0.0
 		x = -inv1(-x, -y)

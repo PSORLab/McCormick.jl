@@ -613,7 +613,7 @@ end
 		multiply_STD_NS(x1, x2, y)
 	end
 	flag, x3 = multiply_MV_NS(x1, x2, y, x1.cnst && x2.cnst)
-	~flag && (return nan(MC{N,MV}))
+	~flag && (return MC{N,MV}(NaN, NaN, y, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
 	return x3
 end
 

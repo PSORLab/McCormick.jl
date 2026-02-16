@@ -134,7 +134,7 @@ end
 			MC_INTERSECT_NOOP_FALLBACK && (return x)
 		end
 	end
-	return MC{N,T}(NaN, NaN, Intv, cv_grad, cc_grad, false)
+	return MC{N,T}(NaN, NaN, Intv, cv_grad, cc_grad, true)
 end
 
 @inline function intersect(x::MC{N,T}, y::MC{N,T}) where {N, T<:Union{NS, MV}}

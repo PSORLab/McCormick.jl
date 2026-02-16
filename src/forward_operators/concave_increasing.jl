@@ -56,7 +56,7 @@ end
 
 @inline function acosh_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS, MV}}
      isempty(x) && (return empty(x))
-     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return nan(MC{N,T}))
+     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
      xLc = z.bareinterval.lo
      xUc = z.bareinterval.hi
      xL = x.Intv.bareinterval.lo
@@ -73,7 +73,7 @@ end
 end
 @inline function acosh_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
      isempty(x) && (return empty(x))
-     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return nan(MC{N,Diff}))
+     (x.Intv.bareinterval.lo < 1.0 || x.Intv.bareinterval.hi < 1.0) && (return MC{N,Diff}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
      xLc = z.bareinterval.lo
      xUc = z.bareinterval.hi
      xL = x.Intv.bareinterval.lo
@@ -97,7 +97,7 @@ end
 
 @inline function sqrt_kernel(x::MC{N, T}, z::Interval{Float64}) where {N, T<:Union{NS, MV}}
      isempty(x) && (return empty(x))
-     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), x.cnst))
+     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return MC{N,T}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
      xLc = z.bareinterval.lo
      xUc = z.bareinterval.hi
      xL = x.Intv.bareinterval.lo
@@ -114,7 +114,7 @@ end
 end
 @inline function sqrt_kernel(x::MC{N, Diff}, z::Interval{Float64}) where N
      isempty(x) && (return empty(x))
-     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return nan(MC{N,Diff}))
+     (x.Intv.bareinterval.lo < 0.0 || x.Intv.bareinterval.hi < 0.0) && (return MC{N,Diff}(NaN, NaN, z, fill(0, SVector{N,Float64}), fill(0, SVector{N,Float64}), true))
      xLc = z.bareinterval.lo
      xUc = z.bareinterval.hi
      xL = x.Intv.bareinterval.lo

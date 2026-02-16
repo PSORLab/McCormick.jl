@@ -49,5 +49,5 @@ end
         z, _ =  div_kernel(t, x, y, x.Intv/y.Intv)
         return z
     end
-    return nan(MCNoGrad)
+    return MCNoGrad(NaN, NaN, x.Intv/y.Intv, true)
 end
