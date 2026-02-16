@@ -10,13 +10,13 @@
 #############################################################################
 
 # Defines functions required for linear algebra packages
-@inline nan(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(NaN, NaN, Interval{Float64}(NaN), true)
-@inline nan(::ANYRELAX, x::MCNoGrad)= MCNoGrad(NaN, NaN, Interval{Float64}(NaN), true)
+@inline nan(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(NaN, NaN, emptyinterval(), true)
+@inline nan(::ANYRELAX, x::MCNoGrad)= MCNoGrad(NaN, NaN, emptyinterval(), true)
 
-@inline one(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(1.0, 1.0, one(Interval{Float64}), true)
-@inline one(::ANYRELAX, x::MCNoGrad) = MCNoGrad(1.0, 1.0, one(Interval{Float64}), true)
+@inline one(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(1.0, 1.0, one(Interval), true)
+@inline one(::ANYRELAX, x::MCNoGrad) = MCNoGrad(1.0, 1.0, one(Interval), true)
 
-@inline zero(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(0.0, 0.0, zero(Interval{Float64}), true)
+@inline zero(::ANYRELAX, ::Type{MCNoGrad}) = MCNoGrad(0.0, 0.0, zero(Interval), true)
 @inline zero(::T, x::MCNoGrad) where T<:ANYRELAX = zero(T(), MCNoGrad)
 
 @inline real(::ANYRELAX, x::MCNoGrad) = x
@@ -174,7 +174,6 @@ end
 promote_rule(::Type{MCNoGrad}, ::Type{S}) where {S<:NumberNotRelax, N, T <: RelaxTag} = MCNoGrad
 promote_rule(::Type{MCNoGrad}, ::Type{S}) where {S<:Real, N, T <: RelaxTag} = MCNoGrad
 
-convert(::Type{MCNoGrad}, x::S) where {S<:NumberNotRelax, N, T <: RelaxTag} = MCNoGrad(Interval{Float64}(x))
-convert(::Type{MCNoGrad}, x::S) where {S<:AbstractInterval, N, T <: RelaxTag} = MCNoGrad(Interval{Float64}(x.lo, x.hi))
-Interval(x::MCNoGrad) = x.Intv
-Interval{Float64}(x::MCNoGrad) = x.Intv
+convert(::Type{MCNoGrad}, x::S) where {S<:NumberNotRelax, N, T <: RelaxTag} = MCNoGrad(interval(x))
+convert(::Type{MCNoGrad}, x::S) where {S<:Interval, N, T <: RelaxTag} = MCNoGrad(interval(x.bareinterval.lo, x.bareinterval.hi))
+interval(x::MCNoGrad) = x.Intv

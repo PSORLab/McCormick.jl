@@ -11,7 +11,7 @@
 
 #=
 @inline function div_MV(::Diff, x::MCNoGrad, y::MCNoGrad, z::Interval{Float64})
-    if (0.0 < y.Intv.lo)
+    if (0.0 < y.Intv.bareinterval.lo)
         cv, cv_grad = div_diffcv(x, y)
         cc, cc_grad = div_diffcv(-x, y)
         return MC{N,Diff}(cv, -cc, z, cv_grad, -cc_grad, x.cnst && y.cnst)
@@ -31,8 +31,8 @@ end
 end
 
 @inline function div_kernel(t::ANYRELAX, x::MCNoGrad, y::MCNoGrad, z::Interval{Float64})
-    degen1 = (x.Intv.hi - x.Intv.lo == 0.0)
-    degen2 = (y.Intv.hi - y.Intv.lo == 0.0)
+    degen1 = (x.Intv.bareinterval.hi - x.Intv.bareinterval.lo == 0.0)
+    degen2 = (y.Intv.bareinterval.hi - y.Intv.bareinterval.lo == 0.0)
     if x === y
         zMC = one(MCNoGrad)
     elseif  !degen1 || !degen2
@@ -49,5 +49,5 @@ end
         z, _ =  div_kernel(t, x, y, x.Intv/y.Intv)
         return z
     end
-    return nan(MCNoGrad)
+    return MCNoGrad(NaN, NaN, x.Intv/y.Intv, true)
 end

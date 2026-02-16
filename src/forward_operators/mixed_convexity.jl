@@ -98,34 +98,34 @@ end
 end
 @inline function cos_kernel(x::MC{N, Diff}, y::Interval{Float64}, cv_tp1::Float64,
                               cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where N
-    xL = x.Intv.lo
-    xU = x.Intv.hi
-    xLc = y.lo
-    xUc = y.hi
-    eps_min, eps_max = cos_arg(x.Intv.lo, x.Intv.hi)
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
+    xLc = y.bareinterval.lo
+    xUc = y.bareinterval.hi
+    eps_min, eps_max = cos_arg(x.Intv.bareinterval.lo, x.Intv.bareinterval.hi)
     midcc = mid3v(x.cv, x.cc, eps_max)
     midcv = mid3v(x.cv, x.cc, eps_min)
-    cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
-    cv, dcv, cv_tp1, cv_tp2 = cv_cos(midcv, x.Intv.lo, x.Intv.hi, cv_tp1, cv_tp2)
-    gcc1, gdcc1, cc_tp1, cc_tp2 = cc_cos(x.cv, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
-    gcv1, gdcv1, cv_tp1, cv_tp2 = cv_cos(x.cv, x.Intv.lo, x.Intv.hi, cv_tp1, cv_tp2)
-    gcc2, gdcc2, cc_tp1, cc_tp2 = cc_cos(x.cc, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
-    gcv2, gdcv2, cv_tp1, cv_tp2 = cv_cos(x.cc, x.Intv.lo, x.Intv.hi, cv_tp1, cv_tp2)
+    cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cc_tp1, cc_tp2)
+    cv, dcv, cv_tp1, cv_tp2 = cv_cos(midcv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cv_tp1, cv_tp2)
+    gcc1, gdcc1, cc_tp1, cc_tp2 = cc_cos(x.cv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cc_tp1, cc_tp2)
+    gcv1, gdcv1, cv_tp1, cv_tp2 = cv_cos(x.cv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cv_tp1, cv_tp2)
+    gcc2, gdcc2, cc_tp1, cc_tp2 = cc_cos(x.cc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cc_tp1, cc_tp2)
+    gcv2, gdcv2, cv_tp1, cv_tp2 = cv_cos(x.cc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cv_tp1, cv_tp2)
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N, Diff}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_tp1, cv_tp2, cc_tp1, cc_tp2
 end
 @inline function cos_kernel(x::MC{N, T}, y::Interval{Float64}, cv_tp1::Float64,
                               cv_tp2::Float64, cc_tp1::Float64, cc_tp2::Float64) where {N,T<:Union{NS,MV}}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
-    xLc = y.lo
-    xUc = y.hi
-    eps_min, eps_max = cos_arg(x.Intv.lo, x.Intv.hi)
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
+    xLc = y.bareinterval.lo
+    xUc = y.bareinterval.hi
+    eps_min, eps_max = cos_arg(x.Intv.bareinterval.lo, x.Intv.bareinterval.hi)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
-    cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.lo, x.Intv.hi, cc_tp1, cc_tp2)
-    cv, dcv, cv_tp1, cv_tp2 = cv_cos(midcv, x.Intv.lo, x.Intv.hi, cv_tp1, cv_tp2)
+    cc, dcc, cc_tp1, cc_tp2 = cc_cos(midcc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cc_tp1, cc_tp2)
+    cv, dcv, cv_tp1, cv_tp2 = cv_cos(midcv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, cv_tp1, cv_tp2)
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
     cv,cc,cv_grad,cc_grad = cut(xLc,xUc,cv,cc,cv_grad,cc_grad)
@@ -444,21 +444,6 @@ end
     return cbrt(x), cbrt_deriv(x), p
 end
 
-# Defines interval version of cbrt if necessary
-# Copy of recent version from IntervalArithmetic.jl
-if VERSION < v"1.3-"
-    function cbrt(x::BigFloat, r::RoundingMode)
-            setrounding(BigFloat, r) do
-                cbrt(x)
-            end
-        end
-    cbrt(a::Interval{Float64}) = atomic(Interval{Float64}, cbrt(big_val(a)))
-    function cbrt(a::Interval{BigFloat})
-        isempty(a) && return a
-        @round(cbrt(a.lo), cbrt(a.hi))
-    end
-end
-
 # basic method overloading operator (sinh, tanh, atanh, asinh), convexoconcave or concavoconvex
 eps_min_dict = Dict{Symbol,Symbol}(:sinh => :xL, :tanh => :xL, :asinh => :xL,
                                  :atanh => :xL, :tan => :xL, :acos => :xU,
@@ -487,21 +472,21 @@ for expri in (:sinh, :tanh, :asinh, :atanh, :tan, :acos, :asin, :atan,
     eps_max = eps_max_dict[expri_sym]
     @eval @inline function ($expri_kernel)(x::MC{N, T}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where {N,T<:Union{NS,MV}}
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cc, x.cv, $eps_min)
         midcc, cc_id = mid3(x.cc, x.cv, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
         cc, dcc, cc_p = $(expri_cc)(midcc, xL, xU, cc_p)
         cv_grad = mid_grad(x.cv_grad, x.cc_grad, cv_id)*dcv
         cc_grad = mid_grad(x.cv_grad, x.cc_grad, cc_id)*dcc
-        cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+        cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
         return MC{N, T}(cv, cc, y, cv_grad, cc_grad, x.cnst), cv_p, cc_p
     end
     @eval @inline function ($expri_kernel)(x::MC{N, Diff}, y::Interval{Float64},
                             cv_p::Float64, cc_p::Float64) where N
-        xL = x.Intv.lo
-        xU = x.Intv.hi
+        xL = x.Intv.bareinterval.lo
+        xU = x.Intv.bareinterval.hi
         midcv, cv_id = mid3(x.cv, x.cc, $eps_min)
         midcc, cc_id = mid3(x.cv, x.cc, $eps_max)
         cv, dcv, cv_p = $(expri_cv)(midcv, xL, xU, cv_p)
@@ -524,8 +509,8 @@ end
 @inline cv_cosh(x::Float64, xL::Float64, xU::Float64) = cosh(x), sinh(x)
 @inline cc_cosh(x::Float64, xL::Float64, xU::Float64) = dline_seg(cosh, sinh, x, xL, xU)
 @inline function cosh_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL
     eps_min = in(0.0, x) ? 0.0 : (abs(xU) > abs(xL) ?  xL : xU)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
@@ -534,12 +519,12 @@ end
     cv, dcv = cv_cosh(midcv, xL, xU)
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-    cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline function cosh_kernel(x::MC{N,Diff}, y::Interval{Float64}) where N
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_max = abs(xU) > abs(xL) ?  xU : xL
     eps_min = in(0.0, x) ? 0.0 : (abs(xU) > abs(xL) ?  xL : xU)
     midcc = mid3v(x.cv, x.cc, eps_max)

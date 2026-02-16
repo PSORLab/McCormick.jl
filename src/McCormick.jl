@@ -32,24 +32,16 @@ import NNlib: relu, selu, leakyrelu, sigmoid, swish, gelu, elu, softsign, logcos
 
 using IntervalArithmetic
 using IntervalArithmetic: @round
-if isdefined(IntervalArithmetic, :big53)
-    big_val(x) = IntervalArithmetic.big53(x)
-else
-    big_val(x) = IntervalArithmetic.bigequiv(x)
-end
 
 using IntervalRootFinding
-import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert, in, isempty,
+import IntervalArithmetic: dist, mid, pow, +, -, *, /, convert,
                            one, zero, real, eps, max, min, abs, exp,
-                           expm1, log, log2, log10, log1p, sqrt, ^,
-                           sin, cos, tan, min, max, sec, csc, cot, step, sech,
-                           csch, coth, acsch, acoth, asech,
-                           sign, dist, mid, pow, Interval, interval, sinh, cosh,
-                           ∩, IntervalBox, bisect, isdisjoint, length,
-                           atan, asin, acos, AbstractInterval, atomic,
-                           sind, cosd, tand, asind, acosd, atand,
-                           secd, cscd, cotd, asecd, acscd, acotd, half_pi,
-                           setrounding, diam, isthin, abs2
+                           expm1, log, log2, log10, log1p, sqrt, ^, sin,
+                           cos, tan, min, max, sec, csc, cot, step, sech,
+                           csch, coth, acsch, acoth, asech, sign, dist, mid,
+                           pow, interval, sinh, cosh, length, atan, asin, acos,
+                           atomic, sind, cosd, tand, asind, acosd, atand, secd, cscd,
+                           cotd, asecd, acscd, acotd, setrounding, diam, isthin, abs2
 
 import SpecialFunctions: erf, erfc, erfinv, erfcinv
 export erf, erfinv, erfc, erfcinv, erf_kernel, erfinv_kernel, erfc_kernel, erfcinv_kernel
@@ -133,18 +125,6 @@ const MC_DIFF_DIV = MC_DIFF_MU1^(-1/MC_DIFF_MU)
 const MC_MV_TOL = 1E-8
 const MC_DEGEN_TOL = 1E-14
 const MC_DOMAIN_TOL = 1E-10
-
-const IntervalConstr = interval
-const Half64 = Float64(0.5)
-const Two64 = Float64(2.0)
-const Three64 = Float64(3.0)
-const EqualityTolerance = Float64(1E-12)
-const DegToRadIntv = atomic(Interval{Float64}, pi)/Interval(180.0)
-const one_intv = one(Interval{Float64})
-const half_intv = Interval{Float64}(0.5)
-const two_intv = Interval{Float64}(2.0)
-const log2_intv = log(Interval{Float64}(2.0))
-const log10_intv = log(Interval{Float64}(10.0))
 
 const NumberNotRelax = Union{Bool, Float16, Float32, Signed, Unsigned, BigFloat,
                              Int8, Int64, Int32, Int16, Int128}
@@ -289,14 +269,14 @@ function cut(xL::Float64, xU::Float64, cv::Float64, cc::Float64,
     return cvo, cco, cv_grado, cc_grado
 end
 
-lo(x::Interval{Float64}) = x.lo
-hi(x::Interval{Float64}) = x.hi
+lo(x::Interval{Float64}) = x.bareinterval.lo
+hi(x::Interval{Float64}) = x.bareinterval.hi
 
 function step(x::Interval{Float64})
-     isempty(x) && return emptyinterval(x)
-     xmin::Float64 = ((x.lo) < 0.0) ? 0.0 : 1.0
-     xmax::Float64 = ((x.hi) >= 0.0) ? 1.0 : 0.0
-     return Interval{Float64}(xmin,xmax)
+     isempty_interval(x) && return x
+     xmin::Float64 = ((x.bareinterval.lo) < 0.0) ? 0.0 : 1.0
+     xmax::Float64 = ((x.bareinterval.hi) >= 0.0) ? 1.0 : 0.0
+     return interval(xmin, xmax)
 end
 
 
@@ -333,11 +313,11 @@ end
 """
 MC{N,T}(y::Interval{Float64})
 
-Constructs a McCormick relaxation with the convex relaxation equal to `y.lo` and
-concave relaxation equal to `y.hi`.
+Constructs a McCormick relaxation with the convex relaxation equal to `y.bareinterval.lo` and
+concave relaxation equal to `y.bareinterval.hi`.
 """
 function MC{N,T}(y::Interval{Float64}) where {N, T <: RelaxTag}
-    MC{N,T}(y.lo, y.hi, y, zero(SVector{N,Float64}),
+    MC{N,T}(y.bareinterval.lo, y.bareinterval.hi, y, zero(SVector{N,Float64}),
                            zero(SVector{N,Float64}), true)
 end
 
@@ -347,11 +327,11 @@ MC{N,T}(y::Float64)
 Constructs a McCormick relaxation with the convex relaxation equal to `y` and
 concave relaxation equal to `y`.
 """
-MC{N,T}(y::Float64) where {N, T <: RelaxTag} = MC{N,T}(Interval{Float64}(y))
+MC{N,T}(y::Float64) where {N, T <: RelaxTag} = MC{N,T}(interval(y))
 function MC{N,T}(y::Y) where {N, T <: RelaxTag, Y <: AbstractIrrational}
-    MC{N,T}(Interval{Float64}(y))
+    MC{N,T}(interval(y))
 end
-MC{N,T}(y::Q) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(Interval{Float64}(y))
+MC{N,T}(y::Q) where {N, T <: RelaxTag, Q <: NumberNotRelax} = MC{N,T}(interval(y))
 
 """
 MC{N,T}(cv::Float64, cc::Float64)
@@ -360,7 +340,7 @@ Constructs a McCormick relaxation with the convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MC{N,T}(cv::Float64, cc::Float64) where {N, T <: RelaxTag}
-    MC{N,T}(cv, cc, Interval{Float64}(cv, cc), zero(SVector{N,Float64}),
+    MC{N,T}(cv, cc, interval(cv, cc), zero(SVector{N,Float64}),
                                                zero(SVector{N,Float64}), true)
 end
 MC{N,T}(cv::Q, cc::R) where {N, T <: RelaxTag, Q <: NumberNotRelax, R <: NumberNotRelax} = MC{N,T}(Float64(cv), Float64(cc))
@@ -393,8 +373,8 @@ function MC{N,T}(x::MC{N,T}) where {N, T <: RelaxTag}
 end
 
 Intv(x::MC) = x.Intv
-lo(x::MC) = x.Intv.lo
-hi(x::MC) = x.Intv.hi
+lo(x::MC) = x.Intv.bareinterval.lo
+hi(x::MC) = x.Intv.bareinterval.hi
 cc(x::MC) = x.cc
 cv(x::MC) = x.cv
 cc_grad(x::MC) = x.cc_grad
@@ -407,8 +387,8 @@ isthin(x::MC) = isthin(x.Intv)
 
 function isone(x::MC)
     flag = true
-    flag &= (x.Intv.lo == 1.0)
-    flag &= (x.Intv.hi == 1.0)
+    flag &= (x.Intv.bareinterval.lo == 1.0)
+    flag &= (x.Intv.bareinterval.hi == 1.0)
     flag &= x.cnst
     return flag
 end
@@ -453,11 +433,11 @@ end
 """
 MCNoGrad(y::Interval{Float64})
 
-Constructs McCormick relaxation with convex relaxation equal to `y.lo` and
-concave relaxation equal to `y.hi`.
+Constructs McCormick relaxation with convex relaxation equal to `y.bareinterval.lo` and
+concave relaxation equal to `y.bareinterval.hi`.
 """
 function MCNoGrad(y::Interval{Float64})
-    MCNoGrad(y.lo, y.hi, y, true)
+    MCNoGrad(y.bareinterval.lo, y.bareinterval.hi, y, true)
 end
 
 """
@@ -466,11 +446,11 @@ MCNoGrad(y::Float64)
 Constructs McCormick relaxation with convex relaxation equal to `y` and
 concave relaxation equal to `y`.
 """
-MCNoGrad(y::Float64) = MCNoGrad(Interval{Float64}(y))
+MCNoGrad(y::Float64) = MCNoGrad(interval(y))
 function MCNoGrad(y::Y) where Y <: AbstractIrrational
-    MCNoGrad(Interval{Float64}(y))
+    MCNoGrad(interval(y))
 end
-MCNoGrad(y::Q) where Q <: NumberNotRelax = MCNoGrad(Interval{Float64}(y))
+MCNoGrad(y::Q) where Q <: NumberNotRelax = MCNoGrad(interval(y))
 
 """
 MCNoGrad(cv::Float64, cc::Float64)
@@ -479,12 +459,12 @@ Constructs McCormick relaxation with convex relaxation equal to `cv` and
 concave relaxation equal to `cc`.
 """
 function MCNoGrad(cv::Float64, cc::Float64)
-    MC{N,T}(cv, cc, Interval{Float64}(cv, cc), true)
+    MC{N,T}(cv, cc, interval(cv, cc), true)
 end
 
 Intv(x::MCNoGrad) = x.Intv
-lo(x::MCNoGrad) = x.Intv.lo
-hi(x::MCNoGrad) = x.Intv.hi
+lo(x::MCNoGrad) = x.Intv.bareinterval.lo
+hi(x::MCNoGrad) = x.Intv.bareinterval.hi
 cc(x::MCNoGrad) = x.cc
 cv(x::MCNoGrad) = x.cv
 cnst(x::MCNoGrad) = x.cnst
@@ -494,8 +474,8 @@ isthin(x::MCNoGrad) = isthin(x.Intv)
 
 function isone(x::MCNoGrad)
     flag = true
-    flag &= (x.Intv.lo == 1.0)
-    flag &= (x.Intv.hi == 1.0)
+    flag &= (x.Intv.bareinterval.lo == 1.0)
+    flag &= (x.Intv.bareinterval.hi == 1.0)
     flag &= x.cnst
     return flag
 end

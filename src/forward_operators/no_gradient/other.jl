@@ -10,15 +10,15 @@
 #############################################################################
 
 
-empty(x::MCNoGrad) = MCNoGrad(Inf, -Inf, Interval{Float64}(Inf,-Inf), false)
+empty(x::MCNoGrad) = MCNoGrad(Inf, -Inf, emptyinterval(), false)
 interval_MC(x::MCNoGrad) = MCNoGrad(x.Intv)
 
 isnan(x::MCNoGrad) = isnan(x.cc) || isnan(x.cv)
-isfinite(x::MCNoGrad) = isfinite(x.cc) && isfinite(x.cv) && isfinite(x.Intv)
+isfinite(x::MCNoGrad) = isfinite(x.cc) && isfinite(x.cv) && isbounded(x.Intv)
 
 @inline function step_kernel(t::Union{NS,MV}, x::MCNoGrad, z::Interval{Float64})
-	xL = x.Intv.lo
-	xU = x.Intv.hi
+	xL = x.Intv.bareinterval.lo
+	xU = x.Intv.bareinterval.hi
 	midcc, cc_id = mid3(x.cc, x.cv, xU)
 	midcv, cv_id = mid3(x.cc, x.cv, xL)
 	cc, dcc = cc_step_NS(midcc, xL, xU)
@@ -28,9 +28,9 @@ end
 @inline step(t::Union{NS,MV}, x::MCNoGrad) = step_kernel(t, x, step(x.Intv))
 
 @inline function abs_kernel(t::Union{NS,MV}, x::MC{N, T}, z::Interval{Float64})
-	xL = x.Intv.lo
-	xU = x.Intv.hi
-	eps_min = mid3v(xL, x.Intv.hi, 0.0)
+	xL = x.Intv.bareinterval.lo
+	xU = x.Intv.bareinterval.hi
+	eps_min = mid3v(xL, x.Intv.bareinterval.hi, 0.0)
 	eps_max = (abs(xU) >= abs(xL)) ? xU : xL
 	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
 	midcv, cv_id = mid3(x.cc, x.cv, eps_min)
@@ -41,11 +41,11 @@ end
 @inline abs(t::Union{NS,MV}, x::MCNoGrad) = abs_kernel(t, x, abs(x.Intv))
 
 @inline abs2_kernel(t::Union{NS,MV}, x::MCNoGrad, z::Interval{Float64}) = sqr_kernel(t, x, z)
-@inline abs2(t::Union{NS,MV}, x::MCNoGrad) = abs2_kernel(t, x, pow(x.Intv,2))
+@inline abs2(t::Union{NS,MV}, x::MCNoGrad) = abs2_kernel(t, x, pown(x.Intv,2))
 
 @inline function xlogx_kernel(t::Union{NS,MV}, x::MCNoGrad, y::Interval{Float64})
-    xL = x.Intv.lo
-    xU = x.Intv.hi
+    xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
     eps_max = xlogx(xU) > xlogx(xL) ?  xU : xL
     eps_min = in(1.0/exp(1.0), x) ? 1.0/exp(1.0) : (xlogx(xU) > xlogx(xL) ?  xL : xU)
     midcc, cc_id = mid3(x.cc, x.cv, eps_max)
@@ -59,8 +59,8 @@ xlogx(t::Union{NS,MV}, x::MCNoGrad) = xlogx_kernel(t, x, xlogx(x.Intv))
 function arh_kernel(t::Union{NS,MV}, x::MCNoGrad, k::Float64, z::Interval{Float64}, cv_p::Float64, cc_p::Float64)
 	(k == 0.0) && return one(MC{N,T})
 	in(0.0, x) && throw(DomainError(0.0))
-	xL = x.Intv.lo
-    xU = x.Intv.hi
+	xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
 	eps_min = xL
 	eps_max = xU
     midcv, cv_id = mid3(x.cc, x.cv, eps_min)
@@ -89,8 +89,8 @@ function xexpax_kernel(t::Union{NS,MV}, x::MCNoGrad, a::Float64, z::Interval{Flo
 	if a == 0.0
 		return one(MCNoGrad), 0, 0, 0.0, 0.0
 	end
-	xL = x.Intv.lo
-    xU = x.Intv.hi
+	xL = x.Intv.bareinterval.lo
+    xU = x.Intv.bareinterval.hi
 	zpnt = -1.0/a
 	fxL = xexpax(xL, a)
 	fxU = xexpax(xU, a)
@@ -121,12 +121,12 @@ end
 
     if cv - cc < MC_INTERSECT_TOL
 		if diam(Intv) > 3.0*MC_INTERSECT_TOL
-			cv = max(cv - MC_INTERSECT_TOL, Intv.lo)
-			cc = min(cc + MC_INTERSECT_TOL, Intv.hi)
-			if cv === Intv.lo
+			cv = max(cv - MC_INTERSECT_TOL, Intv.bareinterval.lo)
+			cc = min(cc + MC_INTERSECT_TOL, Intv.bareinterval.hi)
+			if cv === Intv.bareinterval.lo
 				cv_grad  = zero(SVector{N,Float64})
 			end
-			if cc === Intv.hi
+			if cc === Intv.bareinterval.hi
 				cc_grad = zero(SVector{N,Float64})
 			end
 			return MC{N,T}(cv, cc, Intv, cv_grad, cc_grad, cnst)
@@ -134,13 +134,13 @@ end
 			MC_INTERSECT_NOOP_FALLBACK && (return x)
 		end
 	end
-	return MC{N,T}(NaN, NaN, Intv, cv_grad, cc_grad, false)
+	return MC{N,T}(NaN, NaN, Intv, cv_grad, cc_grad, true)
 end
 
 @inline function intersect(x::MC{N,T}, y::MC{N,T}) where {N, T<:Union{NS, MV}}
 
-     Intv = x.Intv ∩ y.Intv
-	 isempty(Intv) && (return empty(x))
+     Intv = intersect_interval(x.Intv, y.Intv)
+	 isempty_interval(Intv) && (return empty(x))
 
 	 cnst1 = (x.cc < y.cc) ? x.cnst : y.cnst
 	 cnst2 = (x.cv > y.cv) ? x.cnst : y.cnst
@@ -160,8 +160,8 @@ end
 
 @inline function intersect(x::MC{N, Diff}, y::MC{N, Diff}) where N
 
-	Intv = intersect(x.Intv, y.Intv)
-	isempty(Intv) && (return empty(x))
+	Intv = intersect_interval(x.Intv, y.Intv)
+	isempty_interval(Intv) && (return empty(x))
 
     max_MC = x - max(x - y, 0.0)
     min_MC = y - max(y - x, 0.0)
@@ -176,42 +176,42 @@ end
 @inline function intersect(x::MC{N, T}, y::Interval{Float64}) where {N, T<:Union{NS,MV}}
 	cnst1 = x.cnst
 	cnst2 = x.cnst
-	if x.cv >= y.lo
+	if x.cv >= y.bareinterval.lo
   		cv = x.cv
   		cv_grad = x.cv_grad
 	else
 		cnst1 = true
-  		cv = y.lo
+  		cv = y.bareinterval.lo
   		cv_grad = zero(SVector{N,Float64})
 	end
-	if x.cc <= y.hi
+	if x.cc <= y.bareinterval.hi
   		cc = x.cc
   		cc_grad = x.cc_grad
 	else
 		cnst2 = true
-  		cc = y.hi
+  		cc = y.bareinterval.hi
   		cc_grad = zero(SVector{N,Float64})
 	end
 	if cv <= cc
-		return MC{N, T}(cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
+		return MC{N, T}(cv, cc, intersect_interval(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
 	end
-	return correct_intersect(x, cv, cc, intersect(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
+	return correct_intersect(x, cv, cc, intersect_interval(x.Intv, y), cv_grad, cc_grad, cnst1 && cnst2)
 end
 @inline function intersect(x::MC{N, Diff}, y::Interval{Float64}) where N
      max_MC = x - max(x - y, 0.0)
      min_MC = y - max(y - x, 0.0)
 	 if max_MC.cv <= min_MC.cc
-		 MC{N, Diff}(max_MC.cv, min_MC.cc, intersect(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst)
+		return MC{N, Diff}(max_MC.cv, min_MC.cc, intersect_interval(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst)
 	 end
-     return correct_intersect(x, max_MC.cv, min_MC.cc, intersect(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst && y.cnst)
+     return correct_intersect(x, max_MC.cv, min_MC.cc, intersect_interval(x.Intv, y), max_MC.cv_grad, min_MC.cc_grad, x.cnst && y.cnst)
 end
 
 @inline function intersect(c::Float64, x::MC{N,T}) where {N, T<:RelaxTag}
 	isempty(x) && (return empty(x))
 	isnan(x) && (return nan(x))
 
-	intv = intersect(x.Intv, Interval{Float64}(c))
-	isempty(intv) && (return empty(x))
+	intv = intersect_interval(x.Intv, interval(c))
+	isempty_interval(intv) && (return empty(x))
 
 	cv = max(c, x.cv)
 	cc = min(c, x.cc)
@@ -226,9 +226,9 @@ end
 @inline intersect(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag} = intersect(c, x)
 @inline intersect(c::Interval{Float64}, x::MC{N,T}) where {N, T<:RelaxTag} = intersect(c, x)
 
-@inline in(a::Int, x::MC) = in(a, x.Intv)
-@inline in(a::T, x::MC) where T<:AbstractFloat = in(a, x.Intv)
-@inline isempty(x::MC) = isempty(x.Intv)
+@inline in(a::Int, x::MC) = in_interval(a, x.Intv)
+@inline in(a::T, x::MC) where T<:AbstractFloat = in_interval(a, x.Intv)
+@inline isempty(x::MC) = isempty_interval(x.Intv)
 
 """
 expax
@@ -278,13 +278,13 @@ end
 	end
 end
 function xabsx(x::Interval{Float64})
-	xabsx_xL = Interval(x.lo)*abs(Interval(x.lo))
-	xabsx_xU = Interval(x.hi)*abs(Interval(x.hi))
-	Interval{Float64}(xabsx_xL.lo, xabsx_xU.hi)
+	xabsx_xL = interval(x.bareinterval.lo)*abs(interval(x.bareinterval.lo))
+	xabsx_xU = interval(x.bareinterval.hi)*abs(interval(x.bareinterval.hi))
+	interval(xabsx_xL.bareinterval.lo, xabsx_xU.bareinterval.hi)
 end
 @inline function xabsx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Union{NS,MV}}
-	xL = x.Intv.lo
-	xU = x.Intv.hi
+	xL = x.Intv.bareinterval.lo
+	xU = x.Intv.bareinterval.hi
 	eps_max = xU
 	eps_min = xL
 	midcc, cc_id = mid3(x.cc, x.cv, eps_max)
@@ -293,12 +293,12 @@ end
 	cv, dcv = cv_xabsx(midcv, xL, xU)
 	cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
 	cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-	cv, cc, cv_grad, cc_grad = cut(y.lo, y.hi, cv, cc, cv_grad, cc_grad)
+	cv, cc, cv_grad, cc_grad = cut(y.bareinterval.lo, y.bareinterval.hi, cv, cc, cv_grad, cc_grad)
 	return MC{N,T}(cv, cc, y, cv_grad, cc_grad, x.cnst)
 end
 @inline function xabsx_kernel(x::MC{N, T}, y::Interval{Float64}) where {N,T<:Diff}
-	xL = x.Intv.lo
-	xU = x.Intv.hi
+	xL = x.Intv.bareinterval.lo
+	xU = x.Intv.bareinterval.hi
 	eps_min = xL
 	eps_max = xU
 	midcc, cc_id = mid3(x.cc, x.cv, eps_max)

@@ -92,12 +92,12 @@ function contract!(t::NewtonGS, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Bool)
                     yr = xz0[k][i,j]
                     u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, p_ref)
                     wIntv = zv.Intv
-                    if (u1max < xv.Intv.hi) || (u2max < yv.Intv.hi)
+                    if (u1max < xv.Intv.bareinterval.hi) || (u2max < yv.Intv.bareinterval.hi)
                         u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, p_mc, p_ref)
                         za_l = mult_apriori_kernel(xv, yv, wIntv, u1cv, u2cv, u1max, u2max, u1cvg, u2cvg)
                         zv = zv ∩ za_l
                     end
-                    if (v1nmax > -xv.Intv.lo) || (v2nmax > -yv.Intv.lo)
+                    if (v1nmax > -xv.Intv.bareinterval.lo) || (v2nmax > -yv.Intv.bareinterval.lo)
                         v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, p_mc, p_ref)
                         za_u = mult_apriori_kernel(-xv, -yv, wIntv, v1ccn, v2ccn, v1nmax, v2nmax, v1ccgn, v2ccgn)
                         zv = zv ∩ za_u
@@ -137,12 +137,12 @@ function contract!(t::KrawczykCW, d::MCCallback{FH,FJ,C,PRE,N,T}, k::Int, b::Boo
                 yr = xz0[k][i,j]
                 u1max, u2max, v1nmax, v2nmax = estimator_extrema(xr, yr, p_ref)
                 wIntv = zv.Intv
-                if (u1max < xv.Intv.hi) || (u2max < yv.Intv.hi)
+                if (u1max < xv.Intv.bareinterval.hi) || (u2max < yv.Intv.bareinterval.hi)
                     u1cv, u2cv, u1cvg, u2cvg = estimator_under(xr, yr, p_mc, p_ref)
                     za_l = mult_apriori_kernel(xv, yv, wIntv, u1cv, u2cv, u1max, u2max, u1cvg, u2cvg)
                     zv = zv ∩ za_l
                 end
-                if (v1nmax > -xv.Intv.lo) || (v2nmax > -yv.Intv.lo)
+                if (v1nmax > -xv.Intv.bareinterval.lo) || (v2nmax > -yv.Intv.bareinterval.lo)
                     v1ccn, v2ccn, v1ccgn, v2ccgn = estimator_over(xr, yr, p_mc, p_ref)
                     za_u = mult_apriori_kernel(-xv, -yv, wIntv, v1ccn, v2ccn, v1nmax, v2nmax, v1ccgn, v2ccgn)
                     zv = zv ∩ za_u

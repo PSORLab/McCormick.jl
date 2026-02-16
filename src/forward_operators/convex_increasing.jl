@@ -13,10 +13,10 @@ for opMC in (:exp, :exp2, :exp10, :expm1)
    opMC_kernel = Symbol(String(opMC)*"_kernel")
    dop = diffrule(:Base, opMC, :midcv) # Replace with cv ruleset
    MCexp = quote
-              xL = x.Intv.lo
-              xU = x.Intv.hi
-              xLc = z.lo
-              xUc = z.hi
+              xL = x.Intv.bareinterval.lo
+              xU = x.Intv.bareinterval.hi
+              xLc = z.bareinterval.lo
+              xUc = z.bareinterval.hi
               del = xU - xL
               midcc, cc_id = mid3(x.cc, x.cv, xU)
               midcv, cv_id = mid3(x.cc, x.cv, xL)
@@ -35,10 +35,10 @@ for opMC in (:exp, :exp2, :exp10, :expm1)
             end
     dop = diffrule(:Base, opMC, :(x.cv))
     dMCexp = quote
-               xL = x.Intv.lo
-               xU = x.Intv.hi
-               xLc = z.lo
-               xUc = z.hi
+               xL = x.Intv.bareinterval.lo
+               xU = x.Intv.bareinterval.hi
+               xLc = z.bareinterval.lo
+               xUc = z.bareinterval.hi
                del = xU - xL
                midcc = mid3v(x.cv, x.cc, xU)
                midcv = mid3v(x.cv, x.cc, xL)

@@ -28,7 +28,7 @@ DenseMidInv(nx::Int, np::Int) = DenseMidInv(zeros(Float64,nx,nx), zeros(Interval
 function precondition!(d::DenseMidInv{S}, H::Vector{MC{N,T}}, J::Array{MC{N,T},2}) where {N, T <: RelaxTag, S <: VecOrMat{Float64}}
     for i in eachindex(J)
         @inbounds d.YInterval[1] = J[i].Intv
-        @inbounds d.Y[i] = 0.5*(d.YInterval[1].lo + d.YInterval[1].hi)
+        @inbounds d.Y[i] = 0.5*(d.YInterval[1].bareinterval.lo + d.YInterval[1].bareinterval.hi)
     end
     F = lu!(d.Y)
     H .= F\H

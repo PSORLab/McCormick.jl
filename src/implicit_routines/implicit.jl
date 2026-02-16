@@ -16,7 +16,7 @@ An operator that cuts the `x` object using the `y bounds` in a differentiable
 or nonsmooth fashion to achieve a composite relaxation within `y`.
 """
 function final_cut(x::MC{N,NS}, y::MC{N,NS}) where N
-    Ibnd = x.Intv ∩ y.Intv
+    Ibnd = intersect_interval(x.Intv, y.Intv)
     if x.cc < y.cc
         cc = x.cc
         cc_grad = x.cc_grad
@@ -215,13 +215,13 @@ function correct_exp!(d::MCCallback{FH,FJ,C,PRE,N,T}) where {FH, FJ, C, PRE, N, 
 
     zero_grad = zeros(SVector{N,Float64})
     @inbounds for i = 1:nx
-        if (z_mc[i].Intv.lo - eps < X[i].lo) && (z_mc[i].Intv.hi + eps > X[i].hi)
+        if (z_mc[i].Intv.bareinterval.lo - eps < X[i].bareinterval.lo) && (z_mc[i].Intv.bareinterval.hi + eps > X[i].bareinterval.hi)
             x_mc[i] = MC{N,T}(X[i])
-        elseif z_mc[i].Intv.lo - eps < X[i].lo
-            x_mc[i] = MC{N,T}(X[i].lo, x_mc[i].cc, Interval(X[i].lo, x_mc[i].Intv.hi), zero_grad, x_mc[i].cc_grad, x_mc[i].cnst)
+        elseif z_mc[i].Intv.bareinterval.lo - eps < X[i].bareinterval.lo
+            x_mc[i] = MC{N,T}(X[i].bareinterval.lo, x_mc[i].cc, interval(X[i].bareinterval.lo, x_mc[i].Intv.bareinterval.hi), zero_grad, x_mc[i].cc_grad, x_mc[i].cnst)
         else
-            if z_mc[i].Intv.hi + eps > X[i].hi
-                x_mc[i] = MC{N,T}(x_mc[i].cv, X[i].hi, Interval(x_mc[i].Intv.lo, X[i].hi), x_mc[i].cv_grad, zero_grad, x_mc[i].cnst)
+            if z_mc[i].Intv.bareinterval.hi + eps > X[i].bareinterval.hi
+                x_mc[i] = MC{N,T}(x_mc[i].cv, X[i].bareinterval.hi, interval(x_mc[i].Intv.bareinterval.lo, X[i].bareinterval.hi), x_mc[i].cv_grad, zero_grad, x_mc[i].cnst)
             end
         end
     end
@@ -255,8 +255,8 @@ function populate_affine!(d::MCCallback{FH,FJ,C,PRE,N,T}, interval_bnds::Bool) w
 
     if interval_bnds
         @inbounds for i in 1:nx
-            xL = X[i].lo
-            xU = X[i].hi
+            xL = X[i].bareinterval.lo
+            xU = X[i].bareinterval.hi
             x_mc[i]  = MC{N,T}(xL, xU)
             xa_mc[i] = MC{N,T}(xL, xL)
             xA_mc[i] = MC{N,T}(xU, xU)

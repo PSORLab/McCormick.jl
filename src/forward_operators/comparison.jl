@@ -9,22 +9,28 @@
 # Defines :<, :<=, :!=, :==.
 #############################################################################
 
-for f in (:<, :<=)
-    @eval begin
-        function ($f)(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
-            ($f)(x.cv,y.cv) && ($f)(x.cc,y.cc) && ($f)(x.Intv, y.Intv)
-        end
-        function ($f)(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
-            ($f)(x.cv, c) && ($f)(x.cc, c) && ($f)(x.Intv, c)
-        end
-        function ($f)(c::Float64, y::MC{N,T}) where {N, T<:RelaxTag}
-            ($f)(c, y.cv) && ($f)(c, y.cc) && ($f)(c, y.Intv)
-        end
-    end
+function <(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
+    (x.cv < y.cv) && (x.cc < y.cc) && (isstrictless(x.Intv, y.Intv))
+end
+function <(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
+    (x.cv < c) && (x.cc < c) && (isstrictless(x.Intv, interval(c)))
+end
+function <(c::Float64, y::MC{N,T}) where {N, T<:RelaxTag}
+    (c < y.cv) && (c < y.cc) && (isstrictless(interval(c), y.Intv))
+end
+
+function <=(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
+    (x.cv <= y.cv) && (x.cc <= y.cc) && (isweakless(x.Intv, y.Intv))
+end
+function <=(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
+    (x.cv <= c) && (x.cc <= c) && (isweakless(x.Intv, interval(c)))
+end
+function <=(c::Float64, y::MC{N,T}) where {N, T<:RelaxTag}
+    (c <= y.cv) && (c <= y.cc) && (isweakless(interval(c), y.Intv))
 end
 
 function ==(x::MC{N,T}, y::MC{N,T}) where {N, T<:RelaxTag}
-    (x.cv == y.cv) && (x.cc == y.cc) && (x.Intv == y.Intv)
+    (x.cv == y.cv) && (x.cc == y.cc) && (isequal_interval(x.Intv, y.Intv))
 end
 function ==(x::MC{N,T}, c::Float64) where {N, T<:RelaxTag}
     (x.cv == c) && (x.cc == c) && (x.Intv == c)

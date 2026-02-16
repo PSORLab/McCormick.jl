@@ -26,26 +26,26 @@ end
 
 @inline cc_max(x::Float64, xL::Float64, xU::Float64, a::Float64) = dline_seg(max, deriv_max, x, xL, xU, a)
 @inline function max_kernel(x::MC{N, Diff}, c::Float64, z::Interval{Float64}) where N
-    midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
-    midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
-    cv, dcv = cv_max(midcv, x.Intv.lo, x.Intv.hi, c)
-    cc, dcc = cc_max(midcc, x.Intv.lo, x.Intv.hi, c)
-    gcc1,gdcc1 = cc_max(x.cv, x.Intv.lo, x.Intv.hi, c)
-    gcv1,gdcv1 = cv_max(x.cv, x.Intv.lo, x.Intv.hi, c)
-    gcc2,gdcc2 = cc_max(x.cc, x.Intv.lo, x.Intv.hi, c)
-    gcv2,gdcv2 = cv_max(x.cc, x.Intv.lo, x.Intv.hi, c)
+    midcv, cv_id = mid3(x.cc, x.cv, x.Intv.bareinterval.lo)
+    midcc, cc_id = mid3(x.cc, x.cv, x.Intv.bareinterval.hi)
+    cv, dcv = cv_max(midcv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    cc, dcc = cc_max(midcc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    gcc1,gdcc1 = cc_max(x.cv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    gcv1,gdcv1 = cv_max(x.cv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    gcc2,gdcc2 = cc_max(x.cc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    gcv2,gdcv2 = cv_max(x.cc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
     cv_grad = max(0.0, gdcv1)*x.cv_grad + min(0.0, gdcv2)*x.cc_grad
     cc_grad = min(0.0, gdcc1)*x.cv_grad + max(0.0, gdcc2)*x.cc_grad
     return MC{N, Diff}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
 @inline function max_kernel(x::MC{N, T}, c::Float64, z::Interval{Float64}) where {N, T<:Union{NS,MV}}
-    midcv, cv_id = mid3(x.cc, x.cv, x.Intv.lo)
-    midcc, cc_id = mid3(x.cc, x.cv, x.Intv.hi)
-    cv, dcv = cv_max_ns(midcv, x.Intv.lo, x.Intv.hi, c)
-    cc, dcc = cc_max(midcc, x.Intv.lo, x.Intv.hi, c)
+    midcv, cv_id = mid3(x.cc, x.cv, x.Intv.bareinterval.lo)
+    midcc, cc_id = mid3(x.cc, x.cv, x.Intv.bareinterval.hi)
+    cv, dcv = cv_max_ns(midcv, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
+    cc, dcc = cc_max(midcc, x.Intv.bareinterval.lo, x.Intv.bareinterval.hi, c)
     cc_grad = mid_grad(x.cc_grad, x.cv_grad, cc_id)*dcc
     cv_grad = mid_grad(x.cc_grad, x.cv_grad, cv_id)*dcv
-    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(z.bareinterval.lo, z.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N,T}(cv, cc, z, cv_grad, cc_grad, x.cnst)
 end
 @inline max(x::MC, c::Float64) = max_kernel(x, c, max(x.Intv, c))
@@ -54,18 +54,18 @@ end
 
 # Multivariate min/max operators
 @inline function psil_max(x::Float64, y::Float64, lambda::Interval{Float64}, nu::Interval{Float64}, f1::MC{N, Diff}, f2::MC{N, Diff}) where N
-    if nu.hi <= lambda.lo
+    if nu.bareinterval.hi <= lambda.bareinterval.lo
         val = x
-    elseif lambda.hi <= nu.lo
+    elseif lambda.bareinterval.hi <= nu.bareinterval.lo
         val = y
-    elseif nu.lo <= lambda.lo && lambda.lo < nu.hi
-        val = x + (nu.hi - lambda.lo)*max(0.0, (y - x)/(nu.hi - lambda.lo))^MC_DIFF_MU1
+    elseif nu.bareinterval.lo <= lambda.bareinterval.lo && lambda.bareinterval.lo < nu.bareinterval.hi
+        val = x + (nu.bareinterval.hi - lambda.bareinterval.lo)*max(0.0, (y - x)/(nu.bareinterval.hi - lambda.bareinterval.lo))^MC_DIFF_MU1
     else
-        val = y + (lambda.hi - nu.lo)*max(0.0, (x - y)/(lambda.hi - nu.lo))^MC_DIFF_MU1
+        val = y + (lambda.bareinterval.hi - nu.bareinterval.lo)*max(0.0, (x - y)/(lambda.bareinterval.hi - nu.bareinterval.lo))^MC_DIFF_MU1
     end
-    if nu.hi <= lambda.lo
+    if nu.bareinterval.hi <= lambda.bareinterval.lo
         grad_val = f1.cv_grad
-    elseif lambda.hi <= nu.lo
+    elseif lambda.bareinterval.hi <= nu.bareinterval.lo
         grad_val = f1.cv_grad
     else
         grad_val = max(0.0, psil_max_dx(x, y, lambda, nu))*f1.cv_grad +
@@ -77,37 +77,37 @@ end
 end
 
 @inline function psil_max_dx(x::Float64, y::Float64, lambda::Interval{Float64}, nu::Interval{Float64})
-    if in(lambda.lo, nu)
-        return 1.0 - MC_DIFF_MU1*max(0.0, (y - x)/(nu.hi - lambda.lo))^MC_DIFF_MU
+    if in_interval(lambda.bareinterval.lo, nu)
+        return 1.0 - MC_DIFF_MU1*max(0.0, (y - x)/(nu.bareinterval.hi - lambda.bareinterval.lo))^MC_DIFF_MU
     end
-    return MC_DIFF_MU1*max(0.0, (x - y)/(lambda.hi - nu.lo))^MC_DIFF_MU
+    return MC_DIFF_MU1*max(0.0, (x - y)/(lambda.bareinterval.hi - nu.bareinterval.lo))^MC_DIFF_MU
 end
 @inline function psil_max_dy(x::Float64, y::Float64, lambda::Interval{Float64}, nu::Interval{Float64})
-    if in(lambda.lo, nu)
-        return MC_DIFF_MU1*max(0.0, (y - x)/(nu.hi - lambda.lo))^MC_DIFF_MU
+    if in_interval(lambda.bareinterval.lo, nu)
+        return MC_DIFF_MU1*max(0.0, (y - x)/(nu.bareinterval.hi - lambda.bareinterval.lo))^MC_DIFF_MU
     end
-    return 1.0 - MC_DIFF_MU1*max(0.0, (x - y)/(lambda.hi - nu.lo))^MC_DIFF_MU
+    return 1.0 - MC_DIFF_MU1*max(0.0, (x - y)/(lambda.bareinterval.hi - nu.bareinterval.lo))^MC_DIFF_MU
 end
 @inline function psir_max(x::Float64, y::Float64, xgrad::SVector{N,Float64}, ygrad::SVector{N,Float64},
                           lambda::Interval{Float64}, nu::Interval{Float64}) where N
 
-    (nu.hi <= lambda.lo) && (return (x, xgrad))
-    (lambda.hi <= nu.lo) && (return (y, ygrad))
+    (nu.bareinterval.hi <= lambda.bareinterval.lo) && (return (x, xgrad))
+    (lambda.bareinterval.hi <= nu.bareinterval.lo) && (return (y, ygrad))
 
-    maxUU = max(lambda.hi, nu.hi)
-    maxLU = max(lambda.lo, nu.hi)
-    maxUL = max(lambda.hi, nu.lo)
-    maxLL = max(lambda.lo, nu.lo)
+    maxUU = max(lambda.bareinterval.hi, nu.bareinterval.hi)
+    maxLU = max(lambda.bareinterval.lo, nu.bareinterval.hi)
+    maxUL = max(lambda.bareinterval.hi, nu.bareinterval.lo)
+    maxLL = max(lambda.bareinterval.lo, nu.bareinterval.lo)
 
     diamx = diam(lambda)
     diamy = diam(nu)
     delta = maxLL + maxUU - maxLU - maxUL
-    theta_arg = max(0.0, (lambda.hi - x)diamx - (y - nu.lo)/diamy)
+    theta_arg = max(0.0, (lambda.bareinterval.hi - x)diamx - (y - nu.bareinterval.lo)/diamy)
     thetar = delta*theta_arg^MC_DIFF_MU1
 
     coeff1 = maxUU - maxLU
     coeff2 = maxUU - maxUL
-    val = maxUU - coeff1*(lambda.hi-x)/diamx - coeff2*(nu.hi - y)/diamy
+    val = maxUU - coeff1*(lambda.bareinterval.hi-x)/diamx - coeff2*(nu.bareinterval.hi - y)/diamy
 
     shared_term = -MC_DIFF_MU1T*delta*theta_arg^MC_DIFF_MU
     grad_val = ((coeff1 + shared_term)/diamx)*xgrad + ((coeff2 + shared_term)/diamy)*ygrad
@@ -115,13 +115,13 @@ end
 end
 @inline function max_kernel(x::MC{N, Diff}, y::MC{N, Diff}, z::Interval{Float64}) where N
 
-    if (y.Intv.hi <= x.Intv.lo) || (x.Intv.hi <= y.Intv.lo)
+    if (y.Intv.bareinterval.hi <= x.Intv.bareinterval.lo) || (x.Intv.bareinterval.hi <= y.Intv.bareinterval.lo)
         cv, cv_grad = psil_max(x.cv, y.cv, x.Intv, y.Intv, x, y)
-    elseif (y.Intv.lo <= x.Intv.lo) & (x.Intv.lo < y.Intv.hi)
-        temp = mid3v(x.cv, x.cc, y.cv - (y.Intv.hi - x.Intv.lo)*MC_DIFF_DIV)
+    elseif (y.Intv.bareinterval.lo <= x.Intv.bareinterval.lo) & (x.Intv.bareinterval.lo < y.Intv.bareinterval.hi)
+        temp = mid3v(x.cv, x.cc, y.cv - (y.Intv.bareinterval.hi - x.Intv.bareinterval.lo)*MC_DIFF_DIV)
         cv, cv_grad = psil_max(temp, y.cv, x.Intv, y.Intv, x, y)
     else
-        temp = mid3v(y.cv, y.cc, x.cv - (x.Intv.hi - y.Intv.lo)*MC_DIFF_DIV)
+        temp = mid3v(y.cv, y.cc, x.cv - (x.Intv.bareinterval.hi - y.Intv.bareinterval.lo)*MC_DIFF_DIV)
         cv, cv_grad = psil_max(x.cv, temp, x.Intv, y.Intv, x, y)
     end
 
@@ -130,24 +130,24 @@ end
 end
 
 @inline function max_kernel(x::MC{N, MV}, y::MC{N, MV}, z::Interval{Float64}) where N
-    if x.Intv.hi <= y.Intv.lo
+    if x.Intv.bareinterval.hi <= y.Intv.bareinterval.lo
         cc = y.cc
         cc_grad = y.cnst ? zero(SVector{N,Float64}) : y.cc_grad
-    elseif x.Intv.lo >= y.Intv.hi
+    elseif x.Intv.bareinterval.lo >= y.Intv.bareinterval.hi
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
-        maxLU = max(x.Intv.lo, y.Intv.hi)
-        maxUL = max(x.Intv.hi, y.Intv.lo)
+        maxLU = max(x.Intv.bareinterval.lo, y.Intv.bareinterval.hi)
+        maxUL = max(x.Intv.bareinterval.hi, y.Intv.bareinterval.lo)
 
         m1a = isthin(x) ? 0.0 : (x.cc - lo(x))/diam(x)
         m1b = isthin(y) ? 0.0 : (y.cc - lo(y))/diam(y)
-        maxLL = max(x.Intv.lo, y.Intv.lo)
+        maxLL = max(x.Intv.bareinterval.lo, y.Intv.bareinterval.lo)
         g1cc = maxLL + m1a*(maxUL - maxLL) + m1b*(maxLU - maxLL)
 
         m2a = isthin(x) ? 0.0 : (x.cc - hi(x))/diam(x)
         m2b = isthin(y) ? 0.0 : (y.cc - hi(y))/diam(y)
-        maxUU = max(x.Intv.hi, y.Intv.hi)
+        maxUU = max(x.Intv.bareinterval.hi, y.Intv.bareinterval.hi)
         g2cc = maxUU + m2a*(maxUU - maxLU) + m2b*(maxUU - maxUL)
 
         if g1cc < g2cc
@@ -161,15 +161,15 @@ end
     cv = max(x.cv, y.cv)
     cv_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
                               (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
-    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(z.bareinterval.lo, z.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N, MV}(cv, cc, z, cv_grad, cc_grad, y.cnst ? x.cnst : (x.cnst ? y.cnst : (x.cnst || y.cnst)))
 end
 
 @inline function max_kernel(x::MC{N, NS}, y::MC{N, NS}, z::Interval{Float64}) where N
-    if x.Intv.hi <= y.Intv.lo
+    if x.Intv.bareinterval.hi <= y.Intv.bareinterval.lo
         cc = y.cc
         cc_grad = y.cnst ? zero(SVector{N,Float64}) : y.cc_grad
-    elseif x.Intv.lo >= y.Intv.hi
+    elseif x.Intv.bareinterval.lo >= y.Intv.bareinterval.hi
         cc = x.cc
         cc_grad = x.cnst ? zero(SVector{N,Float64}) : x.cc_grad
     else
@@ -180,15 +180,15 @@ end
     cv = max(x.cv, y.cv)
     cv_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
                               (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
-    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(z.bareinterval.lo, z.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N, NS}(cv, cc, z, cv_grad, cc_grad, y.cnst ? x.cnst : (x.cnst ? y.cnst : (x.cnst || y.cnst)))
 end
 
 @inline function min_kernel(x::MC{N, NS}, y::MC{N, NS}, z::Interval{Float64}) where N
-    if x.Intv.hi <= y.Intv.lo
+    if x.Intv.bareinterval.hi <= y.Intv.bareinterval.lo
         cv = x.cv
         cv_grad = x.cnst ? zero(SVector{N,Float64}) : x.cv_grad
-    elseif x.Intv.lo >= y.Intv.hi
+    elseif x.Intv.bareinterval.lo >= y.Intv.bareinterval.hi
         cv = y.cv
         cv_grad = y.cnst ? zero(SVector{N,Float64}) : y.cv_grad
     else
@@ -199,7 +199,7 @@ end
     cc = min(x.cc, y.cc)
     cc_grad = (x.cv > y.cv) ? (x.cnst ? zero(SVector{N,Float64}) : x.cv_grad) :
                               (y.cnst ? zero(SVector{N,Float64}) : y.cv_grad)
-    cv, cc, cv_grad, cc_grad = cut(z.lo, z.hi, cv, cc, cv_grad, cc_grad)
+    cv, cc, cv_grad, cc_grad = cut(z.bareinterval.lo, z.bareinterval.hi, cv, cc, cv_grad, cc_grad)
     return MC{N, NS}(cv, cc, z, cv_grad, cc_grad, y.cnst ? x.cnst : (x.cnst ? y.cnst : (x.cnst || y.cnst)))
 end
 
@@ -210,6 +210,6 @@ end
 @inline function union(x::MC{N,T}, y::MC{N,T}) where {N, T <: RelaxTag}
     cv_MC = min(x, y)
     cc_MC = max(x, y)
-    return MC{N, NS}(cv_MC.cv, cc_MC.cc, Interval(cv_MC.Intv.lo, cc_MC.Intv.hi),
+    return MC{N, NS}(cv_MC.cv, cc_MC.cc, interval(cv_MC.Intv.bareinterval.lo, cc_MC.Intv.bareinterval.hi),
                      cv_MC.cv_grad, cc_MC.cc_grad, x.cnst && y.cnst)
 end

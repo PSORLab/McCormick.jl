@@ -11,8 +11,8 @@
 
 for f in (:exp, :exp2, :exp10, :expm1)
     function ($f)(::Union{NS,MV}, x::MCNoGrad)
-        X = x.Intv;    xL = x.Intv.lo;   xU = x.Intv.hi
-        z = ($f)(X);   zL = z.lo;        zU = z.hi
+        X = x.Intv;    xL = x.Intv.bareinterval.lo;   xU = x.Intv.bareinterval.hi
+        z = ($f)(X);   zL = z.bareinterval.lo;        zU = z.bareinterval.hi
         mcc = mid3v(x.cv, x.cc, xU)
         mcv = mid3v(x.cv, x.cc, xL)
         zcc = zU > zL ? (zL*(xU - mcc) + zU*(mcc - xL))/(xU - xL) : zU
@@ -22,8 +22,8 @@ for f in (:exp, :exp2, :exp10, :expm1)
         return MCNoGrad(zcv, zcc, z, x.cnst)
     end
     function ($f)(::Diff, x::MCNoGrad)
-        X = x.Intv;    xL = x.Intv.lo;   xU = x.Intv.hi
-        z = ($f)(X);   zL = z.lo;        zU = z.hi
+        X = x.Intv;    xL = x.Intv.bareinterval.lo;   xU = x.Intv.bareinterval.hi
+        z = ($f)(X);   zL = z.bareinterval.lo;        zU = z.bareinterval.hi
         mcc = mid3v(x.cv, x.cc, xU)
         mcv = mid3v(x.cv, x.cc, xL)
         zcc = zU > zL ? (zL*(xU - mcc) + zU*(mcc - xL))/(xU - xL) : zU
@@ -33,7 +33,7 @@ for f in (:exp, :exp2, :exp10, :expm1)
     f_kernel = Symbol(String(opMC)*"_kernel")
     df = diffrule(:Base, opMC, :mcv) # Replace with cv ruleset
     function ($f_kernel)(::Union{NS,MV}, x::MCNoGrad, z::Interval{Float64})
-        xL = x.Intv.lo;   xU = x.Intv.hi;   zL = z.lo;   zU = z.hi
+        xL = x.Intv.bareinterval.lo;   xU = x.Intv.bareinterval.hi;   zL = z.bareinterval.lo;   zU = z.bareinterval.hi
         mcc, cci = mid3(x.cc, x.cv, xU)
         mcv, cvi = mid3(x.cc, x.cv, xL)
         zcc = zU > zL ? (zL*(xU - mcc) + zU*(mcc - xL))/(xU - xL) : zU
@@ -54,7 +54,7 @@ for f in (:exp, :exp2, :exp10, :expm1)
     end
     ddf = diffrule(:Base, opMC, :mcv) # Replace with cv ruleset
     function ($f_kernel)(::Diff, x::MCNoGrad, z::Interval{Float64})
-        xL = x.Intv.lo;   xU = x.Intv.hi;   zL = z.lo;   zU = z.hi
+        xL = x.Intv.bareinterval.lo;   xU = x.Intv.bareinterval.hi;   zL = z.bareinterval.lo;   zU = z.bareinterval.hi
         mcc, cci = mid3(x.cc, x.cv, xU)
         mcv, cvi = mid3(x.cc, x.cv, xL)
         zcc = zU > zL ? (zL*(xU - mcc) + zU*(mcc - xL))/(xU - xL) : zU
