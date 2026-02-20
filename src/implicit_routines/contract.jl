@@ -1,8 +1,9 @@
-# Copyright (c) 2018: Matthew Wilhelm & Matthew Stuber.
+# Copyright (c) 2018 Matthew Wilhelm, Robert Gottlieb, Dimitri Alston, 
+# Matthew Stuber, and the University of Connecticut (UConn)
 # This code is licensed under MIT license (see LICENSE.md for full details)
 #############################################################################
 # McCormick.jl
-# A McCormick operator library in Julia
+# A forward McCormick operator library
 # See https://github.com/PSORLab/McCormick.jl
 #############################################################################
 # src/implicit_routines/contact.jl

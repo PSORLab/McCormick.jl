@@ -1,6 +1,6 @@
 name = "McCormick"
 uuid = "53c679d3-6890-5091-8386-c291e8c8aaa1"
-authors = ["Matthew Wilhelm <matthew.wilhelm@uconn.edu>"]
+authors = ["Matthew Wilhelm <matthew.wilhelm@uconn.edu>, Robert Gottlieb <robert.x.gottlieb@uconn.edu>, Dimitri Alston <dimitri.alston@uconn.edu>, and Matthew Stuber <matthew.stuber@uconn.edu>"]
 version = "0.14.0"
 
 [deps]
